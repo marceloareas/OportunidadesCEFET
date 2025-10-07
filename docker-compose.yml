@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   mongo:
     image: mongo
@@ -10,6 +12,16 @@ services:
       MONGO_INITDB_DATABASE: oportunidades_cefet
     volumes:
       - mongo-data:/data/db
+
+backend:
+  build: .
+  container_name: oportunidadescefet-backend
+  ports:
+    - "8080:8080"
+  environment:
+    SPRING_DATA_MONGODB_URI: mongodb://root:secret@mongo:27017/oportunidades_cefet?authSource=admin
+  depends_on:
+    - mongo
 
 volumes:
   mongo-data:
