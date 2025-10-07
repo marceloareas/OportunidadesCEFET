@@ -1,0 +1,15 @@
+services:
+  mongo:
+    image: mongo
+    container_name: mongo-oportunidades-cefet
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+      MONGO_INITDB_DATABASE: oportunidades_cefet
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
