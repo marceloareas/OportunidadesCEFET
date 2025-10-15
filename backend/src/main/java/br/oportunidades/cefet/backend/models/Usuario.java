@@ -21,6 +21,8 @@ public class Usuario {
     @Builder.Default
     private String id = UUID.randomUUID().toString();
     private String nome;
+    private String email;
+    private String senha; // senha criptografada
     private FuncaoDeUsuario funcao;
     private Date criado;
 
