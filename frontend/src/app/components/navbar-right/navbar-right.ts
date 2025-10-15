@@ -1,11 +1,11 @@
-import { Component } from '@angular/core';
-
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-navbar-right',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './navbar-right.html',
   styleUrl: './navbar-right.css'
 })
 export class NavbarRight {
-
+  @Input() logged!: boolean;
 }

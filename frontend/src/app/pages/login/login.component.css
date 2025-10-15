@@ -1,0 +1,124 @@
+.page{
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    background-image: url('/loginBackground.png');
+    background-size: cover;
+    background-position: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.forms{
+    display: flex;
+    width: 65vw;
+    height: 70vh;
+    background-color: #0A497E;
+    border-radius: 25px;
+}
+
+.tab{
+    position: absolute;
+    z-index: 2;
+    width: 32.5vw;
+    height: 70vh;
+    background-color: #8393A2;
+    border-radius: 25px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: 32.5vw;
+     transition: transform 0.6s ease-in-out;
+}
+
+/* quando o usuário clicar em "Registre-se" */
+.tab.move-left {
+  transform: translateX(-100%);
+  border-radius: 25px 0 0 25px;
+}
+
+
+.login-form, .register-form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 32.5vw;
+    height: 70vh;
+    padding: 2vh 2vw;
+    color:white;
+
+    h2{
+        font-size: 32px;
+        font-weight: bold;
+        width: auto;
+        height: auto;
+    }
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+
+    span{
+        margin-top: 1vh;
+        height: auto;
+    }
+
+    a{
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+        text-decoration: underline;
+
+        &:hover{
+            color: #8393A2;
+        }
+    }
+}
+
+.input-group{
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    width: 80%;
+    margin: 1vh 0;
+
+    input{
+        height: 4.5vh;
+        border-radius: 5px;
+        border: 1px solid #111;
+        padding: 0 1vw;
+        font-size: 1rem;
+    }
+
+    label{
+        margin-bottom: 1vh;
+        height: auto;
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+}
+
+.btn-submit{
+    width: 50%;
+    height: 5vh;
+    border: none;
+    border-radius: 5px;
+    background-color: white;
+    color: black;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 2vh;
+    box-shadow: black 5px 5px 3px;
+    transition: ease-in-out 0.3s;
+
+    &:hover{
+        background-color: #8393A2;
+        transform: scale(1.05);
+    }
+}
