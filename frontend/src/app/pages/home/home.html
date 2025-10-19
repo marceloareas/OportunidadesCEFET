@@ -1,0 +1,44 @@
+<app-navbar-top></app-navbar-top>
+<div class="page">
+    <app-navbar-left></app-navbar-left>
+
+    <main [ngSwitch]="currentView" class="content">
+        <div class="scroll-content">
+
+            <div class="posts" *ngSwitchCase="'home'">
+                <div class="new-post">
+                    <div class="img">
+                        <img src="pfptemp.ico">
+                    </div>
+
+
+                    <div (click)="openNewPost()" class="new-post-btn">
+                        <span>Crie uma nova discussão</span>
+                    </div>
+                </div>
+
+                <hr>
+                <app-post></app-post>
+                <hr>
+                <app-post></app-post>
+                <hr>
+            </div>
+
+
+            <!-- criar post -->
+
+            <div class="modal-overlay" *ngIf="newPostModal" (click)="closeNewPost()">
+                <div class="modal-conteudo" (click)="$event.stopPropagation()">
+                    <input class="title-input" type="text" placeholder="Adicione um Titulo">
+                    <textarea class="desc-input" type="text" placeholder="Escreva sobre oque está pensando"></textarea>
+                    <div class="add-image"><i class="bi bi-card-image"></i> Adicionar Imagem</div>
+                    <button class="send-btn">ENVIAR</button>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <app-navbar-right></app-navbar-right>
+</div>

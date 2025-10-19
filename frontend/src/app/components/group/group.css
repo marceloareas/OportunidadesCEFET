@@ -1,0 +1,35 @@
+.group{
+    width: 100%;
+    height: auto;
+
+    .header{
+        display: flex;
+        align-items: center;
+
+        div{
+            margin-left: 1vw;
+        
+            p{
+                font-size: 14px;
+                color: #595959;
+                font-weight: 350;
+            }
+        }
+
+        img{
+            width: 80px;
+            height: 80px;
+            border-radius: 100%;
+            border: 2px solid black;
+            object-fit: cover;
+        }
+    }
+
+}
+
+hr {
+  border: none;
+  height: 1px;
+  border-top: 1px solid black;
+  margin: 4vh 0;
+}

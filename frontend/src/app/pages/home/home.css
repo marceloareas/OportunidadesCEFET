@@ -1,0 +1,151 @@
+.page {
+  display: grid;
+  padding-top: 6.5vh;
+  grid-template-columns: 22.5vw 55vw 22.5vw;
+  height: 100vh;
+  background-color: #FAF9F6;
+  overflow-y: hidden;
+}
+
+.content {
+  overflow-y: auto; 
+  scrollbar-width: none;
+}
+
+.scroll-content {
+  height: auto;
+  padding: 5vh 5vw;
+}
+
+.new-post{
+    width:100%;
+    height: auto;
+    color: black;
+    display: flex;
+    justify-content: space-between;
+
+    .img{
+        width: 50px;
+        height: 50px;
+        border-radius: 100%;
+        border: 1px solid black;;
+        
+        img{
+            border-radius: 100%;
+        }
+    }
+
+    .new-post-btn{
+        width: 90%;
+        height: 50px;
+        display: flex;
+        background-color: #fff;
+        border: 1px solid black;
+        border-radius: 20px;
+        padding: 2vh 1vw;
+        box-sizing: border-box;
+        cursor: pointer;
+
+        span{
+            
+            color: #313131;
+        }
+    }
+}
+
+hr {
+  border: none;
+  height: 1px;
+  border-top: 1px solid black;
+  margin: 4vh 0;
+}
+
+
+.posts{
+    display:block;
+}
+
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* fundo escuro semitransparente */
+  display: flex;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-conteudo {
+  height: 45vh;
+  margin-top:7vh;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0px 5px 15px rgba(0,0,0,0.3);
+  width: 60vw;
+
+  .title-input{
+    width: 100%;
+    height: 6vh;
+    border: none;
+    border-bottom: 2px solid black;
+    font-size: 16px;
+    padding:0;
+    margin-bottom: 2vh;
+    transition: .3s ease;
+  
+    &&:focus{
+        outline: none;
+        font-size: 18px;
+    }
+    }
+
+    .desc-input{
+        width: 100%;
+        height: 20vh;
+        border-radius: 10px;
+        border: 1px solid grey;
+        padding: 10px 5px;
+        
+    }
+
+    .add-image{
+        width: 20vw;
+        height: auto;
+        font-size: 14px;
+        color: #0A497E;
+        padding: 2px 5px;
+        margin-bottom: 5px;
+
+        &&:hover{
+            color: purple;
+            cursor: pointer;
+        }
+    }
+
+    .send-btn{
+        margin-left: auto;
+        right: 0;
+        width: 15vw;
+        height: 5vh;
+        display: flex;
+        background-color: #0A497E;
+        font-size: 16px;
+        justify-content: center;
+        border: 1px solid black;
+        border-radius: 10px;
+        align-items: center;
+        color: white;
+        box-shadow: 2px 2px 2px #444;
+        transition: .2s ease;
+
+        &&:hover{
+            transform: scale(1.03);
+            cursor: pointer;
+        }
+    }
+
+}
