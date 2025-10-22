@@ -19,12 +19,12 @@
 
         <section class="oportunidades-container">
           <h2 class="titulo-principal">
-            {{ modoOportunidade() ? 'Oportunidades Disponíveis' : 'Discussões Recentes' }}
+            Publicações e Oportunidades
           </h2>
 
           <!-- Status da requisição -->
           <div *ngIf="carregando()" class="mensagem-status">
-            {{ modoOportunidade() ? 'Carregando oportunidades...' : 'Carregando discussões...' }}
+            Carregando publicações...
           </div>
           <div *ngIf="erro()" class="mensagem-erro">
             {{ erro() }}
@@ -39,9 +39,7 @@
           </div>
 
           <ng-template #semItens>
-            <p class="mensagem-vazia">
-              {{ modoOportunidade() ? 'Nenhuma oportunidade encontrada.' : 'Nenhuma postagem encontrada.' }}
-            </p>
+            <p class="mensagem-vazia">Nenhum post ou oportunidade encontrado.</p>
           </ng-template>
         </section>
       </div>

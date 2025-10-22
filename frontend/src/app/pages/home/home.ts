@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, computed, signal } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
@@ -32,10 +33,11 @@ export class Home {
   erro = signal<string>('');
 
   feedItens = computed<Post[]>(() => {
-    if (this.modoOportunidade()) {
-      return this.oportunidades().map((op) => this.mapOportunidadeParaPost(op));
-    }
-    return this.posts();
+    const posts = this.posts();
+    const oportunidadesMapeadas = this.oportunidades().map((op) => this.mapOportunidadeParaPost(op));
+    return [...posts, ...oportunidadesMapeadas].sort(
+      (a, b) => this.obterTimestamp(b.criado) - this.obterTimestamp(a.criado)
+    );
   });
 
   // formulário do modal
@@ -58,7 +60,7 @@ export class Home {
       this.router.navigate(['/login']);
       return;
     }
-    this.carregarPosts();
+    this.carregarFeed();
   }
 
   private mapOportunidadeParaPost(op: Oportunidade): Post {
@@ -78,33 +80,32 @@ export class Home {
     };
   }
 
-  carregarPosts() {
-    this.carregando.set(true);
-    this.erro.set('');
-    this.postService.getPosts().subscribe({
-      next: (dados) => {
-        this.posts.set(dados ?? []);
-        this.carregando.set(false);
-      },
-      error: (err) => {
-        console.error('Erro ao carregar postagens:', err);
-        this.erro.set('Erro ao carregar postagens.');
-        this.carregando.set(false);
-      }
-    });
+  private obterTimestamp(criado?: string | Date): number {
+    if (!criado) {
+      return 0;
+    }
+    if (criado instanceof Date) {
+      return criado.getTime();
+    }
+    const data = new Date(criado);
+    return Number.isNaN(data.getTime()) ? 0 : data.getTime();
   }
 
-  carregarOportunidades() {
+  private carregarFeed() {
     this.carregando.set(true);
     this.erro.set('');
-    this.oportunidadeService.listar().subscribe({
-      next: (dados) => {
-        this.oportunidades.set(dados ?? []);
+    forkJoin({
+      posts: this.postService.getPosts(),
+      oportunidades: this.oportunidadeService.listar()
+    }).subscribe({
+      next: ({ posts, oportunidades }) => {
+        this.posts.set(posts ?? []);
+        this.oportunidades.set(oportunidades ?? []);
         this.carregando.set(false);
       },
       error: (err) => {
-        console.error('Erro ao carregar oportunidades:', err);
-        this.erro.set('Erro ao carregar oportunidades.');
+        console.error('Erro ao carregar conteúdo:', err);
+        this.erro.set('Erro ao carregar publicações.');
         this.carregando.set(false);
       }
     });
@@ -176,14 +177,8 @@ export class Home {
   alternarModoOportunidade() {
     const novoValor = !this.modoOportunidade();
     this.modoOportunidade.set(novoValor);
-    this.erro.set('');
     if (novoValor) {
       this.removerImagem();
-      if (this.oportunidades().length === 0) {
-        this.carregarOportunidades();
-      }
-    } else if (this.posts().length === 0) {
-      this.carregarPosts();
     }
   }
 

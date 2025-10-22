@@ -7,7 +7,7 @@ export interface Post {
   titulo: string;
   corpo: string;
   criadorId?: string;
-  criado?: Date;
+  criado?: string | Date;
   imagemBase64?: string;
   likesId?: string[];
   idComentarios?: any[];
