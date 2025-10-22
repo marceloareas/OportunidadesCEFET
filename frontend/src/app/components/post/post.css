@@ -36,6 +36,7 @@
 
     p{
         text-align: justify;
+        white-space: pre-wrap;
         margin-bottom: 2vh;
     }
 

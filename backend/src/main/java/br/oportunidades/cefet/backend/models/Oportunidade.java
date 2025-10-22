@@ -22,6 +22,7 @@ public class Oportunidade {
 
     private String professorId; // referência ao usuário (professor)
     private String nome;
+    private String descricao;
     private int quantidadeDeVagas;
     private int vagasPreenchidas;
     private Date criado;

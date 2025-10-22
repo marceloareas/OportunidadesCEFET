@@ -5,12 +5,17 @@ import { Observable } from 'rxjs';
 // 🔹 Interface de dados (mantém compatibilidade com backend)
 export interface Oportunidade {
   id?: string;
-  titulo: string;
-  descricao: string;
+  nome: string;
+  descricao?: string;
   professorId: string;
-  idCategoria: string;
-  vagasTotais: number;
+  quantidadeDeVagas: number;
   vagasPreenchidas?: number;
+  idCategoria?: string;
+  criado?: string | Date;
+  idMembros?: string[];
+  idImagens?: string[];
+  idLikes?: string[];
+  idCandidatos?: string[];
 }
 
 // 🔹 Serviço principal de comunicação com o backend

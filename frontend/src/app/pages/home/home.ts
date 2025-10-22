@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { PostComponent } from '../../components/post/post';
 import { PostService, Post } from '../../services/post.services';
+import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 
 @Component({
   selector: 'app-home',
@@ -22,19 +23,34 @@ export class Home {
   // estado de visualização
   currentView = signal<'home'>('home');
   newPostModal = signal<boolean>(false);
+  modoOportunidade = signal<boolean>(false);
 
   // dados dos posts
   posts = signal<Post[]>([]);
+  oportunidades = signal<Oportunidade[]>([]);
   carregando = signal<boolean>(false);
   erro = signal<string>('');
+
+  feedItens = computed<Post[]>(() => {
+    if (this.modoOportunidade()) {
+      return this.oportunidades().map((op) => this.mapOportunidadeParaPost(op));
+    }
+    return this.posts();
+  });
 
   // formulário do modal
   titulo = signal<string>('');
   corpo = signal<string>('');
   imagemBase64 = signal<string | null>(null);
   imagemErro = signal<string>('');
+  vagasTotais = signal<number>(1);
+  categoria = signal<string>('');
 
-  constructor(private postService: PostService, private router: Router) {}
+  constructor(
+    private postService: PostService,
+    private oportunidadeService: OportunidadeService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     const isLogged = localStorage.getItem('isLogged') === 'true';
@@ -45,8 +61,26 @@ export class Home {
     this.carregarPosts();
   }
 
+  private mapOportunidadeParaPost(op: Oportunidade): Post {
+    const vagasInfo = `Vagas disponíveis: ${(op.vagasPreenchidas ?? 0)}/${op.quantidadeDeVagas}`;
+    const descricao = op.descricao?.trim();
+    const corpoFormatado = descricao ? `${descricao}\n\n${vagasInfo}` : vagasInfo;
+
+    return {
+      id: op.id,
+      titulo: op.nome,
+      corpo: corpoFormatado,
+      criadorId: op.professorId,
+      criado: op.criado ? new Date(op.criado) : undefined,
+      likesId: op.idLikes ?? [],
+      idComentarios: [],
+      imagemBase64: undefined
+    };
+  }
+
   carregarPosts() {
     this.carregando.set(true);
+    this.erro.set('');
     this.postService.getPosts().subscribe({
       next: (dados) => {
         this.posts.set(dados ?? []);
@@ -55,6 +89,22 @@ export class Home {
       error: (err) => {
         console.error('Erro ao carregar postagens:', err);
         this.erro.set('Erro ao carregar postagens.');
+        this.carregando.set(false);
+      }
+    });
+  }
+
+  carregarOportunidades() {
+    this.carregando.set(true);
+    this.erro.set('');
+    this.oportunidadeService.listar().subscribe({
+      next: (dados) => {
+        this.oportunidades.set(dados ?? []);
+        this.carregando.set(false);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar oportunidades:', err);
+        this.erro.set('Erro ao carregar oportunidades.');
         this.carregando.set(false);
       }
     });
@@ -106,8 +156,57 @@ export class Home {
     }
   }
 
+  onVagasChange(valor: unknown) {
+    let convertido = 0;
+    if (typeof valor === 'string') {
+      convertido = Number(valor.trim());
+    } else if (typeof valor === 'number') {
+      convertido = valor;
+    } else if (valor !== null && valor !== undefined) {
+      convertido = Number(valor);
+    }
+
+    if (!Number.isFinite(convertido)) {
+      convertido = 0;
+    }
+
+    this.vagasTotais.set(Math.max(0, Math.floor(convertido)));
+  }
+
+  alternarModoOportunidade() {
+    const novoValor = !this.modoOportunidade();
+    this.modoOportunidade.set(novoValor);
+    this.erro.set('');
+    if (novoValor) {
+      this.removerImagem();
+      if (this.oportunidades().length === 0) {
+        this.carregarOportunidades();
+      }
+    } else if (this.posts().length === 0) {
+      this.carregarPosts();
+    }
+  }
+
+  private resetFormulario() {
+    this.titulo.set('');
+    this.corpo.set('');
+    this.vagasTotais.set(1);
+    this.categoria.set('');
+    this.removerImagem();
+  }
+
   // criação de post
   enviarPost() {
+    if (!this.titulo().trim()) {
+      alert('Informe um título antes de enviar.');
+      return;
+    }
+
+    if (this.modoOportunidade()) {
+      this.enviarOportunidade();
+      return;
+    }
+
     const novoPost: Post = {
       titulo: this.titulo(),
       corpo: this.corpo(),
@@ -119,14 +218,39 @@ export class Home {
     this.postService.createPost(novoPost).subscribe({
       next: (p) => {
         this.posts.update(lista => [p, ...lista]);
-        this.titulo.set('');
-        this.corpo.set('');
-        this.removerImagem();
+        this.resetFormulario();
         this.newPostModal.set(false);
       },
       error: (err) => {
         console.error('Erro ao criar post:', err);
         alert('Erro ao criar post.');
+      }
+    });
+  }
+
+  private enviarOportunidade() {
+    const vagasInformadas = this.vagasTotais();
+    const quantidadeNormalizada = Number.isFinite(vagasInformadas)
+      ? Math.floor(Math.max(0, vagasInformadas))
+      : 0;
+
+    const novaOportunidade: Oportunidade = {
+      nome: this.titulo(),
+      descricao: this.corpo() || undefined,
+      professorId: 'usuarioFake',
+      quantidadeDeVagas: quantidadeNormalizada,
+      idCategoria: this.categoria() || undefined
+    };
+
+    this.oportunidadeService.criar(novaOportunidade).subscribe({
+      next: (oportunidade) => {
+        this.oportunidades.update(lista => [oportunidade, ...lista]);
+        this.resetFormulario();
+        this.newPostModal.set(false);
+      },
+      error: (err) => {
+        console.error('Erro ao criar oportunidade:', err);
+        alert('Erro ao criar oportunidade.');
       }
     });
   }

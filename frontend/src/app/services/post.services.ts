@@ -9,6 +9,8 @@ export interface Post {
   criadorId?: string;
   criado?: Date;
   imagemBase64?: string;
+  likesId?: string[];
+  idComentarios?: any[];
 }
 
 @Injectable({
