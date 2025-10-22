@@ -1,11 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-post',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './post.html',
   styleUrl: './post.css'
 })
-export class Post {
-
+export class PostComponent {
+  @Input() post!: {
+    id?: string;
+    titulo: string;
+    corpo: string;
+    criadorId?: string;
+    criado?: string | Date;
+    likesId?: string[];
+    idComentarios?: any[];
+  };
 }
