@@ -23,5 +23,17 @@ services:
     depends_on:
       - mongo
 
+  frontend:
+    build:
+      context: ./frontend
+    container_name: oportunidadescefet-frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
 volumes:
   mongo-data:

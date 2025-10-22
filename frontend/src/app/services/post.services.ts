@@ -8,6 +8,7 @@ export interface Post {
   corpo: string;
   criadorId?: string;
   criado?: Date;
+  imagemBase64?: string;
 }
 
 @Injectable({

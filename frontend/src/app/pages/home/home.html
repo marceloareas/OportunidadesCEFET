@@ -58,8 +58,22 @@
             [ngModel]="corpo()"
             (ngModelChange)="corpo.set($event)"
           ></textarea>
-          <div class="add-image">
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            hidden
+            (change)="onImagemSelecionada($event)"
+          />
+          <div class="add-image" (click)="fileInput.click()">
             <i class="bi bi-card-image"></i> Adicionar Imagem
+          </div>
+          <p class="erro-imagem" *ngIf="imagemErro()">{{ imagemErro() }}</p>
+          <div class="image-preview" *ngIf="imagemBase64()">
+            <img [src]="imagemBase64()!" alt="Pré-visualização da imagem" />
+            <button class="remove-image" type="button" (click)="removerImagem($event)">
+              Remover
+            </button>
           </div>
           <button class="send-btn" (click)="enviarPost()">ENVIAR</button>
         </div>

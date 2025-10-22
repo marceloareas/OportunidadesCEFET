@@ -79,7 +79,7 @@ hr {
 }
 
 .modal-conteudo {
-  height: 45vh;
+  height: fit-content;
   margin-top:7vh;
   background-color: #fff;
   padding: 30px;
@@ -123,6 +123,38 @@ hr {
         &&:hover{
             color: purple;
             cursor: pointer;
+        }
+    }
+
+    .erro-imagem{
+        color: #d32f2f;
+        font-size: 0.85rem;
+        margin: 5px 0 10px;
+    }
+
+    .image-preview{
+        display: flex;
+        align-items: center;
+        gap: 1vw;
+        margin-bottom: 1.5vh;
+
+        img{
+            max-height: 120px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .remove-image{
+            background: transparent;
+            border: none;
+            color: #d32f2f;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        .remove-image:hover{
+            text-decoration: underline;
         }
     }
 

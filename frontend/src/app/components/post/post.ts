@@ -17,5 +17,6 @@ export class PostComponent {
     criado?: string | Date;
     likesId?: string[];
     idComentarios?: any[];
+    imagemBase64?: string;
   };
 }

@@ -40,4 +40,5 @@ public class Post {
     @Builder.Default
     private Set<String> likesId = new HashSet<>(); // referencia Usuario(id)
 
+    private String imagemBase64;
 }
