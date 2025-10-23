@@ -1,0 +1,23 @@
+@startuml
+skinparam componentStyle rectangle
+
+actor Usuario
+
+node "Docker Host" {
+  node "Frontend Container\n(oportunidadescefet-frontend)" {
+    component "Angular 2 App\nPorta: 4200"
+  }
+
+  node "Backend Container\n(oportunidadescefet-backend)" {
+    component "Spring Boot App\nPorta: 8080"
+  }
+
+  node "MongoDB Container\n(mongo-oportunidades-cefet)" {
+    database "MongoDB\nPorta: 27017"
+  }
+}
+
+Usuario --> "Angular 2 App\nPorta: 4200"
+"Angular 2 App\nPorta: 4200" --> "Spring Boot App\nPorta: 8080"
+"Spring Boot App\nPorta: 8080" --> "MongoDB\nPorta: 27017"
+@enduml

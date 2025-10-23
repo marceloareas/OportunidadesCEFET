@@ -1,0 +1,67 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #EFEFEF
+  BorderColor black
+}
+
+actor "Usuário"
+actor "Aluno"
+actor "Professor"
+
+"Aluno" --|> "Usuário"
+"Professor" --|> "Aluno"
+
+package "Funcionalidades Comuns" {
+  usecase "Cadastrar-se"
+  usecase "Logar-se"
+  usecase "Manter perfil"
+  usecase "Criar novo post"
+  usecase "Manter post"
+  usecase "Favoritar oportunidades ou posts"
+  usecase "Curtir oportunidades ou posts"
+  usecase "Buscar oportunidades ou posts"
+  usecase "Filtrar por Área de Interesse"
+  usecase "Filtrar por Tipo de Oportunidade"
+  usecase "Filtrar por Data"
+  usecase "Descurtir post"
+  usecase "Excluir post"
+  usecase "Comentar em posts"
+  usecase "Excluir comentário"
+}
+
+package "Funcionalidades do Professor" {
+  usecase "Criar nova oportunidade"
+  usecase "Manter oportunidade"
+  usecase "Excluir oportunidade"
+  usecase "Remover comentários"
+}
+
+package "Funcionalidades do Aluno" {
+  usecase "Candidatar-se à vaga"
+}
+
+"Usuário" --> "Cadastrar-se"
+"Usuário" --> "Logar-se"
+"Usuário" --> "Manter perfil"
+"Usuário" --> "Criar novo post"
+"Usuário" --> "Manter post"
+"Usuário" --> "Favoritar oportunidades ou posts"
+"Usuário" --> "Curtir oportunidades ou posts"
+"Usuário" --> "Buscar oportunidades ou posts"
+"Usuário" --> "Filtrar por Área de Interesse"
+"Usuário" --> "Filtrar por Tipo de Oportunidade"
+"Usuário" --> "Filtrar por Data"
+"Usuário" --> "Descurtir post"
+"Usuário" --> "Excluir post"
+"Usuário" --> "Comentar em posts"
+"Usuário" --> "Excluir comentário"
+
+"Aluno" --> "Candidatar-se à vaga"
+
+"Professor" --> "Criar nova oportunidade"
+"Professor" --> "Manter oportunidade"
+"Professor" --> "Excluir oportunidade"
+"Professor" --> "Remover comentários"
+@enduml

@@ -1,0 +1,60 @@
+@startuml
+entity "Usuario" {
+  + id : String <<PK>>
+  nome : String
+  email : String
+  senha : String
+  funcao : FuncaoDeUsuario
+  criado : Date
+}
+
+entity "Post" {
+  + id : String <<PK>>
+  titulo : String
+  corpo : String
+  criadorId : String <<FK>>
+  criado : Date
+  ultimaAtualizacao : Date
+  imagemBase64 : String
+}
+
+entity "Comentario" {
+  + id : String <<PK>>
+  usuarioId : String <<FK>>
+  idComentarioPai : String <<FK>>
+  tipoEntidadePai : String
+  idPots : String <<FK>>
+  dataComentario : Date
+}
+
+entity "Oportunidade" {
+  + id : String <<PK>>
+  professorId : String <<FK>>
+  nome : String
+  descricao : String
+  quantidadeDeVagas : int
+  vagasPreenchidas : int
+  criado : Date
+  idCategoria : String <<FK>>
+}
+
+entity "Categoria" {
+  + id : String <<PK>>
+  nome : String
+}
+
+entity "Imagem" {
+  + id : String <<PK>>
+  url : String
+}
+
+Usuario "1" -- "0..*" Post : posts
+Usuario "1" -- "0..*" Comentario : comentarios
+Usuario "1" -- "0..*" Oportunidade : candidaturas
+Post "1" -- "0..*" Comentario : comentarios
+Post "1" -- "0..*" Categoria : categorias
+Comentario "1" -- "0..*" Comentario : respostas
+Oportunidade "1" -- "1" Categoria : categoria
+Oportunidade "1" -- "0..*" Usuario : membros
+Oportunidade "1" -- "0..*" Imagem : imagens
+@enduml
