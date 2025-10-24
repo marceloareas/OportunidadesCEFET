@@ -12,7 +12,7 @@
 .forms{
     display: flex;
     width: 65vw;
-    height: 70vh;
+    height: 80vh;
     background-color: #0A497E;
     border-radius: 25px;
 }
@@ -21,7 +21,7 @@
     position: absolute;
     z-index: 2;
     width: 32.5vw;
-    height: 70vh;
+    height: 80vh;
     background-color: #8393A2;
     border-radius: 25px;
     border-top-left-radius: 0;
@@ -44,7 +44,7 @@
     justify-content: center;
     width: 32.5vw;
     height: 70vh;
-    padding: 2vh 2vw;
+    padding: 40vh 2vw;
     color:white;
 
     h2{

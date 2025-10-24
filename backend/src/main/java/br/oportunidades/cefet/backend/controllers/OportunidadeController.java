@@ -12,19 +12,16 @@ import java.util.List;
 public class OportunidadeController {
     private final OportunidadeService oportunidadeService;
 
-    // ✅ Injeção de dependência
     public OportunidadeController(OportunidadeService oportunidadeService) {
         this.oportunidadeService = oportunidadeService;
     }
 
-    // 🟩 1. Listar todas as oportunidades (aluno/professor)
     @GetMapping
     public ResponseEntity<List<Oportunidade>> listarTodas() {
         List<Oportunidade> oportunidades = oportunidadeService.listarTodas();
         return ResponseEntity.ok(oportunidades);
     }
 
-    // 🟦 2. Buscar uma oportunidade por ID
     @GetMapping("/{id}")
     public ResponseEntity<Oportunidade> buscarPorId(@PathVariable String id) {
         return oportunidadeService.buscarPorId(id)
@@ -32,14 +29,12 @@ public class OportunidadeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 🟨 3. Criar nova oportunidade (professor)
     @PostMapping
     public ResponseEntity<Oportunidade> criar(@RequestBody Oportunidade oportunidade) {
         Oportunidade criada = oportunidadeService.criar(oportunidade);
         return ResponseEntity.ok(criada);
     }
 
-    // 🟪 4. Candidatar um aluno
     @PostMapping("/{idOportunidade}/candidatar/{idAluno}")
     public ResponseEntity<Oportunidade> candidatar(
             @PathVariable String idOportunidade,
@@ -49,7 +44,6 @@ public class OportunidadeController {
         return ResponseEntity.ok(atualizada);
     }
 
-    // 🟥 5. Deletar uma oportunidade
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable String id) {
         oportunidadeService.deletar(id);

@@ -62,9 +62,12 @@ hr {
 
 
 .posts{
-    display:block;
+  display:block;
 }
 
+.titulo-principal {
+    margin-bottom: 4vh;
+}
 
 .modal-overlay {
   position: fixed;

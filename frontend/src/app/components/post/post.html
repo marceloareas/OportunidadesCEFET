@@ -12,7 +12,7 @@
   <div class="content">
     <h2>{{ post.titulo }}</h2>
     <p class="description">{{ post.corpo }}</p>
-    <div class="postimg" *ngIf="post.imagemBase64">
+    <div class="posting" *ngIf="post.imagemBase64">
       <img [src]="post.imagemBase64" alt="Imagem da postagem">
     </div>
   </div>
