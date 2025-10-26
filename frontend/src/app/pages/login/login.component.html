@@ -1,75 +1,129 @@
 <div class="page">
-    <div class="forms">
-
-        <div class="login-form">
-            <h2>LOGIN</h2>
-             <form (submit)="onLoginSubmit($event)">
-                <div class="input-group">
-                <label for="email">E-mail</label>
-                <input type="email" id="emailLogin" name="email" placeholder="Digite seu e-mail" required (input)="email.set($any($event.target).value)">
-                </div>
-
-                <div class="input-group">
-                <label for="senha">Senha</label>
-                <input type="password" id="senhaLogin" name="senha" placeholder="Digite sua senha" required (input)="senha.set($any($event.target).value)">
-                </div>
-
-                <button type="submit" class="btn-submit">Enviar</button>
-                <span>Não possui conta ? <a (click)="toggleForm()">Cadastrar</a></span>
-             </form>
+  <div class="forms">
+    <div class="login-form">
+      <h2>LOGIN</h2>
+      <form (submit)="onLoginSubmit($event)">
+        <div class="input-group">
+          <label for="email">E-mail</label>
+          <input
+            type="email"
+            id="emailLogin"
+            name="email"
+            placeholder="Digite seu e-mail"
+            required
+            (input)="email.set($any($event.target).value)"
+          />
         </div>
 
-        <div class="register-form">
-             <h2>CADASTRO</h2>
-             <form (submit)="onRegisterSubmit($event)">
-                <div class="input-group">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required (input)="email.set($any($event.target).value)">
-                </div>
-
-                <div style="display: flex;width: 80%; height: auto; justify-content: space-between;">
-                    <div class="input-group" style="width: 55%;">
-                    <label for="Nome">Nome</label>
-                    <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required (input)="nome.set($any($event.target).value)">
-                    </div>
-
-                    <div class="input-group" style="width: 40%;" >
-                    <label for="matricula">Matricula</label>
-                    <input type="text" id="matricula" name="matricula" placeholder="xxxxxxAAA" required (input)="matricula.set($any($event.target).value)">
-                    </div>
-                </div>
-
-                <div class="input-group">
-                <label for="senha">Senha</label>
-                <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required (input)="senha.set($any($event.target).value)">
-                </div>
-
-                <div class="input-group">
-                <label for="senha">Confirmar Senha</label>
-                <input type="password" id="confirmaSenha" name="confirmaSenha" placeholder="Confirme sua senha" required (input)="confirmaSenha.set($any($event.target).value)">
-                </div>
-
-                <div class="input-group">
-                <label for="senha">Tipo</label>
-                <select style="height: 4.5vh;" [(ngModel)]="selecionada" name="tipo" (change)="selecionada.set($any($event.target).value)">
-                    <option value="" disabled selected>Selecione uma opção</option>
-                    <option *ngFor="let item of opcoes" [value]="item">
-                        {{ item }}
-                    </option>
-                </select>
-
-                </div>
-               
-
-                <button type="submit" class="btn-submit">Enviar</button>
-                <span>já possui conta ? <a (click)="toggleForm()">Login</a></span>
-            </form>
+        <div class="input-group">
+          <label for="senha">Senha</label>
+          <input
+            type="password"
+            id="senhaLogin"
+            name="senha"
+            placeholder="Digite sua senha"
+            required
+            (input)="senha.set($any($event.target).value)"
+          />
         </div>
 
+        <button type="submit" class="btn-submit">Enviar</button>
+        <span>
+          Não possui conta?
+          <a (click)="toggleForm()">Cadastrar</a>
+        </span>
+      </form>
     </div>
 
-    <div class="tab" [class.move-left]="isRegistering()">
+    <div class="register-form">
+      <h2>CADASTRO</h2>
+      <form (submit)="onRegisterSubmit($event)">
+        <div class="input-group">
+          <label for="email">E-mail</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Digite seu e-mail"
+            required
+            (input)="email.set($any($event.target).value)"
+          />
+        </div>
 
+        <div style="display: flex; width: 80%; height: auto; justify-content: space-between;">
+          <div class="input-group" style="width: 55%;">
+            <label for="nome">Nome</label>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              placeholder="Digite seu nome"
+              required
+              (input)="nome.set($any($event.target).value)"
+            />
+          </div>
+
+          <div class="input-group" style="width: 40%;">
+            <label for="matricula">Matrícula</label>
+            <input
+              type="text"
+              id="matricula"
+              name="matricula"
+              placeholder="xxxxxxAAA"
+              required
+              (input)="matricula.set($any($event.target).value)"
+            />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="senha">Senha</label>
+          <input
+            type="password"
+            id="senha"
+            name="senha"
+            placeholder="Digite sua senha"
+            required
+            (input)="senha.set($any($event.target).value)"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="confirmaSenha">Confirmar Senha</label>
+          <input
+            type="password"
+            id="confirmaSenha"
+            name="confirmaSenha"
+            placeholder="Confirme sua senha"
+            required
+            (input)="confirmaSenha.set($any($event.target).value)"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="tipo">Tipo</label>
+          <select
+            style="height: 4.5vh;"
+            [(ngModel)]="selecionada"
+            name="tipo"
+            required
+            (change)="selecionada.set($any($event.target).value)"
+          >
+            <option value="" disabled selected>Selecione uma opção</option>
+            <option *ngFor="let item of opcoes" [value]="item">
+              {{ item }}
+            </option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-submit">Enviar</button>
+        <span>
+          Já possui conta?
+          <a (click)="toggleForm()">Login</a>
+        </span>
+      </form>
     </div>
+  </div>
 
+  <div class="tab" [class.move-left]="isRegistering()"></div>
 </div>

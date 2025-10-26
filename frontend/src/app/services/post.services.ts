@@ -11,6 +11,7 @@ export interface Post {
   imagemBase64?: string;
   likesId?: string[];
   idComentarios?: any[];
+  nomeCriador?: string;
 }
 
 @Injectable({

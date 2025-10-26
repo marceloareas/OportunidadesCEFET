@@ -40,4 +40,6 @@ public class Oportunidade {
 
     @Builder.Default
     private List<String> idCandidatos = new ArrayList<>();
+
+    private String imagemBase64;
 }

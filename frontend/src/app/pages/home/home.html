@@ -15,7 +15,7 @@
           </div>
         </div>
 
-        <hr />
+        
 
         <section class="oportunidades-container">
           <h2 class="titulo-principal">
@@ -24,7 +24,6 @@
 
           <hr />
 
-          <!-- Status da requisição -->
           <div *ngIf="carregando()" class="mensagem-status">
             Carregando publicações...
           </div>
@@ -32,7 +31,6 @@
             {{ erro() }}
           </div>
 
-          <!-- Lista de oportunidades -->
           <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
             <ng-container *ngFor="let p of feedItens(); let last = last">
               <app-post [post]="p"></app-post>
@@ -46,10 +44,10 @@
         </section>
       </div>
 
-      <!-- Modal de nova postagem -->
       <div class="modal-overlay" *ngIf="newPostModal()" (click)="closeNewPost()">
         <div class="modal-conteudo" (click)="$event.stopPropagation()">
-          <div class="toggle-row">
+
+          <div class="toggle-row" *ngIf="tipoUsuario() === 'professor'">
             <span class="toggle-label" [class.ativo]="!modoOportunidade()">Discussão</span>
             <label class="toggle-switch">
               <input
@@ -61,6 +59,7 @@
             </label>
             <span class="toggle-label" [class.ativo]="modoOportunidade()">Oportunidade</span>
           </div>
+
           <input
             class="title-input"
             type="text"
@@ -68,12 +67,14 @@
             [ngModel]="titulo()"
             (ngModelChange)="titulo.set($event)"
           />
+
           <textarea
             class="desc-input"
             [placeholder]="modoOportunidade() ? 'Descreva a oportunidade' : 'Escreva sobre o que está pensando'"
             [ngModel]="corpo()"
             (ngModelChange)="corpo.set($event)"
           ></textarea>
+
           <div class="oportunidade-extra" *ngIf="modoOportunidade()">
             <div class="campo">
               <label for="vagas">Quantidade de vagas</label>
@@ -85,6 +86,7 @@
                 (ngModelChange)="onVagasChange($event)"
               />
             </div>
+
             <div class="campo">
               <label for="categoria">Categoria (opcional)</label>
               <input
@@ -95,6 +97,7 @@
                 (ngModelChange)="categoria.set($event)"
               />
             </div>
+
             <input
               #fileInput
               type="file"
@@ -105,7 +108,9 @@
             <div class="add-image" (click)="fileInput.click()">
               <i class="bi bi-card-image"></i> Adicionar Imagem
             </div>
+
             <p class="erro-imagem" *ngIf="imagemErro()">{{ imagemErro() }}</p>
+
             <div class="image-preview" *ngIf="imagemBase64()">
               <img [src]="imagemBase64()!" alt="Pré-visualização da imagem" />
               <button class="remove-image" type="button" (click)="removerImagem($event)">
@@ -113,6 +118,7 @@
               </button>
             </div>
           </div>
+
           <ng-container *ngIf="!modoOportunidade()">
             <input
               #fileInput
@@ -125,6 +131,7 @@
               <i class="bi bi-card-image"></i> Adicionar Imagem
             </div>
             <p class="erro-imagem" *ngIf="imagemErro()">{{ imagemErro() }}</p>
+
             <div class="image-preview" *ngIf="imagemBase64()">
               <img [src]="imagemBase64()!" alt="Pré-visualização da imagem" />
               <button class="remove-image" type="button" (click)="removerImagem($event)">
@@ -132,6 +139,7 @@
               </button>
             </div>
           </ng-container>
+
           <button class="send-btn" (click)="enviarPost()">ENVIAR</button>
         </div>
       </div>

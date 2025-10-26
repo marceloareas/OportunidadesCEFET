@@ -10,6 +10,7 @@ import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { PostComponent } from '../../components/post/post';
 import { PostService, Post } from '../../services/post.services';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
+import { UsuarioService, Usuario } from '../../services/usuario.service';
 
 @Component({
   selector: 'app-home',
@@ -21,14 +22,17 @@ import { OportunidadeService, Oportunidade } from '../../services/oportunidade.s
 export class Home {
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
 
-  // estado de visualização
   currentView = signal<'home'>('home');
   newPostModal = signal<boolean>(false);
   modoOportunidade = signal<boolean>(false);
 
-  // dados dos posts
+  tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
+  usuarioLogado = signal<{ id: string; nome: string; funcao: string } | null>(null);
+
   posts = signal<Post[]>([]);
   oportunidades = signal<Oportunidade[]>([]);
+  nomesUsuarios = new Map<string, string>();
+
   carregando = signal<boolean>(false);
   erro = signal<string>('');
 
@@ -40,7 +44,6 @@ export class Home {
     );
   });
 
-  // formulário do modal
   titulo = signal<string>('');
   corpo = signal<string>('');
   imagemBase64 = signal<string | null>(null);
@@ -51,6 +54,7 @@ export class Home {
   constructor(
     private postService: PostService,
     private oportunidadeService: OportunidadeService,
+    private usuarioService: UsuarioService,
     private router: Router
   ) {}
 
@@ -60,13 +64,28 @@ export class Home {
       this.router.navigate(['/login']);
       return;
     }
+
+    const usuario = localStorage.getItem('usuario');
+    if (usuario) {
+      try {
+        const parsed = JSON.parse(usuario);
+        this.usuarioLogado.set({
+          id: parsed.id,
+          nome: parsed.nome,
+          funcao: parsed.funcao?.toUpperCase() || 'ALUNO'
+        });
+      } catch {
+        this.usuarioLogado.set(null);
+      }
+    }
+
     this.carregarFeed();
   }
 
   private mapOportunidadeParaPost(op: Oportunidade): Post {
     const vagasInfo = `Vagas disponíveis: ${(op.vagasPreenchidas ?? 0)}/${op.quantidadeDeVagas}`;
     const descricao = op.descricao?.trim();
-    const corpoFormatado = descricao ? `${descricao}\n\n${vagasInfo}` : vagasInfo;
+    const corpoFormatado = descricao ? `${vagasInfo}\n\n${descricao}` : vagasInfo;
 
     return {
       id: op.id,
@@ -76,17 +95,14 @@ export class Home {
       criado: op.criado ? new Date(op.criado) : undefined,
       likesId: op.idLikes ?? [],
       idComentarios: [],
-      imagemBase64: undefined
+      imagemBase64: op.imagemBase64,
+      nomeCriador: this.nomesUsuarios.get(op.professorId || '') || 'Professor'
     };
   }
 
   private obterTimestamp(criado?: string | Date): number {
-    if (!criado) {
-      return 0;
-    }
-    if (criado instanceof Date) {
-      return criado.getTime();
-    }
+    if (!criado) return 0;
+    if (criado instanceof Date) return criado.getTime();
     const data = new Date(criado);
     return Number.isNaN(data.getTime()) ? 0 : data.getTime();
   }
@@ -96,10 +112,18 @@ export class Home {
     this.erro.set('');
     forkJoin({
       posts: this.postService.getPosts(),
-      oportunidades: this.oportunidadeService.listar()
+      oportunidades: this.oportunidadeService.listar(),
+      usuarios: this.usuarioService.listar()
     }).subscribe({
-      next: ({ posts, oportunidades }) => {
-        this.posts.set(posts ?? []);
+      next: ({ posts, oportunidades, usuarios }) => {
+        this.popularCacheUsuarios(usuarios);
+
+        const postsComNome = (posts ?? []).map((p) => ({
+          ...p,
+          nomeCriador: this.nomesUsuarios.get(p.criadorId || '') || 'Usuário Anônimo'
+        }));
+
+        this.posts.set(postsComNome);
         this.oportunidades.set(oportunidades ?? []);
         this.carregando.set(false);
       },
@@ -111,7 +135,14 @@ export class Home {
     });
   }
 
-  // modal
+  private popularCacheUsuarios(usuarios: Usuario[]) {
+    this.nomesUsuarios.clear();
+    for (const u of usuarios) {
+      const id = u.id?.toString();
+      if (id) this.nomesUsuarios.set(id, u.nome);
+    }
+  }
+
   openNewPost() {
     this.newPostModal.set(true);
   }
@@ -152,34 +183,22 @@ export class Home {
     event?.preventDefault();
     this.imagemBase64.set(null);
     this.imagemErro.set('');
-    if (this.fileInput) {
-      this.fileInput.nativeElement.value = '';
-    }
+    if (this.fileInput) this.fileInput.nativeElement.value = '';
   }
 
   onVagasChange(valor: unknown) {
     let convertido = 0;
-    if (typeof valor === 'string') {
-      convertido = Number(valor.trim());
-    } else if (typeof valor === 'number') {
-      convertido = valor;
-    } else if (valor !== null && valor !== undefined) {
-      convertido = Number(valor);
-    }
-
-    if (!Number.isFinite(convertido)) {
-      convertido = 0;
-    }
-
+    if (typeof valor === 'string') convertido = Number(valor.trim());
+    else if (typeof valor === 'number') convertido = valor;
+    else if (valor != null) convertido = Number(valor);
+    if (!Number.isFinite(convertido)) convertido = 0;
     this.vagasTotais.set(Math.max(0, Math.floor(convertido)));
   }
 
   alternarModoOportunidade() {
     const novoValor = !this.modoOportunidade();
     this.modoOportunidade.set(novoValor);
-    if (novoValor) {
-      this.removerImagem();
-    }
+    if (novoValor) this.removerImagem();
   }
 
   private resetFormulario() {
@@ -190,7 +209,7 @@ export class Home {
     this.removerImagem();
   }
 
-  // criação de post
+  /** 🔹 Criação de post normal */
   enviarPost() {
     if (!this.titulo().trim()) {
       alert('Informe um título antes de enviar.');
@@ -202,17 +221,20 @@ export class Home {
       return;
     }
 
+    const usuario = this.usuarioLogado();
     const novoPost: Post = {
       titulo: this.titulo(),
       corpo: this.corpo(),
-      criadorId: 'usuarioFake',
+      criadorId: usuario?.id || 'usuarioAnonimo',
       criado: new Date(),
-      imagemBase64: this.imagemBase64() ?? undefined
+      imagemBase64: this.imagemBase64() ?? undefined,
+      nomeCriador: usuario?.nome || 'Usuário'
     };
 
     this.postService.createPost(novoPost).subscribe({
       next: (p) => {
-        this.posts.update(lista => [p, ...lista]);
+        const postComNome = { ...p, nomeCriador: usuario?.nome || 'Usuário' };
+        this.posts.update(lista => [postComNome, ...lista]);
         this.resetFormulario();
         this.newPostModal.set(false);
       },
@@ -223,7 +245,9 @@ export class Home {
     });
   }
 
+  /** 🔹 Criação de oportunidade (somente professor) */
   private enviarOportunidade() {
+    const usuario = this.usuarioLogado();
     const vagasInformadas = this.vagasTotais();
     const quantidadeNormalizada = Number.isFinite(vagasInformadas)
       ? Math.floor(Math.max(0, vagasInformadas))
@@ -232,14 +256,19 @@ export class Home {
     const novaOportunidade: Oportunidade = {
       nome: this.titulo(),
       descricao: this.corpo() || undefined,
-      professorId: 'usuarioFake',
+      professorId: usuario?.id || 'usuarioAnonimo',
       quantidadeDeVagas: quantidadeNormalizada,
-      idCategoria: this.categoria() || undefined
+      idCategoria: this.categoria() || undefined,
+      imagemBase64: this.imagemBase64() ?? undefined
     };
 
     this.oportunidadeService.criar(novaOportunidade).subscribe({
       next: (oportunidade) => {
-        this.oportunidades.update(lista => [oportunidade, ...lista]);
+        const opComNome = {
+          ...oportunidade,
+          nomeCriador: usuario?.nome || 'Professor'
+        };
+        this.oportunidades.update(lista => [opComNome, ...lista]);
         this.resetFormulario();
         this.newPostModal.set(false);
       },

@@ -1,42 +1,41 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// 🔹 Interface de dados (mantém compatibilidade com backend)
 export interface Oportunidade {
   id?: string;
   nome: string;
   descricao?: string;
   professorId: string;
-  quantidadeDeVagas: number;
+  quantidadeDeVagas?: number;
   vagasPreenchidas?: number;
   idCategoria?: string;
-  criado?: string | Date;
-  idMembros?: string[];
-  idImagens?: string[];
   idLikes?: string[];
-  idCandidatos?: string[];
+  criado?: Date | string;
+  imagemBase64?: string; // ✅ suporte à imagem
 }
 
-// 🔹 Serviço principal de comunicação com o backend
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class OportunidadeService {
-  private http = inject(HttpClient);
-  private readonly API = 'http://localhost:8080/oportunities'; // endpoint do backend
+  private apiUrl = 'http://localhost:8080/oportunities';
+
+  constructor(private http: HttpClient) {}
 
   listar(): Observable<Oportunidade[]> {
-    return this.http.get<Oportunidade[]>(this.API);
+    return this.http.get<Oportunidade[]>(this.apiUrl);
+  }
+
+  buscarPorId(id: string): Observable<Oportunidade> {
+    return this.http.get<Oportunidade>(`${this.apiUrl}/${id}`);
   }
 
   criar(oportunidade: Oportunidade): Observable<Oportunidade> {
-    return this.http.post<Oportunidade>(this.API, oportunidade);
-  }
-
-  atualizar(id: string, oportunidade: Oportunidade): Observable<Oportunidade> {
-    return this.http.put<Oportunidade>(`${this.API}/${id}`, oportunidade);
+    return this.http.post<Oportunidade>(this.apiUrl, oportunidade);
   }
 
   deletar(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.API}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

@@ -11,7 +11,6 @@ import { UsuarioService, Usuario } from '../../services/usuario.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-
 export class Login {
   isRegistering = signal<boolean>(false);
 
@@ -20,7 +19,7 @@ export class Login {
   nome = signal<string>('');
   matricula = signal<string>('');
   confirmaSenha = signal<string>('');
-  selecionada = signal<string>('');
+  selecionada = signal<string>(''); // "Aluno" ou "Professor"
   opcoes = ['Aluno', 'Professor'];
 
   constructor(private router: Router, private usuarioService: UsuarioService) {}
@@ -46,12 +45,26 @@ export class Login {
         );
 
         if (user) {
-          console.log('Usuário autenticado:', user);
+          console.log('✅ Usuário autenticado:', user);
           alert(`Bem-vindo, ${user.nome}!`);
-          console.log('Navegando para /home...');
-          this.router.navigate(['/home']);
+
+          const usuarioNormalizado = {
+            id: user.id?.toString(),
+            nome: user.nome,
+            email: user.email,
+            funcao: user.funcao,
+            matricula: user.matricula,
+          };
+
           localStorage.setItem('isLogged', 'true');
-          console.log('Chamou navigate');
+          localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
+
+          const tipo =
+            user.funcao?.toLowerCase() === 'professor' ? 'professor' : 'aluno';
+          localStorage.setItem('tipoUsuario', tipo);
+
+          console.log('Usuário logado:', usuarioNormalizado.nome, '| Tipo:', tipo);
+          this.router.navigate(['/home']);
         } else {
           alert('Usuário não encontrado ou senha incorreta.');
         }

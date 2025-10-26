@@ -1,10 +1,10 @@
 <div class="post">
   <div class="user">
     <div class="img">
-      <img src="pfptemp.ico">
+      <img src="pfptemp.ico" alt="Foto do usuário">
     </div>
     <div>
-      <h2>{{ post.criadorId || 'Usuário Anônimo' }}</h2>
+      <h2>{{ post.nomeCriador || 'Usuário Anônimo' }}</h2>
       <p>{{ post.criado | date:'dd/MM/yyyy HH:mm' }}</p>
     </div>
   </div>
@@ -12,6 +12,7 @@
   <div class="content">
     <h2>{{ post.titulo }}</h2>
     <p class="description">{{ post.corpo }}</p>
+
     <div class="posting" *ngIf="post.imagemBase64">
       <img [src]="post.imagemBase64" alt="Imagem da postagem">
     </div>

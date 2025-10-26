@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Post as PostModel } from '../../services/post.services'; // ✅ usa o modelo do service
 
 @Component({
   selector: 'app-post',
@@ -9,14 +10,5 @@ import { CommonModule } from '@angular/common';
   styleUrl: './post.css'
 })
 export class PostComponent {
-  @Input() post!: {
-    id?: string;
-    titulo: string;
-    corpo: string;
-    criadorId?: string;
-    criado?: string | Date;
-    likesId?: string[];
-    idComentarios?: any[];
-    imagemBase64?: string;
-  };
+  @Input() post!: PostModel; // ✅ evita conflito de tipo
 }

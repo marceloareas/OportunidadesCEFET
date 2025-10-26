@@ -1,25 +1,30 @@
 <aside class="sidebar-right">
-    <div class="menu-direita">
-        <div class="background">
-            <img src="posttemp.png">
-        </div>
-
-        <div class="pfp">
-            <img src="pfptemp.ico">
-        </div>
-
-        <div class="edit-profile"><span><i class="bi bi-pencil-square"></i> Editar perfil</span></div>
-        <div class="profile">
-            <h2>Jorge Luis</h2>
-            <p class="desc">Bacharel em Ciência da Computação</p>
-
-            <div class="item-list">
-                <a href="#"><i class="bi bi-envelope"></i> Convites</a>
-                <a href="#"><i class="bi bi-bookmark"></i> Itens Salvos</a>
-                <a href="#"><i class="bi bi-gear"></i> Configurações</a>
-                <a href="#"><i class="bi bi-door-open"></i> Sair</a>
-            </div>
-
-        </div>
+  <div class="menu-direita">
+    <div class="background">
+      <img src="posttemp.png" alt="background">
     </div>
+
+    <div class="pfp">
+      <img src="pfptemp.ico" alt="foto de perfil">
+    </div>
+
+    <div class="edit-profile">
+      <span><i class="bi bi-pencil-square"></i> Editar perfil</span>
+    </div>
+
+    <div class="profile">
+      <!-- Nome e função do usuário -->
+      <h2>{{ usuarioNome }}</h2>
+      <p class="desc">{{ usuarioFuncao }}</p>
+
+      <div class="item-list">
+        <a href="#"><i class="bi bi-envelope"></i> Convites</a>
+        <a href="#"><i class="bi bi-bookmark"></i> Itens Salvos</a>
+        <a href="#"><i class="bi bi-gear"></i> Configurações</a>
+        <a (click)="logout()" class="logout">
+          <i class="bi bi-door-open"></i> Sair
+        </a>
+      </div>
+    </div>
+  </div>
 </aside>
