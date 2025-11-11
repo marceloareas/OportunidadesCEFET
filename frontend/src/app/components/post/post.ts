@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Post as PostModel } from '../../services/post.services'; // ✅ usa o modelo do service
+import { OportunidadeService } from '../../services/oportunidade.service';
+import { PostService } from '../../services/post.services';
 
 @Component({
   selector: 'app-post',
@@ -10,5 +11,117 @@ import { Post as PostModel } from '../../services/post.services'; // ✅ usa o m
   styleUrl: './post.css'
 })
 export class PostComponent {
-  @Input() post!: PostModel; // ✅ evita conflito de tipo
+  @Input() post!: {
+    id?: string;
+    titulo: string;
+    corpo: string;
+    criadorId?: string;
+    nomeCriador?: string;
+    criado?: string | Date;
+    likesId?: string[];
+    idComentarios?: any[];
+    imagemBase64?: string;
+    vagasPreenchidas?: number;
+    quantidadeDeVagas?: number;
+    ehOportunidade?: boolean;
+    alunosCandidatosId?: string[];
+  };
+
+  tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
+  usuarioLogado = signal<{ id: string; nome: string; funcao: string } | null>(null);
+
+  jaCandidatado = signal<boolean>(false);
+  contadorCandidatos = signal<number>(0);
+  curtiu = signal<boolean>(false);
+  contadorLikes = signal<number>(0);
+
+  constructor(
+    private oportunidadeService: OportunidadeService,
+    private postService: PostService
+  ) {
+    const usuario = localStorage.getItem('usuario');
+    if (usuario) {
+      try {
+        const parsed = JSON.parse(usuario);
+        this.usuarioLogado.set({
+          id: parsed.id,
+          nome: parsed.nome,
+          funcao: parsed.funcao?.toUpperCase() || 'ALUNO'
+        });
+      } catch {
+        this.usuarioLogado.set(null);
+      }
+    }
+  }
+
+  ngOnInit() {
+    this.contadorCandidatos.set(this.post.alunosCandidatosId?.length ?? 0);
+    this.contadorLikes.set(this.post.likesId?.length ?? 0);
+
+    const usuario = this.usuarioLogado();
+    if (usuario) {
+      if (this.post.likesId?.includes(usuario.id)) this.curtiu.set(true);
+      if (this.post.alunosCandidatosId?.includes(usuario.id)) this.jaCandidatado.set(true);
+    }
+  }
+
+  get dataFormatada(): string {
+    if (!this.post.criado) return '';
+    const data = new Date(this.post.criado);
+    return data.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  alternarLike() {
+    const usuario = this.usuarioLogado();
+    if (!usuario || !this.post.id) return;
+
+    const jaCurtiu = this.curtiu();
+    this.curtiu.set(!jaCurtiu);
+
+    if (jaCurtiu) {
+      this.contadorLikes.update((n) => n - 1);
+      this.post.likesId = this.post.likesId?.filter((id) => id !== usuario.id) || [];
+    } else {
+      this.contadorLikes.update((n) => n + 1);
+      if (!this.post.likesId) this.post.likesId = [];
+      this.post.likesId.push(usuario.id);
+    }
+
+      const req = this.post.ehOportunidade
+      ? this.oportunidadeService.curtirOportunidade(this.post.id, usuario.id)
+      : this.postService.atualizarLike(this.post.id, usuario.id);
+
+    req.subscribe({
+      error: (err) => console.warn('Erro ao curtir:', err)
+    });
+  }
+
+  candidatar() {
+    const usuario = this.usuarioLogado();
+    if (!usuario || !this.post.id) {
+      alert('Usuário não identificado.');
+      return;
+    }
+
+    this.oportunidadeService.candidatarAluno(this.post.id, usuario.id).subscribe({
+      next: () => {
+        alert('Candidatura realizada com sucesso!');
+        this.jaCandidatado.set(true);
+        this.contadorCandidatos.update((n) => n + 1);
+
+        if (!this.post.alunosCandidatosId) this.post.alunosCandidatosId = [];
+        this.post.alunosCandidatosId.push(usuario.id);
+      },
+      error: (err) => {
+        console.error('Erro ao se candidatar:', err);
+        alert('Erro ao se candidatar à vaga.');
+      }
+    });
+  }
 }

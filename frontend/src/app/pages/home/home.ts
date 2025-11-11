@@ -72,7 +72,7 @@ export class Home {
         this.usuarioLogado.set({
           id: parsed.id,
           nome: parsed.nome,
-          funcao: parsed.funcao?.toUpperCase() || 'ALUNO'
+          funcao: parsed.funcao?.toUpperCase() || 'NADA'
         });
       } catch {
         this.usuarioLogado.set(null);
@@ -83,22 +83,26 @@ export class Home {
   }
 
   private mapOportunidadeParaPost(op: Oportunidade): Post {
-    const vagasInfo = `Vagas disponíveis: ${(op.vagasPreenchidas ?? 0)}/${op.quantidadeDeVagas}`;
-    const descricao = op.descricao?.trim();
-    const corpoFormatado = descricao ? `${vagasInfo}\n\n${descricao}` : vagasInfo;
+  const descricao = op.descricao?.trim();
+  const corpoFormatado = descricao || '';
 
-    return {
-      id: op.id,
-      titulo: op.nome,
-      corpo: corpoFormatado,
-      criadorId: op.professorId,
-      criado: op.criado ? new Date(op.criado) : undefined,
-      likesId: op.idLikes ?? [],
-      idComentarios: [],
-      imagemBase64: op.imagemBase64,
-      nomeCriador: this.nomesUsuarios.get(op.professorId || '') || 'Professor'
-    };
-  }
+  return {
+    id: op.id,
+    titulo: op.nome,
+    corpo: corpoFormatado,
+    criadorId: op.professorId,
+    criado: op.criado ? new Date(op.criado) : undefined,
+    idComentarios: [],
+    imagemBase64: op.imagemBase64,
+    nomeCriador: this.nomesUsuarios.get(op.professorId || '') || 'Professor',
+    ehOportunidade: true,
+    vagasPreenchidas: op.vagasPreenchidas ?? 0,
+    quantidadeDeVagas: op.quantidadeDeVagas ?? 0,
+    alunosCandidatosId: op.alunosCandidatosId ?? [],
+    likesId: op.idLikes ? [...op.idLikes] : []
+  };
+}
+
 
   private obterTimestamp(criado?: string | Date): number {
     if (!criado) return 0;
@@ -120,7 +124,9 @@ export class Home {
 
         const postsComNome = (posts ?? []).map((p) => ({
           ...p,
-          nomeCriador: this.nomesUsuarios.get(p.criadorId || '') || 'Usuário Anônimo'
+          nomeCriador: this.nomesUsuarios.get(p.criadorId || '') || 'Usuário Anônimo',
+          ehOportunidade: false as any,
+          likesId: p.likesId ?? []
         }));
 
         this.posts.set(postsComNome);
@@ -138,8 +144,7 @@ export class Home {
   private popularCacheUsuarios(usuarios: Usuario[]) {
     this.nomesUsuarios.clear();
     for (const u of usuarios) {
-      const id = u.id?.toString();
-      if (id) this.nomesUsuarios.set(id, u.nome);
+      if ((u as any).id) this.nomesUsuarios.set((u as any).id, u.nome);
     }
   }
 
@@ -187,18 +192,33 @@ export class Home {
   }
 
   onVagasChange(valor: unknown) {
-    let convertido = 0;
-    if (typeof valor === 'string') convertido = Number(valor.trim());
-    else if (typeof valor === 'number') convertido = valor;
-    else if (valor != null) convertido = Number(valor);
-    if (!Number.isFinite(convertido)) convertido = 0;
-    this.vagasTotais.set(Math.max(0, Math.floor(convertido)));
+    let convertido = 1;
+
+    if (typeof valor === 'string') {
+      const txt = valor.trim();
+      if (txt === '') convertido = 1;
+      else convertido = Number(txt);
+    } else if (typeof valor === 'number') {
+      convertido = valor;
+    } else if (valor != null) {
+      convertido = Number(valor as any);
+    }
+
+    if (!Number.isFinite(convertido) || Number.isNaN(convertido)) convertido = 1;
+    convertido = Math.max(1, Math.floor(convertido));
+
+    this.vagasTotais.set(convertido);
   }
 
   alternarModoOportunidade() {
     const novoValor = !this.modoOportunidade();
     this.modoOportunidade.set(novoValor);
-    if (novoValor) this.removerImagem();
+    if (novoValor) {
+      if (!Number.isFinite(this.vagasTotais()) || this.vagasTotais() < 1) {
+        this.vagasTotais.set(1);
+      }
+      this.removerImagem();
+    }
   }
 
   private resetFormulario() {
@@ -209,7 +229,6 @@ export class Home {
     this.removerImagem();
   }
 
-  /** 🔹 Criação de post normal */
   enviarPost() {
     if (!this.titulo().trim()) {
       alert('Informe um título antes de enviar.');
@@ -228,13 +247,13 @@ export class Home {
       criadorId: usuario?.id || 'usuarioAnonimo',
       criado: new Date(),
       imagemBase64: this.imagemBase64() ?? undefined,
-      nomeCriador: usuario?.nome || 'Usuário'
-    };
+      nomeCriador: usuario?.nome || 'Usuário',
+      ehOportunidade: false as any
+    } as any;
 
     this.postService.createPost(novoPost).subscribe({
       next: (p) => {
-        const postComNome = { ...p, nomeCriador: usuario?.nome || 'Usuário' };
-        this.posts.update(lista => [postComNome, ...lista]);
+        this.posts.update(lista => [p, ...lista]);
         this.resetFormulario();
         this.newPostModal.set(false);
       },
@@ -245,30 +264,39 @@ export class Home {
     });
   }
 
-  /** 🔹 Criação de oportunidade (somente professor) */
   private enviarOportunidade() {
+    if (!this.titulo().trim()) {
+      alert('Informe um título para a oportunidade.');
+      return;
+    }
+
+    const bruto = this.vagasTotais();
+    let quantidade = Number(bruto);
+    if (!Number.isFinite(quantidade) || Number.isNaN(quantidade)) quantidade = 1;
+    quantidade = Math.max(1, Math.floor(quantidade));
+
     const usuario = this.usuarioLogado();
-    const vagasInformadas = this.vagasTotais();
-    const quantidadeNormalizada = Number.isFinite(vagasInformadas)
-      ? Math.floor(Math.max(0, vagasInformadas))
-      : 0;
 
     const novaOportunidade: Oportunidade = {
       nome: this.titulo(),
       descricao: this.corpo() || undefined,
       professorId: usuario?.id || 'usuarioAnonimo',
-      quantidadeDeVagas: quantidadeNormalizada,
+      quantidadeDeVagas: quantidade,                
       idCategoria: this.categoria() || undefined,
       imagemBase64: this.imagemBase64() ?? undefined
-    };
+    } as Oportunidade;
 
     this.oportunidadeService.criar(novaOportunidade).subscribe({
       next: (oportunidade) => {
-        const opComNome = {
+        const opComVagas = {
           ...oportunidade,
-          nomeCriador: usuario?.nome || 'Professor'
-        };
-        this.oportunidades.update(lista => [opComNome, ...lista]);
+          quantidadeDeVagas:
+            Number((oportunidade as any).quantidadeDeVagas) || quantidade,
+          vagasPreenchidas:
+            Number((oportunidade as any).vagasPreenchidas) || 0
+        } as Oportunidade;
+
+        this.oportunidades.update(lista => [opComVagas, ...lista]);
         this.resetFormulario();
         this.newPostModal.set(false);
       },

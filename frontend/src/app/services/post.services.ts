@@ -7,12 +7,19 @@ export interface Post {
   titulo: string;
   corpo: string;
   criadorId?: string;
+  nomeCriador?: string;
   criado?: string | Date;
-  imagemBase64?: string;
   likesId?: string[];
   idComentarios?: any[];
-  nomeCriador?: string;
+  imagemBase64?: string;
+  ehOportunidade?: boolean;
+
+  // 🔹 Campos extras usados apenas quando é uma oportunidade
+  vagasPreenchidas?: number;
+  quantidadeDeVagas?: number;
+  alunosCandidatosId?: string[];
 }
+
 
 @Injectable({
   providedIn: 'root'
@@ -29,4 +36,9 @@ export class PostService {
   createPost(post: Post): Observable<Post> {
     return this.http.post<Post>(this.apiUrl, post);
   }
+
+  atualizarLike(postId: string, usuarioId: string) {
+    return this.http.post(`${this.apiUrl}/${postId}/like/${usuarioId}`, {});
+  }
+
 }

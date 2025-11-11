@@ -15,15 +15,14 @@
           </div>
         </div>
 
-        
+        <hr />
 
         <section class="oportunidades-container">
-          <h2 class="titulo-principal">
-            Publicações e Oportunidades
-          </h2>
+          <h2 class="titulo-principal">Publicações e Oportunidades</h2>
 
           <hr />
 
+          <!-- Status da requisição -->
           <div *ngIf="carregando()" class="mensagem-status">
             Carregando publicações...
           </div>
@@ -31,6 +30,7 @@
             {{ erro() }}
           </div>
 
+          <!-- Lista de oportunidades -->
           <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
             <ng-container *ngFor="let p of feedItens(); let last = last">
               <app-post [post]="p"></app-post>
@@ -39,16 +39,29 @@
           </div>
 
           <ng-template #semItens>
-            <p class="mensagem-vazia">Nenhum post ou oportunidade encontrado.</p>
+            <p class="mensagem-vazia">
+              Nenhum post ou oportunidade encontrado.
+            </p>
           </ng-template>
         </section>
       </div>
 
-      <div class="modal-overlay" *ngIf="newPostModal()" (click)="closeNewPost()">
+      <!-- Modal de nova postagem -->
+      <div
+        class="modal-overlay"
+        *ngIf="newPostModal()"
+        (click)="closeNewPost()"
+      >
         <div class="modal-conteudo" (click)="$event.stopPropagation()">
-
-          <div class="toggle-row" *ngIf="tipoUsuario() === 'professor'">
-            <span class="toggle-label" [class.ativo]="!modoOportunidade()">Discussão</span>
+          <div
+            class="toggle-row"
+            *ngIf="tipoUsuario() === 'professor'"
+          >
+            <span
+              class="toggle-label"
+              [class.ativo]="!modoOportunidade()"
+              >Discussão</span
+            >
             <label class="toggle-switch">
               <input
                 type="checkbox"
@@ -57,7 +70,11 @@
               />
               <span class="slider"></span>
             </label>
-            <span class="toggle-label" [class.ativo]="modoOportunidade()">Oportunidade</span>
+            <span
+              class="toggle-label"
+              [class.ativo]="modoOportunidade()"
+              >Oportunidade</span
+            >
           </div>
 
           <input
@@ -67,10 +84,13 @@
             [ngModel]="titulo()"
             (ngModelChange)="titulo.set($event)"
           />
-
           <textarea
             class="desc-input"
-            [placeholder]="modoOportunidade() ? 'Descreva a oportunidade' : 'Escreva sobre o que está pensando'"
+            [placeholder]="
+              modoOportunidade()
+                ? 'Descreva a oportunidade'
+                : 'Escreva sobre o que está pensando'
+            "
             [ngModel]="corpo()"
             (ngModelChange)="corpo.set($event)"
           ></textarea>
@@ -86,7 +106,6 @@
                 (ngModelChange)="onVagasChange($event)"
               />
             </div>
-
             <div class="campo">
               <label for="categoria">Categoria (opcional)</label>
               <input
@@ -97,7 +116,6 @@
                 (ngModelChange)="categoria.set($event)"
               />
             </div>
-
             <input
               #fileInput
               type="file"
@@ -108,12 +126,19 @@
             <div class="add-image" (click)="fileInput.click()">
               <i class="bi bi-card-image"></i> Adicionar Imagem
             </div>
-
-            <p class="erro-imagem" *ngIf="imagemErro()">{{ imagemErro() }}</p>
-
+            <p class="erro-imagem" *ngIf="imagemErro()">
+              {{ imagemErro() }}
+            </p>
             <div class="image-preview" *ngIf="imagemBase64()">
-              <img [src]="imagemBase64()!" alt="Pré-visualização da imagem" />
-              <button class="remove-image" type="button" (click)="removerImagem($event)">
+              <img
+                [src]="imagemBase64()!"
+                alt="Pré-visualização da imagem"
+              />
+              <button
+                class="remove-image"
+                type="button"
+                (click)="removerImagem($event)"
+              >
                 Remover
               </button>
             </div>
@@ -130,11 +155,19 @@
             <div class="add-image" (click)="fileInput.click()">
               <i class="bi bi-card-image"></i> Adicionar Imagem
             </div>
-            <p class="erro-imagem" *ngIf="imagemErro()">{{ imagemErro() }}</p>
-
+            <p class="erro-imagem" *ngIf="imagemErro()">
+              {{ imagemErro() }}
+            </p>
             <div class="image-preview" *ngIf="imagemBase64()">
-              <img [src]="imagemBase64()!" alt="Pré-visualização da imagem" />
-              <button class="remove-image" type="button" (click)="removerImagem($event)">
+              <img
+                [src]="imagemBase64()!"
+                alt="Pré-visualização da imagem"
+              />
+              <button
+                class="remove-image"
+                type="button"
+                (click)="removerImagem($event)"
+              >
                 Remover
               </button>
             </div>

@@ -6,20 +6,21 @@ export interface Oportunidade {
   id?: string;
   nome: string;
   descricao?: string;
-  professorId: string;
+  professorId?: string;
   quantidadeDeVagas?: number;
   vagasPreenchidas?: number;
   idCategoria?: string;
+  imagemBase64?: string;
+  criado?: string | Date;
+  alunosCandidatosId?: string[];
   idLikes?: string[];
-  criado?: Date | string;
-  imagemBase64?: string; // ✅ suporte à imagem
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class OportunidadeService {
-  private apiUrl = 'http://localhost:8080/oportunities';
+  private apiUrl = 'http://localhost:8080/oportunidades';
 
   constructor(private http: HttpClient) {}
 
@@ -27,15 +28,27 @@ export class OportunidadeService {
     return this.http.get<Oportunidade[]>(this.apiUrl);
   }
 
-  buscarPorId(id: string): Observable<Oportunidade> {
-    return this.http.get<Oportunidade>(`${this.apiUrl}/${id}`);
-  }
-
   criar(oportunidade: Oportunidade): Observable<Oportunidade> {
     return this.http.post<Oportunidade>(this.apiUrl, oportunidade);
+  }
+
+  atualizar(id: string, oportunidade: Oportunidade): Observable<Oportunidade> {
+    return this.http.put<Oportunidade>(`${this.apiUrl}/${id}`, oportunidade);
   }
 
   deletar(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  candidatarAluno(idOportunidade: string, idAluno: string) {
+    return this.http.post<Oportunidade>(
+      `${this.apiUrl}/${idOportunidade}/candidatar/${idAluno}`,
+      {}
+    );
+  }
+
+  curtirOportunidade(idOportunidade: string, idUsuario: string) {
+    return this.http.post(`${this.apiUrl}/${idOportunidade}/like/${idUsuario}`, {});
+  }
+
 }

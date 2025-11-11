@@ -37,4 +37,11 @@ public class PostController {
         postService.deletar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/like/{idUsuario}")
+    public ResponseEntity<String> alternarLike(@PathVariable String id, @PathVariable String idUsuario) {
+        String resultado = postService.alternarLike(id, idUsuario);
+        return ResponseEntity.ok(resultado);
+    }
+
 }

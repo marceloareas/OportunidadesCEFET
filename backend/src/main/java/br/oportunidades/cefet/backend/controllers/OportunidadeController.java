@@ -2,24 +2,22 @@ package br.oportunidades.cefet.backend.controllers;
 
 import br.oportunidades.cefet.backend.models.Oportunidade;
 import br.oportunidades.cefet.backend.services.OportunidadeService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import java.util.*;
 
-@RestController()
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:5173"})
-@RequestMapping("/oportunities")
+@RestController
+@RequestMapping("/oportunidades")
+@CrossOrigin(origins = "*")
 public class OportunidadeController {
-    private final OportunidadeService oportunidadeService;
 
-    public OportunidadeController(OportunidadeService oportunidadeService) {
-        this.oportunidadeService = oportunidadeService;
-    }
+    @Autowired
+    private OportunidadeService oportunidadeService;
 
     @GetMapping
-    public ResponseEntity<List<Oportunidade>> listarTodas() {
-        List<Oportunidade> oportunidades = oportunidadeService.listarTodas();
-        return ResponseEntity.ok(oportunidades);
+    public List<Oportunidade> listar() {
+        return oportunidadeService.listarTodos();
     }
 
     @GetMapping("/{id}")
@@ -31,23 +29,45 @@ public class OportunidadeController {
 
     @PostMapping
     public ResponseEntity<Oportunidade> criar(@RequestBody Oportunidade oportunidade) {
-        Oportunidade criada = oportunidadeService.criar(oportunidade);
-        return ResponseEntity.ok(criada);
+        try {
+            Oportunidade salva = oportunidadeService.salvar(oportunidade);
+            return ResponseEntity.ok(salva);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    @PostMapping("/{idOportunidade}/candidatar/{idAluno}")
-    public ResponseEntity<Oportunidade> candidatar(
-            @PathVariable String idOportunidade,
-            @PathVariable String idAluno) {
-
-        Oportunidade atualizada = oportunidadeService.candidatar(idOportunidade, idAluno);
-        return ResponseEntity.ok(atualizada);
+    @PutMapping("/{id}")
+    public ResponseEntity<Oportunidade> atualizar(@PathVariable String id, @RequestBody Oportunidade atualizada) {
+        return oportunidadeService.atualizar(id, atualizada)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable String id) {
-        oportunidadeService.deletar(id);
-        return ResponseEntity.noContent().build();
+        try {
+            oportunidadeService.deletar(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
+
+    @PostMapping("/{id}/candidatar/{idAluno}")
+    public ResponseEntity<?> candidatar(@PathVariable String id, @PathVariable String idAluno) {
+        Optional<Oportunidade> resultado = oportunidadeService.candidatar(id, idAluno);
+        if (resultado.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(resultado.get());
+    }
+
+    @PostMapping("/{id}/like/{idUsuario}")
+    public ResponseEntity<String> alternarLike(@PathVariable String id, @PathVariable String idUsuario) {
+        String resultado = oportunidadeService.alternarLike(id, idUsuario);
+        return ResponseEntity.ok(resultado);
+    }
+
 
 }

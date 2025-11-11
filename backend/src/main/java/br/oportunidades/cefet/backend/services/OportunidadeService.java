@@ -2,11 +2,9 @@ package br.oportunidades.cefet.backend.services;
 
 import br.oportunidades.cefet.backend.models.Oportunidade;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
-import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.util.Date;
+import org.springframework.stereotype.Service;
+import java.util.*;
 
 @Service
 public class OportunidadeService {
@@ -14,45 +12,96 @@ public class OportunidadeService {
     @Autowired
     private OportunidadeRepository oportunidadeRepository;
 
-    public OportunidadeService(OportunidadeRepository oportunidadeRepository) {
-        this.oportunidadeRepository = oportunidadeRepository;
-    }
-
-    public List<Oportunidade> listarTodas() {
-        List<Oportunidade> oportunidades = oportunidadeRepository.findAll();
-        // Ordena manualmente pelo campo "criado"
-        oportunidades.sort((a, b) -> b.getCriado().compareTo(a.getCriado()));
-        return oportunidades;
+    public List<Oportunidade> listarTodos() {
+        return oportunidadeRepository.findAll();
     }
 
     public Optional<Oportunidade> buscarPorId(String id) {
         return oportunidadeRepository.findById(id);
     }
 
-    public Oportunidade criar(Oportunidade oportunidade) {
+    public Oportunidade salvar(Oportunidade oportunidade) {
+    if (oportunidade.getAlunosCandidatosId() == null)
+        oportunidade.setAlunosCandidatosId(new ArrayList<>());
+
+    if (oportunidade.getIdLikes() == null)
+        oportunidade.setIdLikes(new ArrayList<>());
+
+    if (oportunidade.getCriado() == null)
         oportunidade.setCriado(new Date());
-        oportunidade.setVagasPreenchidas(0); // sempre começa vazia
-        return oportunidadeRepository.save(oportunidade);
-    }
 
-    public Oportunidade candidatar(String idOportunidade, String idAluno) {
-        Oportunidade oportunidade = oportunidadeRepository.findById(idOportunidade)
-                .orElseThrow(() -> new RuntimeException("Oportunidade não encontrada"));
+    if (oportunidade.getVagasPreenchidas() == null)
+        oportunidade.setVagasPreenchidas(0);
 
-        if (oportunidade.getVagasPreenchidas() >= oportunidade.getQuantidadeDeVagas()) {
-            throw new RuntimeException("Todas as vagas estão preenchidas");
-        }
+    if (oportunidade.getQuantidadeDeVagas() == null)
+        oportunidade.setQuantidadeDeVagas(0);
 
-        // Adiciona o aluno à lista de candidatos (se ainda não estiver)
-        if (!oportunidade.getIdCandidatos().contains(idAluno)) {
-            oportunidade.getIdCandidatos().add(idAluno);
-            oportunidade.setVagasPreenchidas(oportunidade.getIdCandidatos().size());
-        }
+    return oportunidadeRepository.save(oportunidade);
+}
 
-        return oportunidadeRepository.save(oportunidade);
-    }
+    public Optional<Oportunidade> atualizar(String id, Oportunidade atualizada) {
+    return oportunidadeRepository.findById(id).map(existente -> {
+        existente.setNome(atualizada.getNome());
+        existente.setDescricao(atualizada.getDescricao());
+        existente.setProfessorId(atualizada.getProfessorId());
+        existente.setQuantidadeDeVagas(atualizada.getQuantidadeDeVagas());
+        existente.setVagasPreenchidas(atualizada.getVagasPreenchidas());
+        existente.setIdCategoria(atualizada.getIdCategoria());
+        existente.setImagemBase64(atualizada.getImagemBase64());
+
+        if (existente.getAlunosCandidatosId() == null)
+            existente.setAlunosCandidatosId(new ArrayList<>());
+
+        if (existente.getIdLikes() == null)
+            existente.setIdLikes(new ArrayList<>());
+
+        return oportunidadeRepository.save(existente);
+    });
+}
 
     public void deletar(String id) {
         oportunidadeRepository.deleteById(id);
     }
+
+    public Optional<Oportunidade> candidatar(String idOportunidade, String idAluno) {
+        Optional<Oportunidade> opt = oportunidadeRepository.findById(idOportunidade);
+        if (opt.isEmpty()) return Optional.empty();
+
+        Oportunidade oportunidade = opt.get();
+        List<String> candidatos = oportunidade.getAlunosCandidatosId();
+        if (candidatos == null) candidatos = new ArrayList<>();
+
+        if (!candidatos.contains(idAluno)) {
+            candidatos.add(idAluno);
+            oportunidade.setAlunosCandidatosId(candidatos);
+            oportunidadeRepository.save(oportunidade);
+        }
+
+        return Optional.of(oportunidade);
+    }
+
+    public String alternarLike(String idOportunidade, String idUsuario) {
+        Optional<Oportunidade> opt = oportunidadeRepository.findById(idOportunidade);
+        if (opt.isEmpty()) {
+            return "Oportunidade não encontrada.";
+        }
+
+        Oportunidade oportunidade = opt.get();
+        List<String> likes = oportunidade.getIdLikes();
+
+        if (likes == null) likes = new ArrayList<>();
+
+        if (likes.contains(idUsuario)) {
+            likes.remove(idUsuario);
+            oportunidade.setIdLikes(likes);
+            oportunidadeRepository.save(oportunidade);
+            return "Like removido.";
+        } else {
+            likes.add(idUsuario);
+            oportunidade.setIdLikes(likes);
+            oportunidadeRepository.save(oportunidade);
+            return "Like adicionado.";
+        }
+    }
+
 }

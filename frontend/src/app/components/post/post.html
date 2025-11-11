@@ -1,38 +1,53 @@
 <div class="post">
-  <div class="user">
-    <div class="img">
-      <img src="pfptemp.ico" alt="Foto do usuário">
-    </div>
-    <div>
-      <h2>{{ post.nomeCriador || 'Usuário Anônimo' }}</h2>
-      <p>{{ post.criado | date:'dd/MM/yyyy HH:mm' }}</p>
-    </div>
-  </div>
-
-  <div class="content">
-    <h2>{{ post.titulo }}</h2>
-    <p class="description">{{ post.corpo }}</p>
-
-    <div class="posting" *ngIf="post.imagemBase64">
-      <img [src]="post.imagemBase64" alt="Imagem da postagem">
+  <div class="post-header">
+    <img class="avatar" src="pfptemp.ico" alt="Foto de perfil" />
+    <div class="post-info">
+      <h2>
+        <ng-container *ngIf="usuarioLogado()?.id === post.criadorId; else outroUsuario">
+          {{ post.nomeCriador }} • você
+        </ng-container>
+        <ng-template #outroUsuario>
+          {{ post.nomeCriador || 'Usuário Anônimo' }}
+        </ng-template>
+      </h2>
+      <span class="date">{{ dataFormatada }}</span>
     </div>
   </div>
 
-  <div class="interaction">
-    <div class="left">
-      <div class="interaction-btn">
-        <i class="bi bi-hand-thumbs-up"></i>
-        <p>{{ post.likesId?.length || 0 }}</p>
-      </div>
+  <div class="post-body">
+    <h3 class="post-title">{{ post.titulo }}</h3>
+    <p class="post-text">{{ post.corpo }}</p>
 
-      <div class="interaction-btn">
-        <i class="bi bi-chat-left-text"></i>
-        <p>{{ post.idComentarios?.length || 0 }}</p>
-      </div>
+    <img *ngIf="post.imagemBase64" [src]="post.imagemBase64" alt="Imagem do post" class="post-image" />
+
+    <div *ngIf="post.ehOportunidade" class="oportunidade-info">
+      <p>Vagas: {{ post.vagasPreenchidas ?? 0 }}/{{ post.quantidadeDeVagas }}</p>
+      <p class="candidatos">Candidatos: {{ contadorCandidatos() }}</p>
     </div>
+  </div>
 
-    <div class="right">
+  <div class="post-footer">
+    <button class="icon-btn like-btn" [class.liked]="curtiu()" (click)="alternarLike()">
+      <i class="bi bi-hand-thumbs-up"></i>
+      <span>{{ contadorLikes() }}</span>
+    </button>
+
+    <button class="icon-btn">
+      <i class="bi bi-chat-left-text"></i>
+      <span>{{ post.idComentarios?.length || 0 }}</span>
+    </button>
+
+    <button class="icon-btn">
       <i class="bi bi-bookmark"></i>
-    </div>
+    </button>
+
+    <button
+      *ngIf="tipoUsuario() === 'aluno' && post.ehOportunidade"
+      class="btn-candidatar"
+      [disabled]="jaCandidatado()"
+      (click)="candidatar()"
+    >
+      {{ jaCandidatado() ? 'CANDIDATADO ✓' : 'CANDIDATAR-SE' }}
+    </button>
   </div>
 </div>

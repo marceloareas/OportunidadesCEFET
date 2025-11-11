@@ -1,113 +1,172 @@
-.post{
-    width: 100%;
-    height: auto;
+.post {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
 }
 
-.user{
-    display: flex;
-    align-items: center;
-    margin-bottom: 1.5vh;
-
-    .img{
-        width: 50px;
-        height: 50px;
-        border-radius: 100px;
-        border: 1px solid black;
-        
-        img{
-            border-radius: 100%;
-        }
-    }
-
-    h2{
-        margin-left: .5vw;
-        font-size: 20px;
-    }
-    p{
-        margin-left: .5vw;
-    }
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.content{
-    h2{
-        font-size: 24px;
-        margin-bottom: .5vh;
-    }
-
-    p{
-        text-align: justify;
-        white-space: pre-wrap;
-        margin-bottom: 2vh;
-    }
-
-    .posting{
-        width:100%;
-        height: auto;
-        justify-content: center;
-        display: flex;
-        margin-bottom: .5vh;
-        border-radius: 10px;
-
-        img{
-            width:40vh;
-            height: auto;
-            object-fit: contain;
-            border-radius: 10px;
-            
-        }
-    }
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-.interaction{
-    display: flex;
-    width: 100%;
-    height: 5vh;
-    margin-bottom: 2vh;
-    justify-content: space-around;
-    padding: 0 .5vw;
-
-    .left, .right{
-        width: 50%;
-        height: 100%;
-        display: flex;
-    }
-
-    .left{
-        justify-content: start;
-        gap:.5vw;
-    }
-
-    .right{
-        justify-content: end;
-        font-size: 18px;
-        padding: 1vh 0vw;
-
-        i{
-            cursor: pointer;
-        }
-
-        i:hover{
-            color: red;
-        }
-
-    }
-
+.post-info h2 {
+  font-size: 0.95rem;
+  margin: 0;
+  color: #222;
+  font-weight: 600;
 }
 
-.interaction-btn{
-    display: flex;
-    padding: 1vh 1.2vw;
-    justify-content: center;
-    gap: .3vw;
-    border: 1px solid black;
-    width: auto;
-    height: 100%;
-    border-radius: 20px;
-    font-size: 16px;
-    cursor: pointer;
+.post-info .date {
+  font-size: 0.8rem;
+  color: #777;
 }
 
-.interaction-btn:hover{
-    color: #0A497E;
-    border-color: #0A497E;
+.post-body {
+  padding-left: 2px;
+}
+
+.post-title {
+  font-size: 1.05rem;
+  color: #111;
+  font-weight: 600;
+  margin: 6px 0 6px;
+}
+
+.post-text {
+  font-size: 0.95rem;
+  color: #333;
+  line-height: 1.4;
+  margin-bottom: 10px;
+  white-space: pre-line;
+}
+
+.post-image {
+  width: 100%;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+/* ✅ Vagas e candidatos */
+.oportunidade-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #ddd;
+  margin-top: 10px;
+  padding-top: 8px;
+  gap: 10px;
+}
+
+.oportunidade-info p {
+  font-size: 0.9rem;
+  color: #444;
+  margin: 0;
+}
+
+/* Botão minimalista */
+.btn-candidatar {
+  background-color: #0A497E;
+  color: white;
+  border: none;
+  padding: 7px 14px 7px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-candidatar:hover:not(:disabled) {
+  background-color: #0062d9;
+  transform: translateY(-1px);
+}
+
+.btn-candidatar:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.post-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid #ddd;
+  padding-top: 8px;
+  margin-top: 10px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.icon-btn:hover {
+  color: #000;
+}
+
+.candidatos {
+  padding-right: 4px 
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.icon-btn:hover {
+  transform: scale(1.05);
+  color: #000;
+}
+
+/* Estado ativo (curtido) */
+.icon-btn.like-btn.liked i,
+.icon-btn.like-btn.liked span {
+  color: #0062d9;
+  font-weight: bold;
+}
+
+/* Botão de candidatura */
+.btn-candidatar {
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-candidatar:hover {
+  background-color: #333;
+}
+
+.btn-candidatar[disabled] {
+  background-color: #888;
+  cursor: not-allowed;
 }
