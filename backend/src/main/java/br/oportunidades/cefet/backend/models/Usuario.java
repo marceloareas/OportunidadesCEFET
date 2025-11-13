@@ -20,6 +20,7 @@ public class Usuario {
     @Id
     @Builder.Default
     private String id = UUID.randomUUID().toString();
+    private String matricula;
     private String nome;
     private String email;
     private String senha; // senha criptografada

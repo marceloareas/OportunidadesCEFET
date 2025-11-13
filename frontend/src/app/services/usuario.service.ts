@@ -8,7 +8,7 @@ export interface Usuario {
   email: string;
   senha: string;
   funcao?: string;     // 'Aluno', 'Professor'
-  matricula?: string;  // campo adicional do frontend
+  matricula?: string;  
 }
 
 @Injectable({ providedIn: 'root' })

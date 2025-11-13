@@ -15,8 +15,6 @@
           </div>
         </div>
 
-        <hr />
-
         <section class="oportunidades-container">
           <h2 class="titulo-principal">Publicações e Oportunidades</h2>
 
@@ -34,7 +32,7 @@
           <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
             <ng-container *ngFor="let p of feedItens(); let last = last">
               <app-post [post]="p"></app-post>
-              <hr *ngIf="!last" />
+              <!--<hr *ngIf="!last" /> -->
             </ng-container>
           </div>
 

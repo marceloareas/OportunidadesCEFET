@@ -99,7 +99,7 @@ export class Home {
     vagasPreenchidas: op.vagasPreenchidas ?? 0,
     quantidadeDeVagas: op.quantidadeDeVagas ?? 0,
     alunosCandidatosId: op.alunosCandidatosId ?? [],
-    likesId: op.idLikes ? [...op.idLikes] : []
+    idLikes: op.idLikes ? [...op.idLikes] : []
   };
 }
 
@@ -126,7 +126,7 @@ export class Home {
           ...p,
           nomeCriador: this.nomesUsuarios.get(p.criadorId || '') || 'Usuário Anônimo',
           ehOportunidade: false as any,
-          likesId: p.likesId ?? []
+          idLikes: p.idLikes ?? []
         }));
 
         this.posts.set(postsComNome);

@@ -40,6 +40,6 @@ public class Comentario {
     private Date dataComentario;
 
     @Builder.Default
-    private Set<String> likesId = new HashSet<>(); // referencia Usuario(id)
+    private Set<String> idLikes = new HashSet<>(); // referencia Usuario(id)
     
 }

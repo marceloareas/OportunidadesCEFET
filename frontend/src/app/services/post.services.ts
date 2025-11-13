@@ -9,12 +9,10 @@ export interface Post {
   criadorId?: string;
   nomeCriador?: string;
   criado?: string | Date;
-  likesId?: string[];
+  idLikes?: string[];
   idComentarios?: any[];
   imagemBase64?: string;
   ehOportunidade?: boolean;
-
-  // 🔹 Campos extras usados apenas quando é uma oportunidade
   vagasPreenchidas?: number;
   quantidadeDeVagas?: number;
   alunosCandidatosId?: string[];
@@ -25,7 +23,7 @@ export interface Post {
   providedIn: 'root'
 })
 export class PostService {
-  private apiUrl = 'http://localhost:8080/posts'; // URL do seu backend Spring Boot
+  private apiUrl = 'http://localhost:8080/posts';
 
   constructor(private http: HttpClient) {}
 

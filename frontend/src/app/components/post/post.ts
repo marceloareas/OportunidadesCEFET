@@ -18,7 +18,7 @@ export class PostComponent {
     criadorId?: string;
     nomeCriador?: string;
     criado?: string | Date;
-    likesId?: string[];
+    idLikes?: string[];
     idComentarios?: any[];
     imagemBase64?: string;
     vagasPreenchidas?: number;
@@ -56,11 +56,11 @@ export class PostComponent {
 
   ngOnInit() {
     this.contadorCandidatos.set(this.post.alunosCandidatosId?.length ?? 0);
-    this.contadorLikes.set(this.post.likesId?.length ?? 0);
+    this.contadorLikes.set(this.post.idLikes?.length ?? 0);
 
     const usuario = this.usuarioLogado();
     if (usuario) {
-      if (this.post.likesId?.includes(usuario.id)) this.curtiu.set(true);
+      if (this.post.idLikes?.includes(usuario.id)) this.curtiu.set(true);
       if (this.post.alunosCandidatosId?.includes(usuario.id)) this.jaCandidatado.set(true);
     }
   }
@@ -86,11 +86,11 @@ export class PostComponent {
 
     if (jaCurtiu) {
       this.contadorLikes.update((n) => n - 1);
-      this.post.likesId = this.post.likesId?.filter((id) => id !== usuario.id) || [];
+      this.post.idLikes = this.post.idLikes?.filter((id) => id !== usuario.id) || [];
     } else {
       this.contadorLikes.update((n) => n + 1);
-      if (!this.post.likesId) this.post.likesId = [];
-      this.post.likesId.push(usuario.id);
+      if (!this.post.idLikes) this.post.idLikes = [];
+      this.post.idLikes.push(usuario.id);
     }
 
       const req = this.post.ehOportunidade
