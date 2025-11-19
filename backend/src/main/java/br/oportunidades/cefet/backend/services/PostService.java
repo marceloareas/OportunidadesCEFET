@@ -46,4 +46,8 @@ public class PostService{
             return "Like adicionado.";
         }
     }
+
+    public List<Post> listarPorUsuario(String criadorId) {
+        return postRepository.findAllByCriadorIdOrderByCriadoDesc(criadorId);
+    }
 }
