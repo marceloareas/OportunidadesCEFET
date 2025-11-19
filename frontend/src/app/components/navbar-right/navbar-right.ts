@@ -30,6 +30,10 @@ export class NavbarRight implements OnInit {
     }
   }
 
+  editarPf(): void {
+    this.router.navigate(['/editar_perfil']);
+  }
+
   // 🔹 Função de logout
   logout(): void {
     localStorage.clear();
