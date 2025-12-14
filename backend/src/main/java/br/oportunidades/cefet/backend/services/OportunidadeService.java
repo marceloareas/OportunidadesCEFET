@@ -149,6 +149,11 @@ public class OportunidadeService {
 
         Oportunidade oportunidade = opt.get();
 
+        // Verifica se oportunidade ainda está aberta
+        if (Boolean.TRUE.equals(oportunidade.getFinalizada())) {
+            throw new IllegalStateException("Oportunidade finalizada.");
+        }
+
         // Verifica se ainda há vagas
         if (oportunidade.getVagasPreenchidas() >= oportunidade.getQuantidadeDeVagas()) {
             throw new IllegalStateException("Todas as vagas já foram preenchidas.");
@@ -177,6 +182,22 @@ public class OportunidadeService {
         );
 
         oportunidadeRepository.save(oportunidade);
+        return Optional.of(oportunidade);
+    }
+
+    public Optional<Oportunidade> finalizar(String idOportunidade) {
+        Optional<Oportunidade> opt = oportunidadeRepository.findById(idOportunidade);
+        if (opt.isEmpty()) return Optional.empty();
+
+        Oportunidade oportunidade = opt.get();
+
+        if (Boolean.TRUE.equals(oportunidade.getFinalizada())) {
+            throw new IllegalStateException("Oportunidade já está finalizada.");
+        }
+
+        oportunidade.setFinalizada(true);
+        oportunidadeRepository.save(oportunidade);
+
         return Optional.of(oportunidade);
     }
 
