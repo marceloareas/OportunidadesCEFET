@@ -5,6 +5,8 @@ import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import br.oportunidades.cefet.backend.enums.CategoriaOportunidade;
+
 
 @Service
 public class OportunidadeService {
@@ -21,23 +23,35 @@ public class OportunidadeService {
     }
 
     public Oportunidade salvar(Oportunidade oportunidade) {
-    if (oportunidade.getAlunosCandidatosId() == null)
+        if (oportunidade.getIdCategoria() == null || oportunidade.getIdCategoria().isBlank()) {
+            throw new IllegalArgumentException("Categoria é obrigatória.");
+        }
+
+        try {
+            CategoriaOportunidade.valueOf(oportunidade.getIdCategoria().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "Categoria inválida. Use: MONITORIA, EXTENSAO, PESQUISA, ESTAGIO ou ORIENTACAO_TCC"
+            );
+        }
+
+        if (oportunidade.getAlunosCandidatosId() == null)
         oportunidade.setAlunosCandidatosId(new ArrayList<>());
 
-    if (oportunidade.getIdLikes() == null)
-        oportunidade.setIdLikes(new ArrayList<>());
+        if (oportunidade.getIdLikes() == null)
+            oportunidade.setIdLikes(new ArrayList<>());
 
-    if (oportunidade.getCriado() == null)
-        oportunidade.setCriado(new Date());
+        if (oportunidade.getCriado() == null)
+            oportunidade.setCriado(new Date());
 
-    if (oportunidade.getVagasPreenchidas() == null)
-        oportunidade.setVagasPreenchidas(0);
+        if (oportunidade.getVagasPreenchidas() == null)
+            oportunidade.setVagasPreenchidas(0);
 
-    if (oportunidade.getQuantidadeDeVagas() == null)
-        oportunidade.setQuantidadeDeVagas(0);
+        if (oportunidade.getQuantidadeDeVagas() == null)
+            oportunidade.setQuantidadeDeVagas(0);
 
-    return oportunidadeRepository.save(oportunidade);
-}
+        return oportunidadeRepository.save(oportunidade);
+    }
 
     public Optional<Oportunidade> atualizar(String id, Oportunidade atualizada) {
     return oportunidadeRepository.findById(id).map(existente -> {
