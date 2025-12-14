@@ -83,6 +83,12 @@ public class OportunidadeService {
 
         Oportunidade oportunidade = opt.get();
         List<String> candidatos = oportunidade.getAlunosCandidatosId();
+
+        // BLOQUEIO SE FINALIZADA
+        if (Boolean.TRUE.equals(oportunidade.getFinalizada())) {
+            throw new IllegalStateException("Oportunidade finalizada. Não é possível se candidatar.");
+        }
+
         if (candidatos == null) candidatos = new ArrayList<>();
 
         if (!candidatos.contains(idAluno)) {

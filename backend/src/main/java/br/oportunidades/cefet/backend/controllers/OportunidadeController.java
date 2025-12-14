@@ -69,5 +69,19 @@ public class OportunidadeController {
         return ResponseEntity.ok(resultado);
     }
 
+    @PostMapping("/{id}/finalizar")
+    public ResponseEntity<?> finalizar(@PathVariable String id) {
+        Optional<Oportunidade> opt = oportunidadeService.buscarPorId(id);
+
+        if (opt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Oportunidade oportunidade = opt.get();
+        oportunidade.setFinalizada(true);
+        oportunidadeService.salvar(oportunidade);
+
+        return ResponseEntity.ok(oportunidade);
+    }
 
 }
