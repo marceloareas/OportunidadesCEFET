@@ -143,4 +143,42 @@ public class OportunidadeService {
         return Optional.of(usuarios);
     }
 
+    public Optional<Oportunidade> aprovarCandidato(String idOportunidade, String idAluno) {
+        Optional<Oportunidade> opt = oportunidadeRepository.findById(idOportunidade);
+        if (opt.isEmpty()) return Optional.empty();
+
+        Oportunidade oportunidade = opt.get();
+
+        // Verifica se ainda há vagas
+        if (oportunidade.getVagasPreenchidas() >= oportunidade.getQuantidadeDeVagas()) {
+            throw new IllegalStateException("Todas as vagas já foram preenchidas.");
+        }
+
+        // Verifica se a oportunidade já foi finalizada
+        if (Boolean.TRUE.equals(oportunidade.getFinalizada())) {
+            throw new IllegalStateException("Oportunidade finalizada.");
+        }
+
+        // Verifica se o aluno se candidatou
+        if (!oportunidade.getAlunosCandidatosId().contains(idAluno)) {
+            throw new IllegalArgumentException("Aluno não está na lista de candidatos.");
+        }
+
+        // 🔒 Não aprovar duas vezes
+        if (oportunidade.getAlunosAprovadosId().contains(idAluno)) {
+            throw new IllegalStateException("Aluno já foi aprovado.");
+        }
+
+
+        // Aprova o aluno
+        oportunidade.getAlunosAprovadosId().add(idAluno);
+        oportunidade.setVagasPreenchidas(
+                oportunidade.getVagasPreenchidas() + 1
+        );
+
+        oportunidadeRepository.save(oportunidade);
+        return Optional.of(oportunidade);
+    }
+
+
 }

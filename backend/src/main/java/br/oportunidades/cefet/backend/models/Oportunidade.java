@@ -41,6 +41,9 @@ public class Oportunidade {
     private List<String> alunosCandidatosId = new ArrayList<>();
 
     @Builder.Default
+    private List<String> alunosAprovadosId = new ArrayList<>();
+
+    @Builder.Default
     private List<String> idLikes = new ArrayList<>();
 
     @Builder.Default

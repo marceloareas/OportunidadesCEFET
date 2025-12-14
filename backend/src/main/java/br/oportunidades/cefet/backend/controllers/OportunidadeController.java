@@ -91,4 +91,19 @@ public class OportunidadeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/{id}/aprovar/{idAluno}")
+    public ResponseEntity<?> aprovarCandidato(
+            @PathVariable String id,
+            @PathVariable String idAluno) {
+
+        try {
+            return oportunidadeService.aprovarCandidato(id, idAluno)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
 }
