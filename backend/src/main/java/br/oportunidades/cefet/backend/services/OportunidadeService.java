@@ -1,15 +1,19 @@
 package br.oportunidades.cefet.backend.services;
 
 import br.oportunidades.cefet.backend.models.Oportunidade;
+import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
+import br.oportunidades.cefet.backend.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
 import br.oportunidades.cefet.backend.enums.CategoriaOportunidade;
 
-
 @Service
 public class OportunidadeService {
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private OportunidadeRepository oportunidadeRepository;
@@ -122,6 +126,21 @@ public class OportunidadeService {
             oportunidadeRepository.save(oportunidade);
             return "Like adicionado.";
         }
+    }
+
+    public Optional<List<Usuario>> listarCandidatos(String idOportunidade) {
+        Optional<Oportunidade> opt = oportunidadeRepository.findById(idOportunidade);
+        if (opt.isEmpty()) return Optional.empty();
+
+        Oportunidade oportunidade = opt.get();
+        List<String> ids = oportunidade.getAlunosCandidatosId();
+
+        if (ids == null || ids.isEmpty()) {
+            return Optional.of(Collections.emptyList());
+        }
+
+        List<Usuario> usuarios = usuarioRepository.findAllById(ids);
+        return Optional.of(usuarios);
     }
 
 }

@@ -84,4 +84,11 @@ public class OportunidadeController {
         return ResponseEntity.ok(oportunidade);
     }
 
+    @GetMapping("/{id}/candidatos")
+    public ResponseEntity<?> listarCandidatos(@PathVariable String id) {
+        return oportunidadeService.listarCandidatos(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }
