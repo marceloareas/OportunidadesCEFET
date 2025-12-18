@@ -37,4 +37,14 @@ public class ComentarioController {
         comentarioService.deletar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/entidade/{tipo}/{id}")
+    public ResponseEntity<List<Comentario>> listarPorEntidade(
+            @PathVariable String tipo,
+            @PathVariable String id) {
+
+        return ResponseEntity.ok(
+                comentarioService.listarPorEntidade(tipo.toUpperCase(), id)
+        );
+    }
 }
