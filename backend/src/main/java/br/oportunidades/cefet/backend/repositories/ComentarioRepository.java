@@ -9,8 +9,10 @@ import java.util.List;
 @Repository
 public interface ComentarioRepository extends MongoRepository<Comentario, String> {
 
-    List<Comentario> findByTipoEntidadePaiAndIdPost(
+    List<Comentario> findByTipoEntidadePaiAndIdPostAndIdComentarioPaiIsNull(
             String tipoEntidadePai,
             String idPost
     );
+
+    List<Comentario> findByIdComentarioPai(String idComentarioPai);
 }

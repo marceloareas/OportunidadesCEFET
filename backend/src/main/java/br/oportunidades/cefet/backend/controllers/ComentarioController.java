@@ -9,42 +9,44 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/comments")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 public class ComentarioController {
 
     @Autowired
     private ComentarioService comentarioService;
 
-    @GetMapping
-    public ResponseEntity<List<Comentario>> listar() {
-        return ResponseEntity.ok(comentarioService.listarTodos());
+    // 🔹 Comentários de um Post
+    @GetMapping("/post/{idPost}")
+    public ResponseEntity<List<Comentario>> listarComentariosPost(
+            @PathVariable String idPost
+    ) {
+        return ResponseEntity.ok(
+                comentarioService.listarComentariosDePost(idPost)
+        );
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Comentario> buscarPorId(@PathVariable String id) {
-        return comentarioService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    // 🔹 Comentários de uma Oportunidade
+    @GetMapping("/oportunidade/{idOportunidade}")
+    public ResponseEntity<List<Comentario>> listarComentariosOportunidade(
+            @PathVariable String idOportunidade
+    ) {
+        return ResponseEntity.ok(
+                comentarioService.listarComentariosDeOportunidade(idOportunidade)
+        );
+    }
+
+    // 🔹 Respostas de um comentário
+    @GetMapping("/respostas/{idComentario}")
+    public ResponseEntity<List<Comentario>> listarRespostas(
+            @PathVariable String idComentario
+    ) {
+        return ResponseEntity.ok(
+                comentarioService.listarRespostas(idComentario)
+        );
     }
 
     @PostMapping
     public ResponseEntity<Comentario> criar(@RequestBody Comentario comentario) {
         return ResponseEntity.ok(comentarioService.salvar(comentario));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable String id) {
-        comentarioService.deletar(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/entidade/{tipo}/{id}")
-    public ResponseEntity<List<Comentario>> listarPorEntidade(
-            @PathVariable String tipo,
-            @PathVariable String id) {
-
-        return ResponseEntity.ok(
-                comentarioService.listarPorEntidade(tipo.toUpperCase(), id)
-        );
     }
 }

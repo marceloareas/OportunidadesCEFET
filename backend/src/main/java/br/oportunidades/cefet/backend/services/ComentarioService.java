@@ -5,6 +5,7 @@ import br.oportunidades.cefet.backend.repositories.ComentarioRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,34 +13,37 @@ import org.springframework.stereotype.Service;
 @Service
 public class ComentarioService {
 
-    @Autowired
     private final ComentarioRepository comentarioRepository;
 
-    public ComentarioService(ComentarioRepository comentarioRepository){
+    @Autowired
+    public ComentarioService(ComentarioRepository comentarioRepository) {
         this.comentarioRepository = comentarioRepository;
     }
 
-    public List<Comentario> listarTodos() { return comentarioRepository.findAll(); }
-    public Optional<Comentario> buscarPorId(String id) { return comentarioRepository.findById(id); }
-    public void deletar(String id) { comentarioRepository.deleteById(id); }
+    public List<Comentario> listarComentariosDePost(String idPost) {
+        return comentarioRepository
+                .findByTipoEntidadePaiAndIdPostAndIdComentarioPaiIsNull(
+                        "Post",
+                        idPost
+                );
+    }
+
+    public List<Comentario> listarComentariosDeOportunidade(String idOportunidade) {
+        return comentarioRepository
+                .findByTipoEntidadePaiAndIdPostAndIdComentarioPaiIsNull(
+                        "Oportunidade",
+                        idOportunidade
+                );
+    }
+
+    public List<Comentario> listarRespostas(String idComentarioPai) {
+        return comentarioRepository.findByIdComentarioPai(idComentarioPai);
+    }
 
     public Comentario salvar(Comentario comentario) {
-
-        if (comentario.getTexto() == null || comentario.getTexto().isBlank()) {
-            throw new IllegalArgumentException("Texto do comentário é obrigatório.");
+        if (comentario.getDataComentario() == null) {
+            comentario.setDataComentario(new Date());
         }
-
-        if (comentario.getTipoEntidadePai() == null ||
-                comentario.getIdPost() == null) {
-            throw new IllegalArgumentException("Comentário precisa de entidade pai.");
-        }
-
         return comentarioRepository.save(comentario);
     }
-
-    public List<Comentario> listarPorEntidade(String tipo, String id) {
-        return comentarioRepository.findByTipoEntidadePaiAndIdPost(tipo, id);
-    }
-
-
 }
