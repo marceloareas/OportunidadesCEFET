@@ -3,6 +3,7 @@ package br.oportunidades.cefet.backend.models;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import br.oportunidades.cefet.backend.enums.GrandeAreaConhecimento;
 import java.util.*;
 
 @Document(collection = "Oportunidade")
@@ -48,4 +49,8 @@ public class Oportunidade {
 
     @Builder.Default
     private Boolean finalizada = false;
+
+    @Builder.Default
+    private List<GrandeAreaConhecimento> grandesAreas = new ArrayList<>();
+
 }

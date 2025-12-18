@@ -31,6 +31,12 @@ public class OportunidadeService {
             throw new IllegalArgumentException("Categoria é obrigatória.");
         }
 
+        if (oportunidade.getGrandesAreas() == null || oportunidade.getGrandesAreas().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "É obrigatório informar ao menos uma grande área do conhecimento."
+            );
+        }
+
         try {
             CategoriaOportunidade.valueOf(oportunidade.getIdCategoria().toUpperCase());
         } catch (IllegalArgumentException e) {
