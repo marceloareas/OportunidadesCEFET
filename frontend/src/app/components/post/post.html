@@ -61,12 +61,12 @@
 </div>
 
 <!-- Modal de comentários -->
-<div
-  class="modal-overlay"
-  *ngIf="newCommentModal()"
-  (click)="closeNewComment()"
->
-  <div class="modal-conteudo" (click)="$event.stopPropagation()">
+<div class="modal-overlay" *ngIf="newCommentModal()" (click)="closeNewComment()">
+  <div class="modal-conteudo card-modal" (click)="$event.stopPropagation()">
+    <div class="modal-topo-lista">
+      <h3>Comentários</h3>
+      <button class="btn-fechar" type="button" (click)="closeNewComment()">Fechar</button>
+    </div>
     <div class="modal-topo">
       <textarea
         placeholder="Escreva seu comentário..."
@@ -78,10 +78,11 @@
     </div>
 
     <div class="modal-comentarios">
-      <div class="comentario" *ngFor="let c of comentarios">
-        <strong>{{ c.autor }}</strong>
-        <p>{{ c.texto }}</p>
+      <div class="comentario-card" *ngFor="let c of comentarios">
+        <div class="comentario-autor">{{ c.autor }}</div>
+        <div class="comentario-texto">{{ c.texto }}</div>
       </div>
+      <div class="mensagem-vazia" *ngIf="comentarios.length === 0">Nenhum comentário ainda.</div>
     </div>
   </div>
 </div>
