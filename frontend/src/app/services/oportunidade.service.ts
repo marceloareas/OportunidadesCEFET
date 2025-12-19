@@ -52,4 +52,8 @@ export class OportunidadeService {
     return this.http.post(`${this.apiUrl}/${idOportunidade}/like/${idUsuario}`, {});
   }
 
+  aprovarCandidato(idOportunidade: string, idAluno: string) {
+    return this.http.post<Oportunidade>(`${this.apiUrl}/${idOportunidade}/aprovar/${idAluno}`, {});
+  }
+
 }

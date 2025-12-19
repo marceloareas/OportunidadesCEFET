@@ -1,0 +1,70 @@
+<app-navbar-top></app-navbar-top>
+<div class="page">
+  <app-navbar-left></app-navbar-left>
+
+  <main class="content">
+    <div class="scroll-content">
+      <section class="oportunidades-container">
+        <h2 class="titulo-principal">Minhas discussões</h2>
+        <hr />
+
+        <div *ngIf="carregando()" class="mensagem-status">Carregando publicações...</div>
+        <div *ngIf="erro()" class="mensagem-erro">{{ erro() }}</div>
+
+        <div *ngIf="!carregando() && minhasPublicacoes().length === 0" class="mensagem-vazia">
+          Você ainda não tem publicações.
+        </div>
+
+        <div *ngIf="!carregando() && minhasPublicacoes().length > 0">
+          <ng-container *ngFor="let p of minhasPublicacoes()">
+            <article class="post-item">
+              <h3>{{ p.titulo }}</h3>
+              <div class="meta">{{ p.criado ? (p.criado | date:'short') : '' }}</div>
+              <p>{{ p.corpo }}</p>
+            </article>
+          </ng-container>
+        </div>
+
+        <section *ngIf="usuarioFuncao === 'professor'">
+          <h3>Minhas oportunidades</h3>
+          <div *ngIf="minhasOportunidades().length === 0">Você não possui oportunidades cadastradas.</div>
+
+          <div *ngFor="let op of minhasOportunidades()" class="oportunidade">
+            <h4>{{ op.nome }}</h4>
+            <div class="meta">Vagas: {{ op.vagasPreenchidas ?? 0 }}/{{ op.quantidadeDeVagas ?? 0 }}</div>
+            <p>{{ op.descricao }}</p>
+
+            <div class="candidatos">
+              <strong>Candidatos:</strong>
+              <button class="btn-pequeno" (click)="abrirListaCandidatos(op.id)">
+                Ver candidatos ({{ (candidatosPorOportunidade()[op.id || ''] || []).length }})
+              </button>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <app-navbar-right></app-navbar-right>
+</div>
+
+<!-- Modal com lista de candidatos para uma oportunidade -->
+<div class="modal-overlay" *ngIf="mostrandoListaCandidatos()" (click)="fecharListaCandidatos()">
+  <div class="modal-conteudo" (click)="$event.stopPropagation()">
+    <h3 style="max-height: 5vh;">Lista de candidatos</h3>
+    <div class="lista-candidatos" *ngIf="oportunidadeSelecionadaId()">
+      <ul>
+        <li *ngFor="let c of (candidatosPorOportunidade()[oportunidadeSelecionadaId() || ''] || [])">
+          <span class="cand-name">{{ c.nome || c.id }}</span>
+          <div class="cand-actions">
+            <button class="btn-pequeno" (click)="aprovarCandidato(oportunidadeSelecionadaId(), c.id)">Aprovar</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div *ngIf="(candidatosPorOportunidade()[oportunidadeSelecionadaId() || ''] || []).length === 0">
+      Nenhum candidato inscrito.
+    </div>
+  </div>
+</div>
