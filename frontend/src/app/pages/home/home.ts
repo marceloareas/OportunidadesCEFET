@@ -50,6 +50,7 @@ export class Home {
   imagemErro = signal<string>('');
   vagasTotais = signal<number>(1);
   categoria = signal<string>('');
+  grandesAreas = signal<string[]>([]);
 
   constructor(
     private postService: PostService,
@@ -191,6 +192,17 @@ export class Home {
     if (this.fileInput) this.fileInput.nativeElement.value = '';
   }
 
+  onAreaChange(event: Event) {
+    const checkbox = event.target as HTMLInputElement;
+    const valor = checkbox.value;
+
+    this.grandesAreas.update(lista =>
+      checkbox.checked
+        ? [...lista, valor]
+        : lista.filter(v => v !== valor)
+    );
+  }
+
   onVagasChange(valor: unknown) {
     let convertido = 1;
 
@@ -277,14 +289,22 @@ export class Home {
 
     const usuario = this.usuarioLogado();
 
+    const categoriaSelecionada = this.categoria()?.trim();
+
+    if (!categoriaSelecionada) {
+      alert('Selecione uma categoria.');
+      return;
+    }
+
     const novaOportunidade: Oportunidade = {
-      nome: this.titulo(),
-      descricao: this.corpo() || undefined,
-      professorId: usuario?.id || 'usuarioAnonimo',
-      quantidadeDeVagas: quantidade,                
-      idCategoria: this.categoria() || undefined,
+      nome: this.titulo().trim(),
+      descricao: this.corpo()?.trim() || undefined,
+      professorId: usuario?.id!,
+      quantidadeDeVagas: quantidade,
+      idCategoria: categoriaSelecionada.toUpperCase(),
+      grandesAreas: this.grandesAreas(),
       imagemBase64: this.imagemBase64() ?? undefined
-    } as Oportunidade;
+    };
 
     this.oportunidadeService.criar(novaOportunidade).subscribe({
       next: (oportunidade) => {

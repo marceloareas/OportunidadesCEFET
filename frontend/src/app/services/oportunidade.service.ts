@@ -10,6 +10,7 @@ export interface Oportunidade {
   quantidadeDeVagas?: number;
   vagasPreenchidas?: number;
   idCategoria?: string;
+  grandesAreas?: string[];
   imagemBase64?: string;
   criado?: string | Date;
   alunosCandidatosId?: string[];

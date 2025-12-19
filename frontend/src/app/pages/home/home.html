@@ -105,14 +105,39 @@
               />
             </div>
             <div class="campo">
-              <label for="categoria">Categoria (opcional)</label>
-              <input
-                id="categoria"
-                type="text"
-                placeholder="Informe uma categoria"
-                [ngModel]="categoria()"
-                (ngModelChange)="categoria.set($event)"
-              />
+              <label>Grandes áreas *</label>
+
+              <label>
+                <input type="checkbox" value="CIENCIAS_EXATAS_E_DA_TERRA"
+                       (change)="onAreaChange($event)" />
+                Ciências Exatas e da Terra
+              </label>
+
+              <label>
+                <input type="checkbox" value="ENGENHARIAS"
+                       (change)="onAreaChange($event)" />
+                Engenharias
+              </label>
+
+              <label>
+                <input type="checkbox" value="CIENCIAS_DA_SAUDE"
+                       (change)="onAreaChange($event)" />
+                Ciências da Saúde
+              </label>
+            </div>
+            <div class="campo">
+              <label>Categoria *</label>
+              <select
+                [(ngModel)]="categoria"
+                class="input"
+              >
+                <option value="">Selecione uma categoria</option>
+                <option value="PESQUISA">Pesquisa</option>
+                <option value="EXTENSAO">Extensão</option>
+                <option value="MONITORIA">Monitoria</option>
+                <option value="ESTAGIO">Estágio</option>
+                <option value="ORIENTACAO_TCC">Orientação TCC</option>
+              </select>
             </div>
             <input
               #fileInput
