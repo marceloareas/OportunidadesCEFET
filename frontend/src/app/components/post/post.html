@@ -32,7 +32,7 @@
       <span>{{ contadorLikes() }}</span>
     </button>
 
-    <button class="icon-btn">
+    <button class="icon-btn" (click)="openNewComment()">
       <i class="bi bi-chat-left-text"></i>
       <span>{{ post.idComentarios?.length || 0 }}</span>
     </button>
@@ -51,3 +51,31 @@
     </button>
   </div>
 </div>
+
+<!-- Modal de nova postagem -->
+      <div
+        class="modal-overlay"
+        *ngIf="newCommentModal()"
+        (click)="closeNewComment()"
+      >
+        <div class="modal-conteudo" (click)="$event.stopPropagation()">
+           <div class="modal-topo">
+          <textarea
+            placeholder="Escreva seu comentário..."
+            [(ngModel)]="novoComentario">
+          </textarea>
+
+          <button (click)="enviarComentario()">
+            Enviar
+          </button>
+        </div>
+
+        <!-- PARTE INFERIOR (SCROLL) -->
+        <div class="modal-comentarios">
+          <div class="comentario" *ngFor="let c of comentarios">
+            <strong>{{ c.autor }}</strong>
+            <p>{{ c.texto }}</p>
+          </div>
+        </div>
+        </div>
+      </div>
