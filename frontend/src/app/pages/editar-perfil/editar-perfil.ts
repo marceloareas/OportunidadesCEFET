@@ -19,6 +19,8 @@ export class EditarPerfil {
   senha = signal<string>('');
   confirmaSenha = signal<string>('');
   userId?: string;
+  funcao?: string;
+  matricula?: string;
 
   constructor(private usuarioService: UsuarioService, private router: Router) {
     const stored = localStorage.getItem('usuario');
@@ -28,6 +30,8 @@ export class EditarPerfil {
         this.userId = u.id?.toString();
         this.nome.set(u.nome || '');
         this.email.set(u.email || '');
+        this.funcao = u.funcao;
+        this.matricula = u.matricula;
       } catch (e) {
         console.error('Erro ao parsear usuário do localStorage', e);
       }
@@ -52,6 +56,14 @@ export class EditarPerfil {
       email: this.email(),
     };
 
+    // Mantém funcao e matricula para não "zerar" no backend
+    if (this.funcao) {
+      payload.funcao = this.funcao;
+    }
+    if (this.matricula) {
+      payload.matricula = this.matricula;
+    }
+
     if (this.senha()) {
       payload.senha = this.senha();
     }
@@ -60,12 +72,20 @@ export class EditarPerfil {
       next: (updated) => {
         alert('Perfil atualizado com sucesso.');
         // Atualiza localStorage com novos dados (mantém id)
+        const funcaoAtualizada = updated.funcao || this.funcao;
         const usuarioNormalizado = {
           id: updated.id?.toString() || this.userId,
           nome: updated.nome,
           email: updated.email,
+          funcao: funcaoAtualizada,
+          matricula: updated.matricula || this.matricula,
         };
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
+        if (funcaoAtualizada) {
+          const tipo =
+            funcaoAtualizada.toLowerCase() === 'professor' ? 'professor' : 'aluno';
+          localStorage.setItem('tipoUsuario', tipo);
+        }
         this.router.navigate(['/home']);
       },
       error: (err) => {

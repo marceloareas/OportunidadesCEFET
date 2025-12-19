@@ -30,11 +30,25 @@ public class UsuarioService {
     }
 
     public Usuario updateUsuario(String id, Usuario usuario) {
-        if (usuarioRepository.existsById(id)) {
-            usuario.setId(id);
-            return usuarioRepository.save(usuario);
-        }
-        return null;
+        return usuarioRepository.findById(id).map(existing -> {
+            // Atualiza apenas campos fornecidos; mantém senha e função se não vierem na requisição
+            if (usuario.getNome() != null) {
+                existing.setNome(usuario.getNome());
+            }
+            if (usuario.getEmail() != null) {
+                existing.setEmail(usuario.getEmail());
+            }
+            if (usuario.getMatricula() != null) {
+                existing.setMatricula(usuario.getMatricula());
+            }
+            if (usuario.getFuncao() != null) {
+                existing.setFuncao(usuario.getFuncao());
+            }
+            if (usuario.getSenha() != null && !usuario.getSenha().isBlank()) {
+                existing.setSenha(usuario.getSenha());
+            }
+            return usuarioRepository.save(existing);
+        }).orElse(null);
     }
 
     public boolean deleteUsuario(String id) {
