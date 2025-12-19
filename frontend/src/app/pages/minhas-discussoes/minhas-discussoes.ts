@@ -63,6 +63,23 @@ export class MinhasDiscussoes {
     });
   }
 
+  finalizarOportunidade(opId: string | null | undefined) {
+    if (!opId) return;
+    if (!confirm('Deseja realmente finalizar esta oportunidade? Isso bloqueará novas candidaturas.')) return;
+    this.oportunidadeService.finalizarOportunidade(opId).subscribe({
+      next: (o) => {
+        this.minhasOportunidades.update(list => list.map(op => op.id === o.id ? o : op));
+        alert('Oportunidade finalizada com sucesso.');
+      },
+      error: (err) => {
+        console.error('Erro ao finalizar oportunidade:', err);
+        const mensagem = err?.error || err?.message || 'Erro ao finalizar oportunidade.';
+        alert(mensagem);
+      }
+      
+    });
+  }
+
   ngOnInit() {
     const usuarioStr = localStorage.getItem('usuario');
     if (!usuarioStr) return;

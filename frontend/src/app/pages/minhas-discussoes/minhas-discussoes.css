@@ -52,6 +52,24 @@
 
 .btn-pequeno { margin-left: 8px; padding: 4px 8px; font-size: 0.85rem; }
 
+.oportunidade-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.oportunidade-actions { display:flex; gap:8px; align-items:center; }
+.badge { background:#eee; padding:4px 8px; border-radius:12px; font-size:0.75rem; color:#333; }
+
+.btn-finalizar {
+  background-color: #0A497E;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.btn-finalizar[disabled] {
+  background-color: #bbb;
+  cursor: not-allowed;
+}
+
 .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0, 0, 0, 0.6); display:flex; justify-content:center; align-items:center; z-index:100; }
 .modal-conteudo { 
     background: #fff; 

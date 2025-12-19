@@ -25,6 +25,7 @@ export class PostComponent {
     idLikes?: string[];
     idComentarios?: any[];
     imagemBase64?: string;
+    finalizada?: boolean;
     vagasPreenchidas?: number;
     quantidadeDeVagas?: number;
     ehOportunidade?: boolean;

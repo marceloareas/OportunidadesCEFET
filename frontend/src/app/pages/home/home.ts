@@ -97,6 +97,7 @@ export class Home {
     imagemBase64: op.imagemBase64,
     nomeCriador: this.nomesUsuarios.get(op.professorId || '') || 'Professor',
     ehOportunidade: true,
+      finalizada: op.finalizada ?? false,
     vagasPreenchidas: op.vagasPreenchidas ?? 0,
     quantidadeDeVagas: op.quantidadeDeVagas ?? 0,
     alunosCandidatosId: op.alunosCandidatosId ?? [],

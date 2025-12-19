@@ -42,12 +42,12 @@
     </button>
 
     <button
-      *ngIf="tipoUsuario() === 'aluno' && post.ehOportunidade"
+      *ngIf="post.ehOportunidade && tipoUsuario() === 'aluno'"
       class="btn-candidatar"
-      [disabled]="jaCandidatado()"
+      [disabled]="jaCandidatado() || post.finalizada"
       (click)="candidatar()"
     >
-      {{ jaCandidatado() ? 'CANDIDATADO ✓' : 'CANDIDATAR-SE' }}
+      {{ post.finalizada ? 'Finalizada' : (jaCandidatado() ? 'CANDIDATADO ✓' : 'CANDIDATAR-SE') }}
     </button>
   </div>
 </div>

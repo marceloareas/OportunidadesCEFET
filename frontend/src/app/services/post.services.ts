@@ -13,6 +13,7 @@ export interface Post {
   idComentarios?: any[];
   imagemBase64?: string;
   ehOportunidade?: boolean;
+  finalizada?: boolean;
   vagasPreenchidas?: number;
   quantidadeDeVagas?: number;
   alunosCandidatosId?: string[];

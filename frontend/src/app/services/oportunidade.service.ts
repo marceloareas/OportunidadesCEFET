@@ -15,6 +15,8 @@ export interface Oportunidade {
   criado?: string | Date;
   alunosCandidatosId?: string[];
   idLikes?: string[];
+  alunosAprovadosId?: string[];
+  finalizada?: boolean;
 }
 
 @Injectable({
@@ -54,6 +56,10 @@ export class OportunidadeService {
 
   aprovarCandidato(idOportunidade: string, idAluno: string) {
     return this.http.post<Oportunidade>(`${this.apiUrl}/${idOportunidade}/aprovar/${idAluno}`, {});
+  }
+
+  finalizarOportunidade(idOportunidade: string) {
+    return this.http.post<Oportunidade>(`${this.apiUrl}/${idOportunidade}/finalizar`, {});
   }
 
 }
