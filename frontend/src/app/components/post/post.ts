@@ -1,11 +1,12 @@
 import { Component, Input, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
+
 import { OportunidadeService } from '../../services/oportunidade.service';
 import { PostService } from '../../services/post.services';
 import { ComentarioService } from '../../services/comentario.service';
-import { UsuarioService } from '../../services/usuario.service';
-import { forkJoin } from 'rxjs';
-import { FormsModule } from '@angular/forms';
+import { UsuarioService, Usuario } from '../../services/usuario.service';
 
 @Component({
   selector: 'app-post',
@@ -30,6 +31,7 @@ export class PostComponent {
     quantidadeDeVagas?: number;
     ehOportunidade?: boolean;
     alunosCandidatosId?: string[];
+    alunosAprovadosId?: string[];
   };
 
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
@@ -37,16 +39,21 @@ export class PostComponent {
 
   novoComentario = '';
   comentarios: Array<{ autor: string; texto: string; data?: string; id?: string }> = [];
-  
+
   jaCandidatado = signal<boolean>(false);
   contadorCandidatos = signal<number>(0);
   curtiu = signal<boolean>(false);
   contadorLikes = signal<number>(0);
+
   newCommentModal = signal<boolean>(false);
-  
-  // use `inject` for ComentarioService to avoid constructor DI ordering issues in standalone components
+  candidatosModal = signal<boolean>(false);
+  candidatos = signal<Usuario[]>([]);
+  candidatosCarregando = signal<boolean>(false);
+  candidatosErro = signal<string>('');
+  aprovando = signal<string | null>(null);
+  somenteAprovados = signal<boolean>(false);
+
   private comentarioService = inject(ComentarioService);
-  // inject usuario service to resolve nomes dos autores
   private usuarioService = inject(UsuarioService);
 
   constructor(
@@ -90,10 +97,9 @@ export class PostComponent {
       minute: '2-digit'
     });
   }
-  
+
   openNewComment() {
     this.newCommentModal.set(true);
-    // carregar comentários do backend quando abrir o modal
     this.loadComments();
   }
 
@@ -102,12 +108,11 @@ export class PostComponent {
   }
 
   enviarComentario() {
-  // if (!this.novoComentario.trim()) return;
-  const usuario = this.usuarioLogado();
-  if (!usuario || !this.post.id) {
-    alert('Usuário ou post não identificado.');
-    return;
-  }
+    const usuario = this.usuarioLogado();
+    if (!usuario || !this.post.id) {
+      alert('Usuário ou post não identificado.');
+      return;
+    }
 
     const payload = {
       usuarioId: usuario.id,
@@ -117,12 +122,8 @@ export class PostComponent {
       idComentarioPai: null
     } as any;
 
-    console.log('Enviando comentário payload:', payload);
-
-  this.comentarioService.criar(payload).subscribe({
+    this.comentarioService.criar(payload).subscribe({
       next: (saved) => {
-        console.log('Comentário salvo:', saved);
-        // adicionar no topo da lista de comentários exibida
         this.comentarios.unshift({
           autor: usuario.nome || usuario.id,
           texto: saved.texto || this.novoComentario,
@@ -130,24 +131,22 @@ export class PostComponent {
           id: saved.id
         });
 
-  // atualizar contagem/local do post se necessário
         if (!this.post.idComentarios) this.post.idComentarios = [];
         if (saved.id) this.post.idComentarios.unshift(saved.id);
 
         this.novoComentario = '';
       },
       error: (err) => {
-        console.error('Erro ao enviar comentário:', err);
-        alert('Erro ao enviar comentário. Veja o console para mais detalhes.');
+        console.error('Erro ao enviar comentario:', err);
+        alert('Erro ao enviar comentario. Veja o console para mais detalhes.');
       }
     });
-}
+  }
 
   loadComments() {
     if (!this.post?.id) return;
-  this.comentarioService.listarComentariosPost(this.post.id).subscribe({
+    this.comentarioService.listarComentariosPost(this.post.id).subscribe({
       next: (arr) => {
-        // mapear e buscar nomes dos autores (evitar mostrar apenas IDs)
         const uniqueIds = Array.from(new Set(arr.map((c) => c.usuarioId).filter(Boolean)));
 
         if (uniqueIds.length === 0) {
@@ -157,7 +156,6 @@ export class PostComponent {
             data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
             id: c.id
           }));
-          // atualizar ids do post para que o contador reflita a quantidade
           try { this.post.idComentarios = arr.map((c) => c.id); } catch {}
           return;
         }
@@ -177,12 +175,10 @@ export class PostComponent {
               data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
               id: c.id
             }));
-            // atualizar ids do post para que o contador reflita a quantidade
             try { this.post.idComentarios = arr.map((c) => c.id); } catch {}
           },
           error: (err) => {
-            console.warn('Erro ao buscar usuários dos comentários:', err);
-            // fallback: mostrar ids ou 'Anônimo'
+            console.warn('Erro ao buscar usuarios dos comentarios:', err);
             this.comentarios = arr.map((c) => ({
               autor: c.usuarioId || 'Anônimo',
               texto: c.texto || '',
@@ -194,7 +190,7 @@ export class PostComponent {
         });
       },
       error: (err) => {
-        console.warn('Erro ao carregar comentários:', err);
+        console.warn('Erro ao carregar comentarios:', err);
       }
     });
   }
@@ -215,7 +211,7 @@ export class PostComponent {
       this.post.idLikes.push(usuario.id);
     }
 
-      const req = this.post.ehOportunidade
+    const req = this.post.ehOportunidade
       ? this.oportunidadeService.curtirOportunidade(this.post.id, usuario.id)
       : this.postService.atualizarLike(this.post.id, usuario.id);
 
@@ -245,5 +241,91 @@ export class PostComponent {
         alert('Erro ao se candidatar à vaga.');
       }
     });
+  }
+
+  podeVerCandidatos(): boolean {
+    const usuario = this.usuarioLogado();
+    return Boolean(
+      usuario &&
+      this.post.ehOportunidade &&
+      this.post.criadorId &&
+      usuario.id === this.post.criadorId
+    );
+  }
+
+  abrirCandidatos() {
+    if (!this.podeVerCandidatos() || !this.post.id) return;
+    const usuario = this.usuarioLogado();
+    if (!usuario) return;
+
+    this.candidatosCarregando.set(true);
+    this.candidatosErro.set('');
+
+    this.oportunidadeService
+      .listarCandidatosDoProfessor(this.post.id, usuario.id)
+      .subscribe({
+        next: (lista) => {
+          this.candidatos.set(lista || []);
+          this.candidatosModal.set(true);
+          this.candidatosCarregando.set(false);
+        },
+        error: (err) => {
+          console.error('Erro ao listar candidatos:', err);
+          this.candidatosErro.set('Não foi possível carregar candidatos.');
+          this.candidatosCarregando.set(false);
+          this.candidatosModal.set(true);
+        }
+      });
+  }
+
+  fecharCandidatos() {
+    this.candidatosModal.set(false);
+  }
+
+  candidatoAprovado(idAluno: string | undefined): boolean {
+    if (!idAluno) return false;
+    return this.post.alunosAprovadosId?.includes(idAluno) ?? false;
+  }
+
+  candidatosFiltrados(): Usuario[] {
+    const lista = this.candidatos() || [];
+    if (!this.somenteAprovados()) return lista;
+    const aprovados = new Set(this.post.alunosAprovadosId || []);
+    return lista.filter((c) => c.id && aprovados.has(c.id));
+  }
+
+  vagasRestantes(): number {
+    const total = this.post.quantidadeDeVagas ?? 0;
+    const preenchidas = this.post.vagasPreenchidas ?? 0;
+    return Math.max(0, total - preenchidas);
+  }
+
+  aprovarCandidato(candidato: Usuario) {
+    const usuario = this.usuarioLogado();
+    const postId = this.post.id;
+    const candidatoId = candidato.id;
+    if (!usuario || !postId || !candidatoId) return;
+    if (this.vagasRestantes() <= 0) {
+      alert('Todas as vagas já foram preenchidas.');
+      return;
+    }
+    this.aprovando.set(candidatoId);
+    this.oportunidadeService
+      .aprovarCandidatoDoProfessor(postId, candidatoId, usuario.id)
+      .subscribe({
+        next: (op) => {
+          if (!this.post.alunosAprovadosId) this.post.alunosAprovadosId = [];
+          this.post.alunosAprovadosId.push(candidatoId);
+          this.post.vagasPreenchidas = op.vagasPreenchidas ?? this.post.vagasPreenchidas;
+          this.post.finalizada = op.finalizada ?? this.post.finalizada;
+          this.aprovando.set(null);
+          alert('Candidato aprovado e vaga atribuída.');
+        },
+        error: (err) => {
+          console.error('Erro ao aprovar candidato:', err);
+          alert('Não foi possível aprovar o candidato.');
+          this.aprovando.set(null);
+        }
+      });
   }
 }

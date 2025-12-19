@@ -4,7 +4,7 @@
     <div class="post-info">
       <h2>
         <ng-container *ngIf="usuarioLogado()?.id === post.criadorId; else outroUsuario">
-          {{ post.nomeCriador }} • você
+          {{ post.nomeCriador }} é você
         </ng-container>
         <ng-template #outroUsuario>
           {{ post.nomeCriador || 'Usuário Anônimo' }}
@@ -23,6 +23,14 @@
     <div *ngIf="post.ehOportunidade" class="oportunidade-info">
       <p>Vagas: {{ post.vagasPreenchidas ?? 0 }}/{{ post.quantidadeDeVagas }}</p>
       <p class="candidatos">Candidatos: {{ contadorCandidatos() }}</p>
+      <button
+        *ngIf="podeVerCandidatos()"
+        class="btn-candidatos"
+        type="button"
+        (click)="abrirCandidatos()"
+      >
+        Ver candidatos
+      </button>
     </div>
   </div>
 
@@ -47,35 +55,85 @@
       [disabled]="jaCandidatado() || post.finalizada"
       (click)="candidatar()"
     >
-      {{ post.finalizada ? 'Finalizada' : (jaCandidatado() ? 'CANDIDATADO ✓' : 'CANDIDATAR-SE') }}
+      {{ post.finalizada ? 'Finalizada' : (jaCandidatado() ? 'CANDIDATADO ✔' : 'CANDIDATAR-SE') }}
     </button>
   </div>
 </div>
 
-<!-- Modal de nova postagem -->
-      <div
-        class="modal-overlay"
-        *ngIf="newCommentModal()"
-        (click)="closeNewComment()"
-      >
-        <div class="modal-conteudo" (click)="$event.stopPropagation()">
-           <div class="modal-topo">
-          <textarea
-            placeholder="Escreva seu comentário..."
-            [(ngModel)]="novoComentario">
-          </textarea>
+<!-- Modal de comentários -->
+<div
+  class="modal-overlay"
+  *ngIf="newCommentModal()"
+  (click)="closeNewComment()"
+>
+  <div class="modal-conteudo" (click)="$event.stopPropagation()">
+    <div class="modal-topo">
+      <textarea
+        placeholder="Escreva seu comentário..."
+        [(ngModel)]="novoComentario"></textarea>
 
-          <button (click)="enviarComentario()">
-            Enviar
-          </button>
-        </div>
+      <button (click)="enviarComentario()">
+        Enviar
+      </button>
+    </div>
 
-        <!-- PARTE INFERIOR (SCROLL) -->
-        <div class="modal-comentarios">
-          <div class="comentario" *ngFor="let c of comentarios">
-            <strong>{{ c.autor }}</strong>
-            <p>{{ c.texto }}</p>
-          </div>
-        </div>
-        </div>
+    <div class="modal-comentarios">
+      <div class="comentario" *ngFor="let c of comentarios">
+        <strong>{{ c.autor }}</strong>
+        <p>{{ c.texto }}</p>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de candidatos (somente dono da oportunidade) -->
+<div class="modal-overlay" *ngIf="candidatosModal()" (click)="fecharCandidatos()">
+  <div class="modal-conteudo modal-candidatos card-modal" (click)="$event.stopPropagation()">
+    <div class="modal-topo-lista">
+      <div class="cabecalho-esq">
+        <h3>Candidatos</h3>
+        <div class="sub">Oportunidade: {{ post.id }}</div>
+      </div>
+      <div class="acoes-topo">
+        <label class="filtro-aprovados">
+          <input type="checkbox" [checked]="somenteAprovados()" (change)="somenteAprovados.set($any($event.target).checked)" />
+          Somente aprovados
+        </label>
+        <button class="btn-fechar" type="button" (click)="fecharCandidatos()">Fechar</button>
+      </div>
+    </div>
+
+    <div class="lista-candidatos">
+      <div *ngIf="candidatosCarregando()">Carregando...</div>
+      <div *ngIf="candidatosErro()">{{ candidatosErro() }}</div>
+
+      <div *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length === 0" class="mensagem-vazia">
+        Nenhum candidato encontrado.
+      </div>
+
+      <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
+        <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
+          <div class="cand-dados">
+            <div class="candidato-nome">{{ c.nome || c.id }}</div>
+            <div class="cand-meta">
+              <span *ngIf="c.email">E-mail: {{ c.email }}</span>
+              <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>
+              <span *ngIf="c.funcao"> • {{ c.funcao }}</span>
+            </div>
+          </div>
+          <div class="cand-actions">
+            <span class="aprovado-chip" *ngIf="candidatoAprovado(c.id)">Aprovado</span>
+            <button
+              class="btn-aprovar"
+              type="button"
+              [disabled]="aprovando() === c.id || vagasRestantes() <= 0 || post.finalizada || candidatoAprovado(c.id)"
+              (click)="aprovarCandidato(c)"
+            >
+              {{ aprovando() === c.id ? 'Aprovando...' : 'Aprovar' }}
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

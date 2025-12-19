@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Usuario } from './usuario.service';
 
 export interface Oportunidade {
   id?: string;
@@ -58,8 +59,19 @@ export class OportunidadeService {
     return this.http.post<Oportunidade>(`${this.apiUrl}/${idOportunidade}/aprovar/${idAluno}`, {});
   }
 
+  aprovarCandidatoDoProfessor(idOportunidade: string, idAluno: string, idProfessor: string) {
+    return this.http.post<Oportunidade>(
+      `${this.apiUrl}/${idOportunidade}/aprovar/${idAluno}/professor/${idProfessor}`,
+      {}
+    );
+  }
+
   finalizarOportunidade(idOportunidade: string) {
     return this.http.post<Oportunidade>(`${this.apiUrl}/${idOportunidade}/finalizar`, {});
+  }
+
+  listarCandidatosDoProfessor(idOportunidade: string, idProfessor: string) {
+    return this.http.get<Usuario[]>(`${this.apiUrl}/${idOportunidade}/candidatos/professor/${idProfessor}`);
   }
 
 }

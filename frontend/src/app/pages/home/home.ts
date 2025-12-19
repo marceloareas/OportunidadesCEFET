@@ -101,6 +101,7 @@ export class Home {
     vagasPreenchidas: op.vagasPreenchidas ?? 0,
     quantidadeDeVagas: op.quantidadeDeVagas ?? 0,
     alunosCandidatosId: op.alunosCandidatosId ?? [],
+    alunosAprovadosId: op.alunosAprovadosId ?? [],
     idLikes: op.idLikes ? [...op.idLikes] : []
   };
 }

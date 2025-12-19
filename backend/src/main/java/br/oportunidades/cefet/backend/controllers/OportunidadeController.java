@@ -91,6 +91,20 @@ public class OportunidadeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Lista candidatos apenas se o professor for o dono da oportunidade
+    @GetMapping("/{id}/candidatos/professor/{idProfessor}")
+    public ResponseEntity<?> listarCandidatosDoProfessor(
+            @PathVariable String id,
+            @PathVariable String idProfessor) {
+        try {
+            return oportunidadeService.listarCandidatosDoProfessor(id, idProfessor)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (SecurityException se) {
+            return ResponseEntity.status(403).body(se.getMessage());
+        }
+    }
+
     @PostMapping("/{id}/aprovar/{idAluno}")
     public ResponseEntity<?> aprovarCandidato(
             @PathVariable String id,
@@ -100,6 +114,24 @@ public class OportunidadeController {
             return oportunidadeService.aprovarCandidato(id, idAluno)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Aprovar candidato informando o professor dono
+    @PostMapping("/{id}/aprovar/{idAluno}/professor/{idProfessor}")
+    public ResponseEntity<?> aprovarCandidatoDoProfessor(
+            @PathVariable String id,
+            @PathVariable String idAluno,
+            @PathVariable String idProfessor) {
+
+        try {
+            return oportunidadeService.aprovarCandidatoDoProfessor(id, idAluno, idProfessor)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (SecurityException se) {
+            return ResponseEntity.status(403).body(se.getMessage());
         } catch (IllegalStateException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

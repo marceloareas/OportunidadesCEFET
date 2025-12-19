@@ -17,6 +17,7 @@ export interface Post {
   vagasPreenchidas?: number;
   quantidadeDeVagas?: number;
   alunosCandidatosId?: string[];
+  alunosAprovadosId?: string[];
 }
 
 

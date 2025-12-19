@@ -22,7 +22,8 @@ export class MinhasDiscussoes {
 
   minhasPublicacoes = signal<Post[]>([]);
   minhasOportunidades = signal<Oportunidade[]>([]);
-  candidatosPorOportunidade = signal<Record<string, Array<{ id: string; nome?: string }>>>({});
+  candidatosPorOportunidade = signal<Record<string, Array<{ id: string; nome?: string; aprovado?: boolean }>>>({});
+  somenteAprovados = signal<boolean>(false);
 
   // modal de candidato
   candidatoSelecionado = signal<Usuario | null>(null);
@@ -41,15 +42,15 @@ export class MinhasDiscussoes {
   ) {}
 
   aprovarCandidato(opId: string | null | undefined, alunoId: string | null | undefined) {
-    if (!opId || !alunoId) return;
-    this.oportunidadeService.aprovarCandidato(opId, alunoId).subscribe({
+    if (!opId || !alunoId || !this.usuarioId) return;
+    this.oportunidadeService.aprovarCandidatoDoProfessor(opId, alunoId, this.usuarioId).subscribe({
       next: (oportunidadeAtualizada) => {
-        // atualizar vaga preenchida na lista de oportunidades
-        this.minhasOportunidades.update(list => list.map(op => op.id === oportunidadeAtualizada.id ? oportunidadeAtualizada : op));
+        this.minhasOportunidades.update(list =>
+          list.map(op => op.id === oportunidadeAtualizada.id ? oportunidadeAtualizada : op));
 
-        // remover candidato da lista local de candidatos
+        // marca candidato como aprovado
         this.candidatosPorOportunidade.update(map => {
-          const arr = (map[opId] || []).filter(c => c.id !== alunoId);
+          const arr = (map[opId] || []).map(c => c.id === alunoId ? { ...c, aprovado: true } : c);
           return { ...map, [opId]: arr };
         });
 
@@ -121,6 +122,7 @@ export class MinhasDiscussoes {
           // buscar nomes dos candidatos para cada oportunidade
           for (const op of minhas) {
             const candidatos = op.alunosCandidatosId ?? [];
+            const aprovados = new Set(op.alunosAprovadosId || []);
             if (!candidatos.length) {
               this.candidatosPorOportunidade.update(s => ({ ...s, [op.id!]: [] }));
               continue;
@@ -128,12 +130,15 @@ export class MinhasDiscussoes {
             const requests = candidatos.map(id => this.usuarioService.buscarPorId(id));
             forkJoin(requests).subscribe({
               next: (users: Usuario[]) => {
-                const list = (users || []).map(u => ({ id: u.id!, nome: u.nome }));
+                const list = (users || []).map(u => ({ id: u.id!, nome: u.nome, aprovado: aprovados.has(u.id!) }));
                 this.candidatosPorOportunidade.update(s => ({ ...s, [op.id!]: list }));
               },
               error: (err) => {
                 console.warn('Erro ao buscar candidatos:', err);
-                this.candidatosPorOportunidade.update(s => ({ ...s, [op.id!]: candidatos.map(id => ({ id })) }));
+                this.candidatosPorOportunidade.update(s => ({
+                  ...s,
+                  [op.id!]: candidatos.map(id => ({ id, aprovado: aprovados.has(id) }))
+                }));
               }
             });
           }
@@ -171,5 +176,18 @@ export class MinhasDiscussoes {
   fecharModalCandidato() {
     this.mostrandoCandidato.set(false);
     this.candidatoSelecionado.set(null);
+  }
+
+  estaAprovado(opId: string | null, candId: string | null | undefined): boolean {
+    if (!opId || !candId) return false;
+    const aprovados = this.minhasOportunidades().find(o => o.id === opId)?.alunosAprovadosId || [];
+    return aprovados.includes(candId);
+  }
+
+  candidatosFiltrados(opId: string | null): Array<{ id: string; nome?: string; aprovado?: boolean; email?: string; matricula?: string; funcao?: string }> {
+    if (!opId) return [];
+    const arr = this.candidatosPorOportunidade()[opId] || [];
+    if (!this.somenteAprovados()) return arr;
+    return arr.filter(c => this.estaAprovado(opId, c.id) || c.aprovado);
   }
 }

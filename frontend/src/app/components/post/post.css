@@ -74,6 +74,21 @@
   margin: 0;
 }
 
+.btn-candidatos {
+  background: #0a497e;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-candidatos:hover {
+  background: #0c5c9f;
+}
+
 /* Botão minimalista */
 .btn-candidatar {
   background-color: #0A497E;
@@ -196,6 +211,57 @@
   width: 60vw;
 }
 
+.modal-conteudo.modal-candidatos {
+  max-width: 620px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  border: 1px solid #e5e5e5;
+}
+
+.candidatos-topo {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-topo-lista{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.cabecalho-esq h3{
+  margin: 0;
+}
+
+.sub{
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.acoes-topo{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-fechar{
+  background: #f2f2f2;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.filtro-aprovados {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
 /* TOPO FIXO */
 .modal-topo {
   padding: 12px;
@@ -219,6 +285,113 @@
   flex: 1;
   overflow-y: auto;
   padding: 12px;
+}
+
+.lista-candidatos{
+  width: 100%;
+}
+
+.lista-candidatos ul{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lista-candidatos li{
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid #e5e5e5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.95rem;
+  background: #f9f9fb;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.cand-dados{
+  flex: 1;
+  min-width: 0;
+}
+
+.candidato-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #fafafa;
+}
+
+.candidato-acoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.candidato-nome {
+  font-weight: 700;
+  color: #111;
+}
+
+.cand-meta{
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.candidato-info {
+  color: #444;
+  font-size: 0.9rem;
+}
+
+.candidato-tag {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: #eef5ff;
+  color: #0a497e;
+  font-weight: 600;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.aprovado-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e8f7ed;
+  color: #1f7a3d;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.btn-aprovar {
+  background: #0a497e;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-aprovar:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+.btn-aprovar:hover:not(:disabled) {
+  background: #0c5c9f;
+}
+
+.mensagem-vazia{
+  color: #666;
+  font-style: italic;
+  padding: 8px;
 }
 
 .comentario {

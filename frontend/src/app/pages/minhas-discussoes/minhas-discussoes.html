@@ -59,20 +59,47 @@
 
 <!-- Modal com lista de candidatos para uma oportunidade -->
 <div class="modal-overlay" *ngIf="mostrandoListaCandidatos()" (click)="fecharListaCandidatos()">
-  <div class="modal-conteudo" (click)="$event.stopPropagation()">
-    <h3 style="max-height: 5vh;">Lista de candidatos</h3>
+  <div class="modal-conteudo card-modal" (click)="$event.stopPropagation()">
+    <div class="modal-topo-lista">
+      <div class="cabecalho-esq">
+        <h3>Candidatos</h3>
+        <div class="sub" *ngIf="oportunidadeSelecionadaId()">Oportunidade: {{ oportunidadeSelecionadaId() }}</div>
+      </div>
+      <div class="acoes-topo">
+        <label class="filtro-aprovados">
+          <input type="checkbox" [checked]="somenteAprovados()" (change)="somenteAprovados.set($any($event.target).checked)" />
+          Somente aprovados
+        </label>
+        <button class="btn-fechar" type="button" (click)="fecharListaCandidatos()">Fechar</button>
+      </div>
+    </div>
+
     <div class="lista-candidatos" *ngIf="oportunidadeSelecionadaId()">
       <ul>
-        <li *ngFor="let c of (candidatosPorOportunidade()[oportunidadeSelecionadaId() || ''] || [])">
-          <span class="cand-name">{{ c.nome || c.id }}</span>
+        <li class="candidato-card" *ngFor="let c of candidatosFiltrados(oportunidadeSelecionadaId())">
+          <div class="cand-dados">
+            <div class="cand-nome">{{ c.nome || c.id }}</div>
+            <div class="cand-meta">
+              <span *ngIf="c.email">E-mail: {{ c.email }}</span>
+              <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>
+              <span *ngIf="c.funcao"> • {{ c.funcao }}</span>
+            </div>
+          </div>
           <div class="cand-actions">
-            <button class="btn-pequeno" (click)="aprovarCandidato(oportunidadeSelecionadaId(), c.id)">Aprovar</button>
+            <span class="badge aprovado" *ngIf="estaAprovado(oportunidadeSelecionadaId(), c.id) || c.aprovado">Aprovado</span>
+            <button
+              class="btn-pequeno btn-aprovar"
+              [disabled]="estaAprovado(oportunidadeSelecionadaId(), c.id) || c.aprovado"
+              (click)="aprovarCandidato(oportunidadeSelecionadaId(), c.id)">
+              Aprovar
+            </button>
           </div>
         </li>
       </ul>
     </div>
-    <div *ngIf="(candidatosPorOportunidade()[oportunidadeSelecionadaId() || ''] || []).length === 0">
-      Nenhum candidato inscrito.
+
+    <div class="mensagem-vazia" *ngIf="candidatosFiltrados(oportunidadeSelecionadaId()).length === 0">
+      Nenhum candidato encontrado.
     </div>
   </div>
 </div>
