@@ -1,44 +1,206 @@
 <app-navbar-top></app-navbar-top>
 <div class="page">
-    <app-navbar-left></app-navbar-left>
+  <app-navbar-left></app-navbar-left>
 
-    <main [ngSwitch]="currentView" class="content">
-        <div class="scroll-content">
+  <main [ngSwitch]="currentView()" class="content">
+    <div class="scroll-content">
+      <div class="posts" *ngSwitchCase="'home'">
+        <div class="new-post">
+          <div class="img">
+            <img src="pfptemp.ico" />
+          </div>
 
-            <div class="posts" *ngSwitchCase="'home'">
-                <div class="new-post">
-                    <div class="img">
-                        <img src="pfptemp.ico">
-                    </div>
-
-
-                    <div (click)="openNewPost()" class="new-post-btn">
-                        <span>Crie uma nova discussão</span>
-                    </div>
-                </div>
-
-                <hr>
-                <app-post></app-post>
-                <hr>
-                <app-post></app-post>
-                <hr>
-            </div>
-
-
-            <!-- criar post -->
-
-            <div class="modal-overlay" *ngIf="newPostModal" (click)="closeNewPost()">
-                <div class="modal-conteudo" (click)="$event.stopPropagation()">
-                    <input class="title-input" type="text" placeholder="Adicione um Titulo">
-                    <textarea class="desc-input" type="text" placeholder="Escreva sobre oque está pensando"></textarea>
-                    <div class="add-image"><i class="bi bi-card-image"></i> Adicionar Imagem</div>
-                    <button class="send-btn">ENVIAR</button>
-                </div>
-            </div>
-
-
+          <div (click)="openNewPost()" class="new-post-btn">
+            <span>Crie uma nova discussão</span>
+          </div>
         </div>
-    </main>
 
-    <app-navbar-right></app-navbar-right>
+        <section class="oportunidades-container">
+          <h2 class="titulo-principal">Publicações e Oportunidades</h2>
+
+          <hr />
+
+          <!-- Status da requisição -->
+          <div *ngIf="carregando()" class="mensagem-status">
+            Carregando publicações...
+          </div>
+          <div *ngIf="erro()" class="mensagem-erro">
+            {{ erro() }}
+          </div>
+
+          <!-- Lista de oportunidades -->
+          <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
+            <ng-container *ngFor="let p of feedItens(); let last = last">
+              <app-post [post]="p"></app-post>
+              <!--<hr *ngIf="!last" /> -->
+            </ng-container>
+          </div>
+
+          <ng-template #semItens>
+            <p class="mensagem-vazia">
+              Nenhum post ou oportunidade encontrado.
+            </p>
+          </ng-template>
+        </section>
+      </div>
+
+      <!-- Modal de nova postagem -->
+      <div
+        class="modal-overlay"
+        *ngIf="newPostModal()"
+        (click)="closeNewPost()"
+      >
+        <div class="modal-conteudo" (click)="$event.stopPropagation()">
+          <div
+            class="toggle-row"
+            *ngIf="tipoUsuario() === 'professor'"
+          >
+            <span
+              class="toggle-label"
+              [class.ativo]="!modoOportunidade()"
+              >Discussão</span
+            >
+            <label class="toggle-switch">
+              <input
+                type="checkbox"
+                [checked]="modoOportunidade()"
+                (change)="alternarModoOportunidade()"
+              />
+              <span class="slider"></span>
+            </label>
+            <span
+              class="toggle-label"
+              [class.ativo]="modoOportunidade()"
+              >Oportunidade</span
+            >
+          </div>
+
+          <input
+            class="title-input"
+            type="text"
+            placeholder="Adicione um Título"
+            [ngModel]="titulo()"
+            (ngModelChange)="titulo.set($event)"
+          />
+          <textarea
+            class="desc-input"
+            [placeholder]="
+              modoOportunidade()
+                ? 'Descreva a oportunidade'
+                : 'Escreva sobre o que está pensando'
+            "
+            [ngModel]="corpo()"
+            (ngModelChange)="corpo.set($event)"
+          ></textarea>
+
+          <div class="oportunidade-extra" *ngIf="modoOportunidade()">
+            <div class="campo">
+              <label for="vagas">Quantidade de vagas</label>
+              <input
+                id="vagas"
+                type="number"
+                min="0"
+                [ngModel]="vagasTotais()"
+                (ngModelChange)="onVagasChange($event)"
+              />
+            </div>
+            <div class="campo">
+              <label>Grandes áreas *</label>
+
+              <label>
+                <input type="checkbox" value="CIENCIAS_EXATAS_E_DA_TERRA"
+                       (change)="onAreaChange($event)" />
+                Ciências Exatas e da Terra
+              </label>
+
+              <label>
+                <input type="checkbox" value="ENGENHARIAS"
+                       (change)="onAreaChange($event)" />
+                Engenharias
+              </label>
+
+              <label>
+                <input type="checkbox" value="CIENCIAS_DA_SAUDE"
+                       (change)="onAreaChange($event)" />
+                Ciências da Saúde
+              </label>
+            </div>
+            <div class="campo">
+              <label>Categoria *</label>
+              <select
+                [(ngModel)]="categoria"
+                class="input"
+              >
+                <option value="">Selecione uma categoria</option>
+                <option value="PESQUISA">Pesquisa</option>
+                <option value="EXTENSAO">Extensão</option>
+                <option value="MONITORIA">Monitoria</option>
+                <option value="ESTAGIO">Estágio</option>
+                <option value="ORIENTACAO_TCC">Orientação TCC</option>
+              </select>
+            </div>
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              hidden
+              (change)="onImagemSelecionada($event)"
+            />
+            <div class="add-image" (click)="fileInput.click()">
+              <i class="bi bi-card-image"></i> Adicionar Imagem
+            </div>
+            <p class="erro-imagem" *ngIf="imagemErro()">
+              {{ imagemErro() }}
+            </p>
+            <div class="image-preview" *ngIf="imagemBase64()">
+              <img
+                [src]="imagemBase64()!"
+                alt="Pré-visualização da imagem"
+              />
+              <button
+                class="remove-image"
+                type="button"
+                (click)="removerImagem($event)"
+              >
+                Remover
+              </button>
+            </div>
+          </div>
+
+          <ng-container *ngIf="!modoOportunidade()">
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              hidden
+              (change)="onImagemSelecionada($event)"
+            />
+            <div class="add-image" (click)="fileInput.click()">
+              <i class="bi bi-card-image"></i> Adicionar Imagem
+            </div>
+            <p class="erro-imagem" *ngIf="imagemErro()">
+              {{ imagemErro() }}
+            </p>
+            <div class="image-preview" *ngIf="imagemBase64()">
+              <img
+                [src]="imagemBase64()!"
+                alt="Pré-visualização da imagem"
+              />
+              <button
+                class="remove-image"
+                type="button"
+                (click)="removerImagem($event)"
+              >
+                Remover
+              </button>
+            </div>
+          </ng-container>
+
+          <button class="send-btn" (click)="enviarPost()">ENVIAR</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <app-navbar-right></app-navbar-right>
 </div>

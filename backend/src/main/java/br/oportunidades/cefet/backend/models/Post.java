@@ -37,7 +37,9 @@ public class Post {
 
     private Date ultimaAtualizacao;
 
+    private String imagemBase64;
+    
     @Builder.Default
-    private Set<String> likesId = new HashSet<>(); // referencia Usuario(id)
+    private List<String> idLikes = new ArrayList<>();
 
 }

@@ -7,3 +7,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OportunidadeRepository extends MongoRepository<Oportunidade, String> {
 }
+

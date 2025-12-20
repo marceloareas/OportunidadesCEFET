@@ -1,0 +1,12 @@
+package br.oportunidades.cefet.backend.enums;
+
+public enum GrandeAreaConhecimento {
+    CIENCIAS_AGRARIAS,
+    CIENCIAS_BIOLOGICAS,
+    CIENCIAS_DA_SAUDE,
+    CIENCIAS_EXATAS_E_DA_TERRA,
+    ENGENHARIAS,
+    CIENCIAS_HUMANAS,
+    CIENCIAS_SOCIAIS_APLICADAS,
+    LINGUISTICA_LETRAS_E_ARTES
+}

@@ -1,4 +1,4 @@
-package br.oportunidades.cefet.backend.config;
+package br.oportunidades.cefet.backend.services;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

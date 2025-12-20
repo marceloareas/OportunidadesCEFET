@@ -13,15 +13,27 @@ services:
     volumes:
       - mongo-data:/data/db
 
-backend:
-  build: .
-  container_name: oportunidadescefet-backend
-  ports:
-    - "8080:8080"
-  environment:
-    SPRING_DATA_MONGODB_URI: mongodb://root:secret@mongo:27017/oportunidades_cefet?authSource=admin
-  depends_on:
-    - mongo
+  backend:
+    build: ./backend
+    container_name: oportunidadescefet-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://root:secret@mongo:27017/oportunidades_cefet?authSource=admin
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: oportunidadescefet-frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
 
 volumes:
   mongo-data:

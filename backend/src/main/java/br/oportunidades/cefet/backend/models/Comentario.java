@@ -35,11 +35,14 @@ public class Comentario {
                                     // facilitar busca no Banco
 
     // Comentário 1:1 Post
-    private String idPots; // referencia Post(id)
-
-    private Date dataComentario;
+    private String idPost; // referencia Post(id)
 
     @Builder.Default
-    private Set<String> likesId = new HashSet<>(); // referencia Usuario(id)
-    
+    private Date dataComentario = new Date();
+
+    private String texto;
+
+    @Builder.Default
+    private Set<String> idLikes = new HashSet<>(); // referencia Usuario(id)
+
 }

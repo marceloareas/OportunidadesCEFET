@@ -1,0 +1,104 @@
+.page {
+  display: grid;
+  padding-top: 6.5vh;
+  grid-template-columns: 22.5vw 77.5vw;
+  height: 100vh;
+  background-color: #FAF9F6;
+  overflow-y: hidden;
+}
+
+.content {
+  overflow-y: auto; 
+  scrollbar-width: none;
+}
+
+.profile{
+  background-color: #fff;
+  margin-top: 5vh;
+  height: auto;
+  min-height: 80vh;
+  border-radius: 10px;
+  margin-inline: 2.5vw;
+  border: 1px solid rgba(0,0,0,0.12);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 2vh 2vw;
+}
+
+.profile h2{
+  font-size: 1.6rem;
+  margin-bottom: 1.5vh;
+  color: #0A497E;
+}
+
+form{
+  display: flex;
+  flex-direction: column;
+  gap: 1.25vh;
+  width: 100%;
+}
+
+.input-group{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.input-row{
+  display: flex;
+  gap: 2vw;
+  width: 100%;
+}
+
+label{
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.5vh;
+  color: #313131;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select{
+  height: 4.5vh;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.15);
+  padding: 0 0.8vw;
+  font-size: 0.975rem;
+  box-sizing: border-box;
+}
+
+input::placeholder{
+  color: #999;
+}
+
+.send-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0A497E;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6vh 1.2vw;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform .15s ease, background-color .15s ease;
+}
+
+.send-btn:hover{
+  transform: translateY(-2px);
+  background-color: #083a64;
+}
+
+.form-actions{
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.cancel-link{
+  color: #0A497E;
+  text-decoration: none;
+  align-self: center;
+}
