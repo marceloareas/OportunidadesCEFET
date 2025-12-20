@@ -145,7 +145,11 @@ export class PostComponent {
 
   loadComments() {
     if (!this.post?.id) return;
-    this.comentarioService.listarComentariosPost(this.post.id).subscribe({
+    const req = this.post.ehOportunidade
+      ? this.comentarioService.listarComentariosOportunidade(this.post.id)
+      : this.comentarioService.listarComentariosPost(this.post.id);
+
+    req.subscribe({
       next: (arr) => {
         const uniqueIds = Array.from(new Set(arr.map((c) => c.usuarioId).filter(Boolean)));
 

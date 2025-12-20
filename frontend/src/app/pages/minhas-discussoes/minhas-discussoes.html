@@ -24,82 +24,9 @@
             </article>
           </ng-container>
         </div>
-
-        <section *ngIf="usuarioFuncao === 'professor'">
-          <h3>Minhas oportunidades</h3>
-          <div *ngIf="minhasOportunidades().length === 0">Você não possui oportunidades cadastradas.</div>
-
-          <div *ngFor="let op of minhasOportunidades()" class="oportunidade">
-            <div class="oportunidade-header">
-              <h4>{{ op.nome }}</h4>
-              <div class="oportunidade-actions">
-                <span class="badge" *ngIf="op.finalizada">FINALIZADA</span>
-                <button class="btn-finalizar" [disabled]="op.finalizada" (click)="finalizarOportunidade(op.id)">
-                  {{ op.finalizada ? 'Finalizada' : 'Finalizar' }}
-                </button>
-              </div>
-            </div>
-            <div class="meta">Vagas: {{ op.vagasPreenchidas ?? 0 }}/{{ op.quantidadeDeVagas ?? 0 }}</div>
-            <p>{{ op.descricao }}</p>
-
-            <div class="candidatos">
-              <strong>Candidatos:</strong>
-              <button class="btn-pequeno" (click)="abrirListaCandidatos(op.id)">
-                Ver candidatos ({{ (candidatosPorOportunidade()[op.id || ''] || []).length }})
-              </button>
-            </div>
-          </div>
-        </section>
       </section>
     </div>
   </main>
 
   <app-navbar-right></app-navbar-right>
-</div>
-
-<!-- Modal com lista de candidatos para uma oportunidade -->
-<div class="modal-overlay" *ngIf="mostrandoListaCandidatos()" (click)="fecharListaCandidatos()">
-  <div class="modal-conteudo card-modal" (click)="$event.stopPropagation()">
-    <div class="modal-topo-lista">
-      <div class="cabecalho-esq">
-        <h3>Candidatos</h3>
-        <div class="sub" *ngIf="oportunidadeSelecionadaId()">Oportunidade: {{ oportunidadeSelecionadaId() }}</div>
-      </div>
-      <div class="acoes-topo">
-        <label class="filtro-aprovados">
-          <input type="checkbox" [checked]="somenteAprovados()" (change)="somenteAprovados.set($any($event.target).checked)" />
-          Somente aprovados
-        </label>
-        <button class="btn-fechar" type="button" (click)="fecharListaCandidatos()">Fechar</button>
-      </div>
-    </div>
-
-    <div class="lista-candidatos" *ngIf="oportunidadeSelecionadaId()">
-      <ul>
-        <li class="candidato-card" *ngFor="let c of candidatosFiltrados(oportunidadeSelecionadaId())">
-          <div class="cand-dados">
-            <div class="cand-nome">{{ c.nome || c.id }}</div>
-            <div class="cand-meta">
-              <span *ngIf="c.email">E-mail: {{ c.email }}</span>
-              <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>
-              <span *ngIf="c.funcao"> • {{ c.funcao }}</span>
-            </div>
-          </div>
-          <div class="cand-actions">
-            <span class="badge aprovado" *ngIf="estaAprovado(oportunidadeSelecionadaId(), c.id) || c.aprovado">Aprovado</span>
-            <button
-              class="btn-pequeno btn-aprovar"
-              [disabled]="estaAprovado(oportunidadeSelecionadaId(), c.id) || c.aprovado"
-              (click)="aprovarCandidato(oportunidadeSelecionadaId(), c.id)">
-              Aprovar
-            </button>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <div class="mensagem-vazia" *ngIf="candidatosFiltrados(oportunidadeSelecionadaId()).length === 0">
-      Nenhum candidato encontrado.
-    </div>
-  </div>
 </div>

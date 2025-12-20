@@ -22,6 +22,10 @@ export class ComentarioService {
     return this.http.get<Comentario[]>(`${this.API}/post/${idPost}`);
   }
 
+  listarComentariosOportunidade(idOportunidade: string): Observable<Comentario[]> {
+    return this.http.get<Comentario[]>(`${this.API}/oportunidade/${idOportunidade}`);
+  }
+
   criar(comentario: Comentario): Observable<Comentario> {
     return this.http.post<Comentario>(this.API, comentario);
   }
