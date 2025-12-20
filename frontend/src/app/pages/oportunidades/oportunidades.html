@@ -1,0 +1,110 @@
+<app-navbar-top></app-navbar-top>
+<div class="page">
+  <app-navbar-left></app-navbar-left>
+
+  <main class="content">
+    <div class="scroll-content">
+      <h2 class="titulo-principal">Oportunidades</h2>
+      <div *ngIf="carregando()" class="mensagem-status">Carregando...</div>
+      <div *ngIf="erro()" class="mensagem-erro">{{ erro() }}</div>
+
+      <section *ngIf="usuarioFuncao === 'professor'">
+        <h3>Minhas oportunidades</h3>
+        <div class="mensagem-vazia" *ngIf="!carregando() && minhasOportunidades().length === 0">
+          Você ainda não possui oportunidades criadas.
+        </div>
+        <div class="cards">
+          <article class="card" *ngFor="let op of minhasOportunidades()">
+            <div class="card-head">
+              <div>
+                <h4>{{ op.nome }}</h4>
+                <p class="meta">Vagas: {{ op.vagasPreenchidas ?? 0 }}/{{ op.quantidadeDeVagas ?? 0 }}</p>
+              </div>
+              <span class="badge" [class.finalizada]="op.finalizada">{{ op.finalizada ? 'Finalizada' : 'Aberta' }}</span>
+            </div>
+            <p class="descricao">{{ op.descricao }}</p>
+            <div class="acoes">
+              <button class="btn" (click)="abrirListaCandidatos(op)">Ver candidatos ({{ op.alunosCandidatosId?.length || 0 }})</button>
+              <button class="btn btn-sec" [disabled]="op.finalizada" (click)="finalizar(op)">
+                {{ op.finalizada ? 'Finalizada' : 'Finalizar' }}
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section *ngIf="usuarioFuncao !== 'professor'">
+        <h3>Minhas candidaturas</h3>
+        <div class="mensagem-vazia" *ngIf="!carregando() && candidaturas().length === 0">
+          Você ainda não se candidatou a oportunidades.
+        </div>
+        <div class="cards">
+          <article class="card" *ngFor="let op of candidaturas()">
+            <div class="card-head">
+              <div>
+                <h4>{{ op.nome }}</h4>
+                <p class="meta">Status: {{ statusAluno(op) }}</p>
+              </div>
+              <span class="badge" [class.finalizada]="op.finalizada">{{ op.finalizada ? 'Finalizada' : 'Aberta' }}</span>
+            </div>
+            <p class="descricao">{{ op.descricao }}</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <app-navbar-right></app-navbar-right>
+</div>
+
+<!-- Modal candidatos -->
+<div class="modal-overlay" *ngIf="mostrandoListaCandidatos()" (click)="fecharListaCandidatos()">
+  <div class="modal-conteudo card-modal" (click)="$event.stopPropagation()">
+    <div class="modal-topo-lista">
+      <div class="cabecalho-esq">
+        <h3>Candidatos</h3>
+        <div class="sub">Oportunidade: {{ oportunidadeSelecionadaId() }}</div>
+      </div>
+      <div class="acoes-topo">
+        <label class="filtro-aprovados">
+          <input type="checkbox" [checked]="somenteAprovados()" (change)="somenteAprovados.set($any($event.target).checked)" />
+          Somente aprovados
+        </label>
+        <button class="btn-fechar" type="button" (click)="fecharListaCandidatos()">Fechar</button>
+      </div>
+    </div>
+
+    <div class="lista-candidatos">
+      <div *ngIf="candidatosCarregando()">Carregando...</div>
+      <div *ngIf="candidatosErro()">{{ candidatosErro() }}</div>
+
+      <div class="mensagem-vazia" *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length === 0">
+        Nenhum candidato encontrado.
+      </div>
+
+      <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
+        <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
+          <div class="cand-dados">
+            <div class="candidato-nome">{{ c.nome || c.id }}</div>
+            <div class="cand-meta">
+              <span *ngIf="c.email">E-mail: {{ c.email }}</span>
+              <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>
+              <span *ngIf="c.funcao"> • {{ c.funcao }}</span>
+            </div>
+          </div>
+          <div class="cand-actions">
+            <span class="badge aprovado" *ngIf="estaAprovado(c.id)">Aprovado</span>
+            <button
+              class="btn-aprovar"
+              type="button"
+              [disabled]="aprovando() === c.id || estaAprovado(c.id)"
+              (click)="aprovarCandidato(c)"
+            >
+              {{ aprovando() === c.id ? 'Aprovando...' : 'Aprovar' }}
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

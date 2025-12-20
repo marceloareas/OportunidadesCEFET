@@ -1,0 +1,32 @@
+<app-navbar-top></app-navbar-top>
+<div class="page">
+  <app-navbar-left></app-navbar-left>
+
+  <main class="content">
+    <div class="scroll-content">
+      <section class="oportunidades-container">
+        <h2 class="titulo-principal">Minhas discussões</h2>
+        <hr />
+
+        <div *ngIf="carregando()" class="mensagem-status">Carregando publicações...</div>
+        <div *ngIf="erro()" class="mensagem-erro">{{ erro() }}</div>
+
+        <div *ngIf="!carregando() && minhasPublicacoes().length === 0" class="mensagem-vazia">
+          Você ainda não tem publicações.
+        </div>
+
+        <div *ngIf="!carregando() && minhasPublicacoes().length > 0">
+          <ng-container *ngFor="let p of minhasPublicacoes()">
+            <article class="post-item">
+              <h3>{{ p.titulo }}</h3>
+              <div class="meta">{{ p.criado ? (p.criado | date:'short') : '' }}</div>
+              <p>{{ p.corpo }}</p>
+            </article>
+          </ng-container>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <app-navbar-right></app-navbar-right>
+</div>

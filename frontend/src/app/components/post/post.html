@@ -1,0 +1,140 @@
+<div class="post">
+  <div class="post-header">
+    <img class="avatar" src="pfptemp.ico" alt="Foto de perfil" />
+    <div class="post-info">
+      <h2>
+        <ng-container *ngIf="usuarioLogado()?.id === post.criadorId; else outroUsuario">
+          {{ post.nomeCriador }} é você
+        </ng-container>
+        <ng-template #outroUsuario>
+          {{ post.nomeCriador || 'Usuário Anônimo' }}
+        </ng-template>
+      </h2>
+      <span class="date">{{ dataFormatada }}</span>
+    </div>
+  </div>
+
+  <div class="post-body">
+    <h3 class="post-title">{{ post.titulo }}</h3>
+    <p class="post-text">{{ post.corpo }}</p>
+
+    <img *ngIf="post.imagemBase64" [src]="post.imagemBase64" alt="Imagem do post" class="post-image" />
+
+    <div *ngIf="post.ehOportunidade" class="oportunidade-info">
+      <p>Vagas: {{ post.vagasPreenchidas ?? 0 }}/{{ post.quantidadeDeVagas }}</p>
+      <p class="candidatos">Candidatos: {{ contadorCandidatos() }}</p>
+      <button
+        *ngIf="podeVerCandidatos()"
+        class="btn-candidatos"
+        type="button"
+        (click)="abrirCandidatos()"
+      >
+        Ver candidatos
+      </button>
+    </div>
+  </div>
+
+  <div class="post-footer">
+    <button class="icon-btn like-btn" [class.liked]="curtiu()" (click)="alternarLike()">
+      <i class="bi bi-hand-thumbs-up"></i>
+      <span>{{ contadorLikes() }}</span>
+    </button>
+
+    <button class="icon-btn" (click)="openNewComment()">
+      <i class="bi bi-chat-left-text"></i>
+      <span>{{ post.idComentarios?.length || 0 }}</span>
+    </button>
+
+    <button class="icon-btn">
+      <i class="bi bi-bookmark"></i>
+    </button>
+
+    <button
+      *ngIf="post.ehOportunidade && tipoUsuario() === 'aluno'"
+      class="btn-candidatar"
+      [disabled]="jaCandidatado() || post.finalizada"
+      (click)="candidatar()"
+    >
+      {{ post.finalizada ? 'Finalizada' : (jaCandidatado() ? 'CANDIDATADO ✔' : 'CANDIDATAR-SE') }}
+    </button>
+  </div>
+</div>
+
+<!-- Modal de comentários -->
+<div class="modal-overlay" *ngIf="newCommentModal()" (click)="closeNewComment()">
+  <div class="modal-conteudo card-modal" (click)="$event.stopPropagation()">
+    <div class="modal-topo-lista">
+      <h3>Comentários</h3>
+      <button class="btn-fechar" type="button" (click)="closeNewComment()">Fechar</button>
+    </div>
+    <div class="modal-topo">
+      <textarea
+        placeholder="Escreva seu comentário..."
+        [(ngModel)]="novoComentario"></textarea>
+
+      <button (click)="enviarComentario()">
+        Enviar
+      </button>
+    </div>
+
+    <div class="modal-comentarios">
+      <div class="comentario-card" *ngFor="let c of comentarios">
+        <div class="comentario-autor">{{ c.autor }}</div>
+        <div class="comentario-texto">{{ c.texto }}</div>
+      </div>
+      <div class="mensagem-vazia" *ngIf="comentarios.length === 0">Nenhum comentário ainda.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de candidatos (somente dono da oportunidade) -->
+<div class="modal-overlay" *ngIf="candidatosModal()" (click)="fecharCandidatos()">
+  <div class="modal-conteudo modal-candidatos card-modal" (click)="$event.stopPropagation()">
+    <div class="modal-topo-lista">
+      <div class="cabecalho-esq">
+        <h3>Candidatos</h3>
+        <div class="sub">Oportunidade: {{ post.id }}</div>
+      </div>
+      <div class="acoes-topo">
+        <label class="filtro-aprovados">
+          <input type="checkbox" [checked]="somenteAprovados()" (change)="somenteAprovados.set($any($event.target).checked)" />
+          Somente aprovados
+        </label>
+        <button class="btn-fechar" type="button" (click)="fecharCandidatos()">Fechar</button>
+      </div>
+    </div>
+
+    <div class="lista-candidatos">
+      <div *ngIf="candidatosCarregando()">Carregando...</div>
+      <div *ngIf="candidatosErro()">{{ candidatosErro() }}</div>
+
+      <div *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length === 0" class="mensagem-vazia">
+        Nenhum candidato encontrado.
+      </div>
+
+      <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
+        <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
+          <div class="cand-dados">
+            <div class="candidato-nome">{{ c.nome || c.id }}</div>
+            <div class="cand-meta">
+              <span *ngIf="c.email">E-mail: {{ c.email }}</span>
+              <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>
+              <span *ngIf="c.funcao"> • {{ c.funcao }}</span>
+            </div>
+          </div>
+          <div class="cand-actions">
+            <span class="aprovado-chip" *ngIf="candidatoAprovado(c.id)">Aprovado</span>
+            <button
+              class="btn-aprovar"
+              type="button"
+              [disabled]="aprovando() === c.id || vagasRestantes() <= 0 || post.finalizada || candidatoAprovado(c.id)"
+              (click)="aprovarCandidato(c)"
+            >
+              {{ aprovando() === c.id ? 'Aprovando...' : 'Aprovar' }}
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

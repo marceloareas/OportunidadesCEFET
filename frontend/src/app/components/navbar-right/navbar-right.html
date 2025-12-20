@@ -1,0 +1,30 @@
+<aside class="sidebar-right">
+  <div class="menu-direita">
+    <div class="background">
+      <img src="posttemp.png" alt="background">
+    </div>
+
+    <div class="pfp">
+      <img src="pfptemp.ico" alt="foto de perfil">
+    </div>
+
+    <div class="edit-profile">
+      <span (click)="editarPf()"><i class="bi bi-pencil-square"></i> Editar perfil</span>
+    </div>
+
+    <div class="profile">
+      <!-- Nome e função do usuário -->
+      <h2>{{ usuarioNome }}</h2>
+      <p class="desc">{{ usuarioFuncao }} {{ usuarioMatricula }}</p>
+
+      <div class="item-list">
+        <a (click)="editarPf()"><i class="bi bi-envelope"></i> Convites</a>
+        <a href="#"><i class="bi bi-bookmark"></i> Itens Salvos</a>
+        <a href="#"><i class="bi bi-gear"></i> Configurações</a>
+        <a (click)="logout()" class="logout">
+          <i class="bi bi-door-open"></i> Sair
+        </a>
+      </div>
+    </div>
+  </div>
+</aside>

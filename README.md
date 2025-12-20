@@ -1,4 +1,4 @@
-# 🌟 OportunidadesCEFET
+#cd 🌟 OportunidadesCEFET
 Uma plataforma web para conectar alunos e professores do CEFET a projetos de pesquisa, extensão, monitoria e iniciação científica.
 O sistema facilita a divulgação de oportunidades acadêmicas, além de permitir maior interação entre alunos e docentes.
 
