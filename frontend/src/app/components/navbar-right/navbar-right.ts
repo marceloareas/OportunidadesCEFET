@@ -30,8 +30,12 @@ export class NavbarRight implements OnInit {
     }
   }
 
-  editarPf(): void {
-    this.router.navigate(['/editar_perfil']);
+  goHome(): void {
+    this.router.navigate(['/home']);
+  }
+
+  goConfig(): void {
+    this.router.navigate(['/config']);
   }
 
   // 🔹 Função de logout
