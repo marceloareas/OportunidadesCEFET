@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
 
 @Component({
@@ -22,7 +23,11 @@ export class Login {
   selecionada = signal<string>(''); // "Aluno" ou "Professor"
   opcoes = ['Aluno', 'Professor'];
 
-  constructor(private router: Router, private usuarioService: UsuarioService) {}
+  constructor(
+    private router: Router,
+    private usuarioService: UsuarioService,
+    private authService: AuthService
+  ) {}
 
   toggleForm(): void {
     this.isRegistering.set(!this.isRegistering());
@@ -38,40 +43,31 @@ export class Login {
       return;
     }
 
-    this.usuarioService.listar().subscribe({
-      next: (usuarios) => {
-        const user = usuarios.find(
-          (u) => u.email === this.email() && u.senha === this.senha()
-        );
+    this.authService.login({ email: this.email(), senha: this.senha() }).subscribe({
+      next: (authResponse) => {
+        const usuarioNormalizado = {
+          id: authResponse.usuario.id?.toString(),
+          nome: authResponse.usuario.nome,
+          email: authResponse.usuario.email,
+          funcao: authResponse.usuario.funcao,
+          matricula: authResponse.usuario.matricula,
+        };
 
-        if (user) {
-          console.log('✅ Usuário autenticado:', user);
-          alert(`Bem-vindo, ${user.nome}!`);
+        localStorage.setItem('isLogged', 'true');
+        localStorage.setItem('token', authResponse.token);
+        localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
 
-          const usuarioNormalizado = {
-            id: user.id?.toString(),
-            nome: user.nome,
-            email: user.email,
-            funcao: user.funcao,
-            matricula: user.matricula,
-          };
+        const tipo =
+          authResponse.usuario.funcao?.toLowerCase() === 'professor' ? 'professor' : 'aluno';
+        localStorage.setItem('tipoUsuario', tipo);
 
-          localStorage.setItem('isLogged', 'true');
-          localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
-
-          const tipo =
-            user.funcao?.toLowerCase() === 'professor' ? 'professor' : 'aluno';
-          localStorage.setItem('tipoUsuario', tipo);
-
-          console.log('Usuário logado:', usuarioNormalizado.nome, '| Tipo:', tipo);
-          this.router.navigate(['/home']);
-        } else {
-          alert('Usuário não encontrado ou senha incorreta.');
-        }
+        alert(`Bem-vindo, ${authResponse.usuario.nome}!`);
+        console.log('Usuário logado:', usuarioNormalizado.nome, '| Tipo:', tipo);
+        this.router.navigate(['/home']);
       },
       error: (err) => {
-        console.error('Erro ao buscar usuários:', err);
-        alert('Erro ao conectar ao servidor.');
+        console.error('Erro ao autenticar usuário:', err);
+        alert('Usuário não encontrado ou senha incorreta.');
       },
     });
   }

@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController()
 @RequestMapping("/users")
-@CrossOrigin(origins = "http://localhost:4200")
 public class UsuarioController {
 
     @Autowired
@@ -35,16 +34,24 @@ public class UsuarioController {
 
     // Criar novo
     @PostMapping
-    public Usuario createUsuario(@RequestBody Usuario usuario) {
-        return usuarioService.createUsuario(usuario);
+    public ResponseEntity<Usuario> createUsuario(@RequestBody Usuario usuario) {
+        try {
+            return ResponseEntity.ok(usuarioService.createUsuario(usuario));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(409).build();
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> updateUsuario(@PathVariable String id, @RequestBody Usuario usuario){
         Usuario existingUsuario = usuarioService.getUsuarioById(id);
         if (existingUsuario != null) {
-            Usuario updatedUsuario = usuarioService.updateUsuario(id, usuario);
-            return ResponseEntity.ok(updatedUsuario);
+            try {
+                Usuario updatedUsuario = usuarioService.updateUsuario(id, usuario);
+                return ResponseEntity.ok(updatedUsuario);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(409).build();
+            }
         } else {
             return ResponseEntity.notFound().build();
         }

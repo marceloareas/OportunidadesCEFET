@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/app-env';
 
 export interface Post {
   id?: string;
@@ -25,7 +26,7 @@ export interface Post {
   providedIn: 'root'
 })
 export class PostService {
-  private apiUrl = 'http://localhost:8080/posts';
+  private apiUrl = `${API_BASE_URL}/posts`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/app-env';
 import { Usuario } from './usuario.service';
 
 export interface Oportunidade {
@@ -24,7 +25,7 @@ export interface Oportunidade {
   providedIn: 'root'
 })
 export class OportunidadeService {
-  private apiUrl = 'http://localhost:8080/oportunidades';
+  private apiUrl = `${API_BASE_URL}/oportunidades`;
 
   constructor(private http: HttpClient) {}
 
