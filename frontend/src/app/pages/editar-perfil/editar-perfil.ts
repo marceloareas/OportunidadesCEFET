@@ -94,4 +94,8 @@ export class EditarPerfil {
       },
     });
   }
+
+  onCancel() {
+    this.router.navigate(['/home']);
+  }
 }

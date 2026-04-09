@@ -9,7 +9,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/oportunidades")
-@CrossOrigin(origins = "*")
 public class OportunidadeController {
 
     @Autowired
