@@ -24,6 +24,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    color: white;
+    font-size: large;
+    font-family: "Comic Sans MS";
+    font-weight: bold;
 
     .search{
         width: 80%;
