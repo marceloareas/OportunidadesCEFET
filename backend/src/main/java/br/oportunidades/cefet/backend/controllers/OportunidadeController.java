@@ -3,6 +3,7 @@ package br.oportunidades.cefet.backend.controllers;
 import br.oportunidades.cefet.backend.models.Oportunidade;
 import br.oportunidades.cefet.backend.services.OportunidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
@@ -15,8 +16,11 @@ public class OportunidadeController {
     private OportunidadeService oportunidadeService;
 
     @GetMapping
-    public List<Oportunidade> listar() {
-        return oportunidadeService.listarTodos();
+    public ResponseEntity<Page<Oportunidade>> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(oportunidadeService.listarTodos(page, size));
     }
 
     @GetMapping("/{id}")

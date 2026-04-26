@@ -7,6 +7,7 @@ import { OportunidadeService } from '../../services/oportunidade.service';
 import { PostService } from '../../services/post.services';
 import { ComentarioService } from '../../services/comentario.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { FeedItem } from '../../services/feed.service';
 
 @Component({
   selector: 'app-post',
@@ -16,23 +17,7 @@ import { UsuarioService, Usuario } from '../../services/usuario.service';
   styleUrl: './post.css'
 })
 export class PostComponent {
-  @Input() post!: {
-    id?: string;
-    titulo: string;
-    corpo: string;
-    criadorId?: string;
-    nomeCriador?: string;
-    criado?: string | Date;
-    idLikes?: string[];
-    idComentarios?: any[];
-    imagemBase64?: string;
-    finalizada?: boolean;
-    vagasPreenchidas?: number;
-    quantidadeDeVagas?: number;
-    ehOportunidade?: boolean;
-    alunosCandidatosId?: string[];
-    alunosAprovadosId?: string[];
-  };
+  @Input() post!: FeedItem;
 
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
   usuarioLogado = signal<{ id: string; nome: string; funcao: string } | null>(null);
@@ -79,6 +64,11 @@ export class PostComponent {
     this.contadorCandidatos.set(this.post.alunosCandidatosId?.length ?? 0);
     this.contadorLikes.set(this.post.idLikes?.length ?? 0);
 
+    if (!this.post.idLikes) this.post.idLikes = [];
+    if (!this.post.idComentarios) this.post.idComentarios = [];
+    if (!this.post.alunosCandidatosId) this.post.alunosCandidatosId = [];
+    if (!this.post.alunosAprovadosId) this.post.alunosAprovadosId = [];
+
     const usuario = this.usuarioLogado();
     if (usuario) {
       if (this.post.idLikes?.includes(usuario.id)) this.curtiu.set(true);
@@ -117,7 +107,7 @@ export class PostComponent {
     const payload = {
       usuarioId: usuario.id,
       tipoEntidadePai: this.post.ehOportunidade ? 'Oportunidade' : 'Post',
-      idPost: this.post.id,
+      idPost: this.post.referenciaId || this.post.id,
       texto: this.novoComentario,
       idComentarioPai: null
     } as any;
@@ -144,10 +134,12 @@ export class PostComponent {
   }
 
   loadComments() {
-    if (!this.post?.id) return;
+    const referenciaId = this.post.referenciaId || this.post.id;
+    if (!referenciaId) return;
+
     const req = this.post.ehOportunidade
-      ? this.comentarioService.listarComentariosOportunidade(this.post.id)
-      : this.comentarioService.listarComentariosPost(this.post.id);
+      ? this.comentarioService.listarComentariosOportunidade(referenciaId)
+      : this.comentarioService.listarComentariosPost(referenciaId);
 
     req.subscribe({
       next: (arr) => {
@@ -160,7 +152,10 @@ export class PostComponent {
             data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
             id: c.id
           }));
-          try { this.post.idComentarios = arr.map((c) => c.id); } catch {}
+          try { this.post.idComentarios = arr
+            .map((c) => c.id)
+            .filter((id): id is string => Boolean(id)); } 
+          catch {}
           return;
         }
 
@@ -179,7 +174,10 @@ export class PostComponent {
               data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
               id: c.id
             }));
-            try { this.post.idComentarios = arr.map((c) => c.id); } catch {}
+            try { this.post.idComentarios = arr
+              .map((c) => c.id)
+              .filter((id): id is string => Boolean(id)); 
+            } catch {}
           },
           error: (err) => {
             console.warn('Erro ao buscar usuarios dos comentarios:', err);
@@ -189,7 +187,10 @@ export class PostComponent {
               data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
               id: c.id
             }));
-            try { this.post.idComentarios = arr.map((c) => c.id); } catch {}
+            try { this.post.idComentarios = arr
+              .map((c) => c.id)
+              .filter((id): id is string => Boolean(id));
+            } catch {}
           }
         });
       },
@@ -215,9 +216,12 @@ export class PostComponent {
       this.post.idLikes.push(usuario.id);
     }
 
+    const referenciaId = this.post.referenciaId || this.post.id;
+    if (!referenciaId) return;
+
     const req = this.post.ehOportunidade
-      ? this.oportunidadeService.curtirOportunidade(this.post.id, usuario.id)
-      : this.postService.atualizarLike(this.post.id, usuario.id);
+      ? this.oportunidadeService.curtirOportunidade(referenciaId, usuario.id)
+      : this.postService.atualizarLike(referenciaId, usuario.id);
 
     req.subscribe({
       error: (err) => console.warn('Erro ao curtir:', err)
@@ -231,7 +235,10 @@ export class PostComponent {
       return;
     }
 
-    this.oportunidadeService.candidatarAluno(this.post.id, usuario.id).subscribe({
+    const referenciaId = this.post.referenciaId || this.post.id;
+    if (!referenciaId) return;
+
+    this.oportunidadeService.candidatarAluno(referenciaId, usuario.id).subscribe({
       next: () => {
         alert('Candidatura realizada com sucesso!');
         this.jaCandidatado.set(true);
@@ -265,8 +272,10 @@ export class PostComponent {
     this.candidatosCarregando.set(true);
     this.candidatosErro.set('');
 
-    this.oportunidadeService
-      .listarCandidatosDoProfessor(this.post.id, usuario.id)
+    const referenciaId = this.post.referenciaId || this.post.id;
+    if (!referenciaId) return;
+
+    this.oportunidadeService.listarCandidatosDoProfessor(referenciaId, usuario.id)
       .subscribe({
         next: (lista) => {
           this.candidatos.set(lista || []);
@@ -306,7 +315,7 @@ export class PostComponent {
 
   aprovarCandidato(candidato: Usuario) {
     const usuario = this.usuarioLogado();
-    const postId = this.post.id;
+    const postId = this.post.referenciaId || this.post.id;
     const candidatoId = candidato.id;
     if (!usuario || !postId || !candidatoId) return;
     if (this.vagasRestantes() <= 0) {
