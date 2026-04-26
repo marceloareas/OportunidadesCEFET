@@ -1,29 +1,58 @@
 package br.oportunidades.cefet.backend.services;
 
 import br.oportunidades.cefet.backend.models.Post;
+import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.repositories.PostRepository;
+import br.oportunidades.cefet.backend.repositories.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 @Service
-public class PostService{
+public class PostService {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private FeedService feedService;
 
     public PostService(PostRepository postRepository) {
         this.postRepository = postRepository;
     }
 
-    public List<Post> listarTodos() { return postRepository.findAll(); }
-    public Optional<Post> buscarPorId(String id) { return postRepository.findById(id); }
-    public Post salvar(Post post) { return postRepository.save(post); }
-    public void deletar(String id) { postRepository.deleteById(id); }
+    public Page<Post> listarTodos(int page, int size) {
+        return postRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
+    }
+
+    public Optional<Post> buscarPorId(String id) {
+        return postRepository.findById(id);
+    }
+
+    public Post salvar(Post post) {
+        Post salvo = postRepository.save(post);
+
+        String nomeCriador = usuarioRepository.findById(salvo.getCriadorId())
+                .map(Usuario::getNome)
+                .orElse("Usuário Anônimo");
+
+        feedService.criarFeedPost(salvo, nomeCriador);
+
+        return salvo;
+    }
+
+    public void deletar(String id) {
+        postRepository.deleteById(id);
+        feedService.deletarFeedItem(id);
+    }
 
     public String alternarLike(String idPost, String idUsuario) {
         Optional<Post> opt = postRepository.findById(idPost);
@@ -31,23 +60,42 @@ public class PostService{
 
         Post post = opt.get();
         List<String> likes = post.getIdLikes();
-        
+
         if (likes == null) likes = new ArrayList<>();
 
         if (likes.contains(idUsuario)) {
             likes.remove(idUsuario);
             post.setIdLikes(likes);
-            postRepository.save(post);
+
+            Post salvo = postRepository.save(post);
+
+            String nomeCriador = usuarioRepository.findById(salvo.getCriadorId())
+                    .map(Usuario::getNome)
+                    .orElse("Usuário Anônimo");
+
+            feedService.atualizarFeedPost(salvo, nomeCriador);
+
             return "Like removido.";
         } else {
             likes.add(idUsuario);
             post.setIdLikes(likes);
-            postRepository.save(post);
+
+            Post salvo = postRepository.save(post);
+
+            String nomeCriador = usuarioRepository.findById(salvo.getCriadorId())
+                    .map(Usuario::getNome)
+                    .orElse("Usuário Anônimo");
+
+            feedService.atualizarFeedPost(salvo, nomeCriador);
+
             return "Like adicionado.";
         }
     }
 
-    public List<Post> listarPorUsuario(String criadorId) {
-        return postRepository.findAllByCriadorIdOrderByCriadoDesc(criadorId);
+    public Page<Post> listarPorUsuario(String criadorId, int page, int size) {
+        return postRepository.findAllByCriadorIdOrderByCriadoDesc(
+                criadorId,
+                PageRequest.of(page, size)
+        );
     }
 }

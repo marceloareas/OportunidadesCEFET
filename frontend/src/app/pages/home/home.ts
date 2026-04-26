@@ -11,6 +11,7 @@ import { PostComponent } from '../../components/post/post';
 import { PostService, Post } from '../../services/post.services';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { FeedItem, FeedService } from '../../services/feed.service';
 
 @Component({
   selector: 'app-home',
@@ -29,20 +30,13 @@ export class Home {
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
   usuarioLogado = signal<{ id: string; nome: string; funcao: string } | null>(null);
 
-  posts = signal<Post[]>([]);
-  oportunidades = signal<Oportunidade[]>([]);
-  nomesUsuarios = new Map<string, string>();
+  feedItens = signal<FeedItem[]>([]);
+  page = signal<number>(0);
+  size = 10;
+  hasMore = signal<boolean>(true);
 
   carregando = signal<boolean>(false);
   erro = signal<string>('');
-
-  feedItens = computed<Post[]>(() => {
-    const posts = this.posts();
-    const oportunidadesMapeadas = this.oportunidades().map((op) => this.mapOportunidadeParaPost(op));
-    return [...posts, ...oportunidadesMapeadas].sort(
-      (a, b) => this.obterTimestamp(b.criado) - this.obterTimestamp(a.criado)
-    );
-  });
 
   titulo = signal<string>('');
   corpo = signal<string>('');
@@ -55,9 +49,13 @@ export class Home {
   constructor(
     private postService: PostService,
     private oportunidadeService: OportunidadeService,
-    private usuarioService: UsuarioService,
+    private feedService: FeedService,
     private router: Router
   ) {}
+
+  trackByFeedId(index: number, item: FeedItem): string {
+    return item.id!;
+  }
 
   ngOnInit() {
     const isLogged = localStorage.getItem('isLogged') === 'true';
@@ -83,72 +81,36 @@ export class Home {
     this.carregarFeed();
   }
 
-  private mapOportunidadeParaPost(op: Oportunidade): Post {
-  const descricao = op.descricao?.trim();
-  const corpoFormatado = descricao || '';
+  private carregarFeed(reset = true) {
+    if (reset) {
+      this.page.set(0);
+      this.feedItens.set([]);
+      this.hasMore.set(true);
+    }
 
-  return {
-    id: op.id,
-    titulo: op.nome,
-    corpo: corpoFormatado,
-    criadorId: op.professorId,
-    criado: op.criado ? new Date(op.criado) : undefined,
-    idComentarios: [],
-    imagemBase64: op.imagemBase64,
-    nomeCriador: this.nomesUsuarios.get(op.professorId || '') || 'Professor',
-    ehOportunidade: true,
-      finalizada: op.finalizada ?? false,
-    vagasPreenchidas: op.vagasPreenchidas ?? 0,
-    quantidadeDeVagas: op.quantidadeDeVagas ?? 0,
-    alunosCandidatosId: op.alunosCandidatosId ?? [],
-    alunosAprovadosId: op.alunosAprovadosId ?? [],
-    idLikes: op.idLikes ? [...op.idLikes] : []
-  };
-}
-
-
-  private obterTimestamp(criado?: string | Date): number {
-    if (!criado) return 0;
-    if (criado instanceof Date) return criado.getTime();
-    const data = new Date(criado);
-    return Number.isNaN(data.getTime()) ? 0 : data.getTime();
-  }
-
-  private carregarFeed() {
     this.carregando.set(true);
     this.erro.set('');
-    forkJoin({
-      posts: this.postService.getPosts(),
-      oportunidades: this.oportunidadeService.listar(),
-      usuarios: this.usuarioService.listar()
-    }).subscribe({
-      next: ({ posts, oportunidades, usuarios }) => {
-        this.popularCacheUsuarios(usuarios);
 
-        const postsComNome = (posts ?? []).map((p) => ({
-          ...p,
-          nomeCriador: this.nomesUsuarios.get(p.criadorId || '') || 'Usuário Anônimo',
-          ehOportunidade: false as any,
-          idLikes: p.idLikes ?? []
-        }));
+    this.feedService.listar(this.page(), this.size).subscribe({
+      next: (res) => {
+        this.feedItens.update(lista => [...lista, ...res.content]);
 
-        this.posts.set(postsComNome);
-        this.oportunidades.set(oportunidades ?? []);
+        this.hasMore.set(this.page() + 1 < res.totalPages);
+        this.page.set(this.page() + 1);
+
         this.carregando.set(false);
       },
       error: (err) => {
-        console.error('Erro ao carregar conteúdo:', err);
+        console.error('Erro ao carregar feed:', err);
         this.erro.set('Erro ao carregar publicações.');
         this.carregando.set(false);
       }
     });
   }
 
-  private popularCacheUsuarios(usuarios: Usuario[]) {
-    this.nomesUsuarios.clear();
-    for (const u of usuarios) {
-      if ((u as any).id) this.nomesUsuarios.set((u as any).id, u.nome);
-    }
+  carregarMais() {
+    if (this.carregando() || !this.hasMore()) return;
+    this.carregarFeed(false);
   }
 
   openNewPost() {
@@ -267,7 +229,7 @@ export class Home {
 
     this.postService.createPost(novoPost).subscribe({
       next: (p) => {
-        this.posts.update(lista => [p, ...lista]);
+        this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
       },
@@ -318,7 +280,7 @@ export class Home {
             Number((oportunidade as any).vagasPreenchidas) || 0
         } as Oportunidade;
 
-        this.oportunidades.update(lista => [opComVagas, ...lista]);
+        this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
       },

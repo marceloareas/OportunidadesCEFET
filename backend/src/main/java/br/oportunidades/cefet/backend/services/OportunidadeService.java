@@ -6,6 +6,8 @@ import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
 import br.oportunidades.cefet.backend.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,8 +25,11 @@ public class OportunidadeService {
     @Autowired
     private OportunidadeRepository oportunidadeRepository;
 
-    public List<Oportunidade> listarTodos() {
-        return oportunidadeRepository.findAll();
+    @Autowired
+    private FeedService feedService;
+
+    public Page<Oportunidade> listarTodos(int page, int size) {
+        return oportunidadeRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
     }
 
     public Optional<Oportunidade> buscarPorId(String id) {
@@ -68,7 +73,15 @@ public class OportunidadeService {
             oportunidade.setQuantidadeDeVagas(0);
         }
 
-        return oportunidadeRepository.save(oportunidade);
+        Oportunidade salva = oportunidadeRepository.save(oportunidade);
+
+        String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
+                .map(Usuario::getNome)
+                .orElse("Professor");
+
+        feedService.criarFeedOportunidade(salva, nomeCriador);
+
+        return salva;
     }
 
     public Optional<Oportunidade> atualizar(String id, Oportunidade atualizada) {
@@ -89,12 +102,21 @@ public class OportunidadeService {
                 existente.setIdLikes(new ArrayList<>());
             }
 
-            return oportunidadeRepository.save(existente);
+            Oportunidade salva = oportunidadeRepository.save(existente);
+
+            String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
+                    .map(Usuario::getNome)
+                    .orElse("Professor");
+
+            feedService.atualizarFeedOportunidade(salva, nomeCriador);
+
+            return salva;
         });
     }
 
     public void deletar(String id) {
         oportunidadeRepository.deleteById(id);
+        feedService.deletarFeedItem(id);
     }
 
     public Optional<Oportunidade> candidatar(String idOportunidade, String idAluno) {
@@ -113,7 +135,13 @@ public class OportunidadeService {
         if (!candidatos.contains(idAluno)) {
             candidatos.add(idAluno);
             oportunidade.setAlunosCandidatosId(candidatos);
-            oportunidadeRepository.save(oportunidade);
+            Oportunidade salva = oportunidadeRepository.save(oportunidade);
+
+            String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
+                    .map(Usuario::getNome)
+                    .orElse("Professor");
+
+            feedService.atualizarFeedOportunidade(salva, nomeCriador);
         }
 
         return Optional.of(oportunidade);
@@ -133,12 +161,27 @@ public class OportunidadeService {
         if (likes.contains(idUsuario)) {
             likes.remove(idUsuario);
             oportunidade.setIdLikes(likes);
-            oportunidadeRepository.save(oportunidade);
+            Oportunidade salva = oportunidadeRepository.save(oportunidade);
+
+            String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
+                    .map(Usuario::getNome)
+                    .orElse("Professor");
+
+            feedService.atualizarFeedOportunidade(salva, nomeCriador);
+
             return "Like removido.";
         } else {
             likes.add(idUsuario);
             oportunidade.setIdLikes(likes);
             oportunidadeRepository.save(oportunidade);
+            Oportunidade salva = oportunidadeRepository.save(oportunidade);
+
+            String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
+                    .map(Usuario::getNome)
+                    .orElse("Professor");
+
+            feedService.atualizarFeedOportunidade(salva, nomeCriador);
+
             return "Like adicionado.";
         }
     }
@@ -219,8 +262,15 @@ public class OportunidadeService {
             oportunidade.setFinalizada(true);
         }
 
-        oportunidadeRepository.save(oportunidade);
-        return Optional.of(oportunidade);
+        Oportunidade salva = oportunidadeRepository.save(oportunidade);
+
+        String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
+                .map(Usuario::getNome)
+                .orElse("Professor");
+
+        feedService.atualizarFeedOportunidade(salva, nomeCriador);
+
+        return Optional.of(salva);
     }
 
     public Optional<Oportunidade> finalizar(String idOportunidade) {
@@ -234,8 +284,14 @@ public class OportunidadeService {
         }
 
         oportunidade.setFinalizada(true);
-        oportunidadeRepository.save(oportunidade);
+        Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-        return Optional.of(oportunidade);
+        String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
+                .map(Usuario::getNome)
+                .orElse("Professor");
+
+        feedService.atualizarFeedOportunidade(salva, nomeCriador);
+
+        return Optional.of(salva);
     }
 }

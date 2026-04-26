@@ -28,18 +28,48 @@
             {{ erro() }}
           </div>
 
-          <!-- Lista de oportunidades -->
-          <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
-            <ng-container *ngFor="let p of feedItens(); let last = last">
-              <app-post [post]="p"></app-post>
-              <!--<hr *ngIf="!last" /> -->
-            </ng-container>
-          </div>
+          <!-- Lista de feed -->
+          <div *ngIf="feedItens().length > 0; else semItens">
 
+            <ng-container *ngFor="let p of feedItens(); trackBy: trackByFeedId">
+              <app-post [post]="p"></app-post>
+            </ng-container>
+
+            <!-- Footer do feed -->
+            <div class="feed-footer">
+
+              <!-- LOADING -->
+              <div *ngIf="carregando()" class="feed-state loading">
+                <div class="loader"></div>
+                <span>Carregando novas publicações...</span>
+              </div>
+
+              <!-- CARREGAR MAIS -->
+              <button
+                *ngIf="!carregando() && hasMore()"
+                class="feed-load-btn"
+                (click)="carregarMais()"
+              >
+                <span>Carregar mais</span>
+                <i class="bi bi-arrow-down"></i>
+              </button>
+
+              <!-- FIM -->
+              <div *ngIf="!carregando() && !hasMore()" class="feed-state end">
+                <div>
+                  <strong>Fim do feed</strong>
+                  <p>Você viu tudo por enquanto</p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+          <!-- EMPTY STATE FORA DO NGIF -->
           <ng-template #semItens>
-            <p class="mensagem-vazia">
+            <div class="mensagem-vazia">
               Nenhum post ou oportunidade encontrado.
-            </p>
+            </div>
           </ng-template>
         </section>
       </div>
