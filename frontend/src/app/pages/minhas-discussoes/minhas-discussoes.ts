@@ -37,9 +37,8 @@ export class MinhasDiscussoes {
     this.erro.set('');
 
     this.postService.getPosts().subscribe({
-      next: (posts) => {
-        const meus = (posts || []).filter(p => p.criadorId === this.usuarioId);
-        this.minhasPublicacoes.set(meus.map(p => ({ ...p })));
+      next: (page) => {
+        this.minhasPublicacoes.set(page.content || []);
         this.carregando.set(false);
       },
       error: (err) => {

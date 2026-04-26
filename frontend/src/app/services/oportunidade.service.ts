@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/app-env';
 import { Usuario } from './usuario.service';
+import { Page } from './post.services';
 
 export interface Oportunidade {
   id?: string;
@@ -29,8 +30,10 @@ export class OportunidadeService {
 
   constructor(private http: HttpClient) {}
 
-  listar(): Observable<Oportunidade[]> {
-    return this.http.get<Oportunidade[]>(this.apiUrl);
+  listar(page = 0, size = 20): Observable<Page<Oportunidade>> {
+    return this.http.get<Page<Oportunidade>>(
+      `${this.apiUrl}?page=${page}&size=${size}`
+    );
   }
 
   criar(oportunidade: Oportunidade): Observable<Oportunidade> {

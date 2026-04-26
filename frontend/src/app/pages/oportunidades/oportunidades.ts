@@ -56,8 +56,8 @@ export class OportunidadesPage {
     this.erro.set('');
 
     this.oportunidadeService.listar().subscribe({
-      next: (ops) => {
-        const lista = ops || [];
+      next: (page) => {
+        const lista = page.content || [];
         if (this.usuarioFuncao === 'professor') {
           this.minhasOportunidades.set(lista.filter(o => o.professorId === this.usuarioId));
         } else {
