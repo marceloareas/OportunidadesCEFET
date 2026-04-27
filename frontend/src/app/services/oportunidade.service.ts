@@ -36,6 +36,24 @@ export class OportunidadeService {
     );
   }
 
+  listarPorProfessor(professorId: string, page = 0, size = 20): Observable<Page<Oportunidade>> {
+    return this.http.get<Page<Oportunidade>>(
+      `${this.apiUrl}/professor/${professorId}?page=${page}&size=${size}`
+    );
+  }
+
+  listarPorAluno(alunoId: string, page = 0, size = 20): Observable<Page<Oportunidade>> {
+    return this.http.get<Page<Oportunidade>>(
+      `${this.apiUrl}/aluno/${alunoId}?page=${page}&size=${size}`
+    );
+  }
+
+  listarCandidatos(idOportunidade: string, page = 0, size = 10) {
+    return this.http.get<Page<Usuario>>(
+      `${this.apiUrl}/${idOportunidade}/candidatos?page=${page}&size=${size}`
+    );
+  }
+
   criar(oportunidade: Oportunidade): Observable<Oportunidade> {
     return this.http.post<Oportunidade>(this.apiUrl, oportunidade);
   }

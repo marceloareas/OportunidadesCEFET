@@ -30,6 +30,22 @@
               </button>
             </div>
           </article>
+          <div class="paginacao"
+              *ngIf="!carregando() && totalPaginas() > 1">
+            <button (click)="paginaAnteriorOportunidades()" [disabled]="paginaAtual() === 0">
+              Anterior
+            </button>
+
+            <span>
+              Página {{ paginaAtual() + 1 }} de {{ totalPaginas() }}
+            </span>
+
+            <button
+              (click)="proximaPaginaOportunidades()"
+              [disabled]="paginaAtual() >= totalPaginas() - 1">
+              Próxima
+            </button>
+          </div>
         </div>
       </section>
 
@@ -105,6 +121,26 @@
           </div>
         </li>
       </ul>
+      <div class="paginacao"
+     *ngIf="!candidatosCarregando() 
+            && !candidatosErro() 
+            && totalPaginasCandidatos() > 1">
+        <button
+          (click)="paginaAnteriorCandidatos()"
+          [disabled]="paginaAtualCandidatos() === 0">
+          Anterior
+        </button>
+
+        <span>
+          Página {{ paginaAtualCandidatos() + 1 }} de {{ totalPaginasCandidatos() }}
+        </span>
+
+        <button
+          (click)="proximaPaginaCandidatos()"
+          [disabled]="paginaAtualCandidatos() >= totalPaginasCandidatos() - 1">
+          Próxima
+        </button>
+      </div>
     </div>
   </div>
 </div>

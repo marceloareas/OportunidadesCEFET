@@ -10,4 +10,9 @@ import org.springframework.stereotype.Repository;
 public interface OportunidadeRepository extends MongoRepository<Oportunidade, String> {
 
     Page<Oportunidade> findAllByOrderByCriadoDesc(Pageable pageable);
+
+    Page<Oportunidade> findByProfessorIdOrderByCriadoDesc(
+            String professorId,
+            Pageable pageable
+    );
 }

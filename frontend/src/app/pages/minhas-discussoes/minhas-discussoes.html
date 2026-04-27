@@ -23,6 +23,26 @@
               <p>{{ p.corpo }}</p>
             </article>
           </ng-container>
+
+          <div class="paginacao"
+          *ngIf="!carregando()
+                  && !erro()
+                  && minhasPublicacoes().length > 0
+                  && totalPaginas() > 1">
+            <button (click)="paginaAnterior()" [disabled]="paginaAtual() === 0">
+              Anterior
+            </button>
+
+            <span>
+              Página {{ paginaAtual() + 1 }} de {{ totalPaginas() }}
+            </span>
+
+            <button
+              (click)="proximaPagina()"
+              [disabled]="paginaAtual() >= totalPaginas() - 1">
+              Próxima
+            </button>
+          </div>
         </div>
       </section>
     </div>

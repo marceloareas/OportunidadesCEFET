@@ -108,6 +108,28 @@ public class OportunidadeController {
         }
     }
 
+    @GetMapping("/professor/{idProfessor}")
+    public ResponseEntity<Page<Oportunidade>> listarPorProfessor(
+            @PathVariable String idProfessor,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                oportunidadeService.listarPorProfessor(idProfessor, page, size)
+        );
+    }
+
+    @GetMapping("/aluno/{idAluno}")
+    public ResponseEntity<Page<Oportunidade>> listarPorAluno(
+            @PathVariable String idAluno,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                oportunidadeService.listarPorAluno(idAluno, page, size)
+        );
+    }
+
     @PostMapping("/{id}/aprovar/{idAluno}")
     public ResponseEntity<?> aprovarCandidato(
             @PathVariable String id,

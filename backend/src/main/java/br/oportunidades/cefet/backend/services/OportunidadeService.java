@@ -84,6 +84,26 @@ public class OportunidadeService {
         return salva;
     }
 
+    public Page<Oportunidade> listarPorProfessor(String idProfessor, int page, int size) {
+        return oportunidadeRepository
+                .findByProfessorIdOrderByCriadoDesc(
+                        idProfessor,
+                        PageRequest.of(page, size)
+                );
+    }
+
+    public Page<Oportunidade> listarPorAluno(String idAluno, int page, int size) {
+        Page<Oportunidade> pageData =
+                oportunidadeRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
+
+        return pageData.map(o -> {
+            if (o.getAlunosCandidatosId() != null && o.getAlunosCandidatosId().contains(idAluno)) {
+                return o;
+            }
+            return null;
+        }).map(o -> o);
+    }
+
     public Optional<Oportunidade> atualizar(String id, Oportunidade atualizada) {
         return oportunidadeRepository.findById(id).map(existente -> {
             existente.setNome(atualizada.getNome());

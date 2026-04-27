@@ -38,7 +38,7 @@ export class PostService {
 
   constructor(private http: HttpClient) {}
 
-  getPosts(page: number = 0, size: number = 20): Observable<Page<Post>> {
+  getPosts(page: number = 0, size: number = 10): Observable<Page<Post>> {
     return this.http.get<Page<Post>>(
       `${this.apiUrl}?page=${page}&size=${size}`
     );
