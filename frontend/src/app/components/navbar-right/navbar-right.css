@@ -67,6 +67,7 @@
             text-decoration: none;
             color: black;
             font-size: 17px;
+            cursor: pointer;
         }
 
         a:hover{
