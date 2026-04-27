@@ -116,6 +116,25 @@
           </select>
         </div>
 
+
+        <div class="input-group" style="align-items:center;">
+          <label style="margin-bottom:0.5em;">Imagem de Perfil</label>
+          <div class="avatar-upload" (click)="triggerFileInput()">
+            <img [src]="imagemPreview || '../pfptemp.ico'" class="avatar-preview" />
+            <span class="avatar-camera"><i class="bi bi-camera"></i></span>
+          </div>
+          <input
+            type="file"
+            id="imagemPerfil"
+            name="imagemPerfil"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            #fileInput
+            style="display:none;"
+          />
+          <span *ngIf="imagemErro" class="imagem-erro">{{ imagemErro }}</span>
+        </div>
+
         <button type="submit" class="btn-submit">Enviar</button>
         <span>
           Já possui conta?

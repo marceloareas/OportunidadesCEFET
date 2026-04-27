@@ -1,6 +1,6 @@
 <div class="post">
   <div class="post-header">
-    <img class="avatar" src="pfptemp.ico" alt="Foto de perfil" />
+    <img class="avatar" [src]="post.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" />
     <div class="post-info">
       <h2>
         <ng-container *ngIf="usuarioLogado()?.id === post.criadorId; else outroUsuario">
@@ -79,7 +79,10 @@
 
     <div class="modal-comentarios">
       <div class="comentario-card" *ngFor="let c of comentarios">
-        <div class="comentario-autor">{{ c.autor }}</div>
+        <div class="comentario-autor" style="display: flex; align-items: center; gap: 8px;">
+          <img *ngIf="c.imagemPerfil" [src]="c.imagemPerfil" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+          <span>{{ c.autor }}</span>
+        </div>
         <div class="comentario-texto">{{ c.texto }}</div>
       </div>
       <div class="mensagem-vazia" *ngIf="comentarios.length === 0">Nenhum comentário ainda.</div>

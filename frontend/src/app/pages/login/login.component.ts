@@ -23,11 +23,46 @@ export class Login {
   selecionada = signal<string>(''); // "Aluno" ou "Professor"
   opcoes = ['Aluno', 'Professor'];
 
+  imagemPerfilBase64: string | null = null;
+  imagemPreview: string | null = null;
+  imagemErro: string = '';
+
   constructor(
     private router: Router,
     private usuarioService: UsuarioService,
     private authService: AuthService
   ) {}
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (!file.type.startsWith('image/')) {
+        this.imagemErro = 'Selecione um arquivo de imagem válido.';
+        this.imagemPerfilBase64 = null;
+        this.imagemPreview = null;
+        input.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagemPerfilBase64 = reader.result as string;
+        this.imagemPreview = this.imagemPerfilBase64;
+        this.imagemErro = '';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      this.imagemPerfilBase64 = null;
+      this.imagemPreview = null;
+    }
+  }
+
+  triggerFileInput(): void {
+    const fileInput = document.getElementById('imagemPerfil') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
 
   toggleForm(): void {
     this.isRegistering.set(!this.isRegistering());
@@ -51,6 +86,7 @@ export class Login {
           email: authResponse.usuario.email,
           funcao: authResponse.usuario.funcao,
           matricula: authResponse.usuario.matricula,
+          imagemPerfil: authResponse.usuario.imagemPerfil
         };
 
         localStorage.setItem('isLogged', 'true');
@@ -86,6 +122,7 @@ export class Login {
       senha: this.senha(),
       funcao: this.selecionada().toUpperCase(),
       matricula: this.matricula(),
+      imagemPerfil: this.imagemPerfilBase64 || undefined
     };
 
     this.usuarioService.cadastrar(novoUsuario).subscribe({

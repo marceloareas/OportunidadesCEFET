@@ -30,6 +30,7 @@ public class Usuario {
     private String senha; // senha criptografada
     private FuncaoDeUsuario funcao;
     private Date criado;
+    private String imagemPerfil;
 
     @Builder.Default
     // Usuário 0:N Posts

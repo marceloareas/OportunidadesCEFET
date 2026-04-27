@@ -9,7 +9,8 @@ export interface Usuario {
   email: string;
   senha?: string;
   funcao?: string;     // 'Aluno', 'Professor'
-  matricula?: string;  
+  matricula?: string;
+  imagemPerfil?: string; // base64 ou url
 }
 
 @Injectable({ providedIn: 'root' })

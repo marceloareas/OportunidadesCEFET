@@ -13,6 +13,7 @@ export class NavbarRight implements OnInit {
   usuarioNome: string = 'Usuário';
   usuarioFuncao: string = 'Função não definida';
   usuarioMatricula: string = 'Matrícula';
+  usuarioImagem: string | null = null;
 
   constructor(private router: Router) {}
 
@@ -24,6 +25,7 @@ export class NavbarRight implements OnInit {
         this.usuarioNome = usuario.nome || 'Usuário';
         this.usuarioFuncao = usuario.funcao || 'Função não definida';
         this.usuarioMatricula = usuario.matricula || '';
+        this.usuarioImagem = usuario.imagemPerfil || null;
       } catch (error) {
         console.error('Erro ao ler dados do usuário:', error);
       }

@@ -59,6 +59,19 @@
                     </div>
                   </div>
 
+                  <div class="input-group">
+                    <label for="imagemPerfil">Imagem de Perfil</label>
+                    <input
+                      type="file"
+                      id="imagemPerfil"
+                      name="imagemPerfil"
+                      accept="image/*"
+                      (change)="onImageSelected($event)"
+                    />
+                  </div>
+                  <div *ngIf="imagemPreview" style="margin-bottom: 1em;">
+                    <img [src]="imagemPreview" style="max-width: 120px; max-height: 120px; border-radius: 50%; border: 1px solid #ccc;" />
+                  </div>
                   <div class="form-actions">
                     <button type="submit" class="send-btn">Salvar</button>
                     <a href="/home" class="cancel-link" (click)="$event.preventDefault(); onCancel()">Cancelar</a>

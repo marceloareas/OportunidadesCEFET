@@ -1,3 +1,46 @@
+.avatar-upload {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin-bottom: 0.5em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-preview {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #8393A2;
+    background: #eaeaea;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.avatar-camera {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #0A497E;
+    color: #fff;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+.imagem-erro {
+    color: #ff4444;
+    font-size: 0.95em;
+    margin-top: 0.5em;
+}
 .page{
     height: 100vh;
     width: 100vw;
@@ -12,7 +55,7 @@
 .forms{
     display: flex;
     width: 65vw;
-    height: 80vh;
+    height: 90vh;
     background-color: #0A497E;
     border-radius: 25px;
 }
@@ -21,7 +64,7 @@
     position: absolute;
     z-index: 2;
     width: 32.5vw;
-    height: 80vh;
+    height: 90vh;
     background-color: #8393A2;
     border-radius: 25px;
     border-top-left-radius: 0;
@@ -43,7 +86,7 @@
     align-items: center;
     justify-content: center;
     width: 32.5vw;
-    height: 70vh;
+    height: 90vh;
     padding: 40vh 2vw;
     color:white;
 

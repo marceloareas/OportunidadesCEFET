@@ -19,8 +19,8 @@ export interface Post {
   quantidadeDeVagas?: number;
   alunosCandidatosId?: string[];
   alunosAprovadosId?: string[];
+  imagemPerfil?: string; // <-- Added this line to fix the TS2353 error
 }
-
 
 @Injectable({
   providedIn: 'root'
@@ -41,5 +41,4 @@ export class PostService {
   atualizarLike(postId: string, usuarioId: string) {
     return this.http.post(`${this.apiUrl}/${postId}/like/${usuarioId}`, {});
   }
-
 }

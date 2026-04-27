@@ -27,11 +27,12 @@ export class Home {
   modoOportunidade = signal<boolean>(false);
 
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
-  usuarioLogado = signal<{ id: string; nome: string; funcao: string } | null>(null);
+  usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
 
   posts = signal<Post[]>([]);
   oportunidades = signal<Oportunidade[]>([]);
   nomesUsuarios = new Map<string, string>();
+  imagensUsuarios = new Map<string, string>();
 
   carregando = signal<boolean>(false);
   erro = signal<string>('');
@@ -73,7 +74,8 @@ export class Home {
         this.usuarioLogado.set({
           id: parsed.id,
           nome: parsed.nome,
-          funcao: parsed.funcao?.toUpperCase() || 'NADA'
+          funcao: parsed.funcao?.toUpperCase() || 'NADA',
+          imagemPerfil: parsed.imagemPerfil
         });
       } catch {
         this.usuarioLogado.set(null);
@@ -84,27 +86,28 @@ export class Home {
   }
 
   private mapOportunidadeParaPost(op: Oportunidade): Post {
-  const descricao = op.descricao?.trim();
-  const corpoFormatado = descricao || '';
-
-  return {
-    id: op.id,
-    titulo: op.nome,
-    corpo: corpoFormatado,
-    criadorId: op.professorId,
-    criado: op.criado ? new Date(op.criado) : undefined,
-    idComentarios: [],
-    imagemBase64: op.imagemBase64,
-    nomeCriador: this.nomesUsuarios.get(op.professorId || '') || 'Professor',
-    ehOportunidade: true,
+    const descricao = op.descricao?.trim();
+    const corpoFormatado = descricao || '';
+    const criadorId = op.professorId;
+    return {
+      id: op.id,
+      titulo: op.nome,
+      corpo: corpoFormatado,
+      criadorId,
+      criado: op.criado ? new Date(op.criado) : undefined,
+      idComentarios: [],
+      imagemBase64: op.imagemBase64,
+      nomeCriador: this.nomesUsuarios.get(criadorId || '') || 'Professor',
+      imagemPerfil: this.imagensUsuarios.get(criadorId || '') || undefined,
+      ehOportunidade: true,
       finalizada: op.finalizada ?? false,
-    vagasPreenchidas: op.vagasPreenchidas ?? 0,
-    quantidadeDeVagas: op.quantidadeDeVagas ?? 0,
-    alunosCandidatosId: op.alunosCandidatosId ?? [],
-    alunosAprovadosId: op.alunosAprovadosId ?? [],
-    idLikes: op.idLikes ? [...op.idLikes] : []
-  };
-}
+      vagasPreenchidas: op.vagasPreenchidas ?? 0,
+      quantidadeDeVagas: op.quantidadeDeVagas ?? 0,
+      alunosCandidatosId: op.alunosCandidatosId ?? [],
+      alunosAprovadosId: op.alunosAprovadosId ?? [],
+      idLikes: op.idLikes ? [...op.idLikes] : []
+    };
+  }
 
 
   private obterTimestamp(criado?: string | Date): number {
@@ -128,6 +131,7 @@ export class Home {
         const postsComNome = (posts ?? []).map((p) => ({
           ...p,
           nomeCriador: this.nomesUsuarios.get(p.criadorId || '') || 'Usuário Anônimo',
+          imagemPerfil: this.imagensUsuarios.get(p.criadorId || '') || undefined,
           ehOportunidade: false as any,
           idLikes: p.idLikes ?? []
         }));
@@ -146,8 +150,12 @@ export class Home {
 
   private popularCacheUsuarios(usuarios: Usuario[]) {
     this.nomesUsuarios.clear();
+    this.imagensUsuarios.clear();
     for (const u of usuarios) {
-      if ((u as any).id) this.nomesUsuarios.set((u as any).id, u.nome);
+      if ((u as any).id) {
+        this.nomesUsuarios.set((u as any).id, u.nome);
+        if (u.imagemPerfil) this.imagensUsuarios.set((u as any).id, u.imagemPerfil);
+      }
     }
   }
 
@@ -267,9 +275,16 @@ export class Home {
 
     this.postService.createPost(novoPost).subscribe({
       next: (p) => {
-        this.posts.update(lista => [p, ...lista]);
-        this.resetFormulario();
-        this.newPostModal.set(false);
+        const postFormatado = {
+          ...p,
+          nomeCriador: usuario?.nome || 'Usuário',
+          imagemPerfil: usuario?.imagemPerfil,
+          ehOportunidade: false as any,
+          idLikes: []
+        };
+      this.posts.update(lista => [postFormatado, ...lista]);
+      this.resetFormulario();
+      this.newPostModal.set(false);
       },
       error: (err) => {
         console.error('Erro ao criar post:', err);

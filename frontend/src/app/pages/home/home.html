@@ -7,7 +7,7 @@
       <div class="posts" *ngSwitchCase="'home'">
         <div class="new-post">
           <div class="img">
-            <img src="pfptemp.ico" />
+            <img [src]="usuarioLogado()?.imagemPerfil || 'pfptemp.ico'" />
           </div>
 
           <div (click)="openNewPost()" class="new-post-btn">
@@ -155,7 +155,6 @@
             <div class="image-preview" *ngIf="imagemBase64()">
               <img
                 [src]="imagemBase64()!"
-                alt="Pré-visualização da imagem"
               />
               <button
                 class="remove-image"
@@ -184,7 +183,6 @@
             <div class="image-preview" *ngIf="imagemBase64()">
               <img
                 [src]="imagemBase64()!"
-                alt="Pré-visualização da imagem"
               />
               <button
                 class="remove-image"
