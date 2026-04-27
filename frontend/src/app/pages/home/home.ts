@@ -28,7 +28,7 @@ export class Home {
   modoOportunidade = signal<boolean>(false);
 
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
-  usuarioLogado = signal<{ id: string; nome: string; funcao: string } | null>(null);
+  usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
 
   feedItens = signal<FeedItem[]>([]);
   page = signal<number>(0);
@@ -71,7 +71,8 @@ export class Home {
         this.usuarioLogado.set({
           id: parsed.id,
           nome: parsed.nome,
-          funcao: parsed.funcao?.toUpperCase() || 'NADA'
+          funcao: parsed.funcao?.toUpperCase() || 'NADA',
+          imagemPerfil: parsed.imagemPerfil
         });
       } catch {
         this.usuarioLogado.set(null);
@@ -224,7 +225,6 @@ export class Home {
       criado: new Date(),
       imagemBase64: this.imagemBase64() ?? undefined,
       nomeCriador: usuario?.nome || 'Usuário',
-      ehOportunidade: false as any
     } as any;
 
     this.postService.createPost(novoPost).subscribe({

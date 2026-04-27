@@ -20,6 +20,7 @@ export interface Oportunidade {
   idLikes?: string[];
   alunosAprovadosId?: string[];
   finalizada?: boolean;
+  imagemPerfil?: string; // url ou base64 da foto do professor/criador
 }
 
 @Injectable({

@@ -21,14 +21,13 @@ export interface Post {
   idLikes?: string[];
   idComentarios?: any[];
   imagemBase64?: string;
-  ehOportunidade?: boolean;
   finalizada?: boolean;
   vagasPreenchidas?: number;
   quantidadeDeVagas?: number;
   alunosCandidatosId?: string[];
   alunosAprovadosId?: string[];
+  imagemPerfil?: string;
 }
-
 
 @Injectable({
   providedIn: 'root'
@@ -57,5 +56,4 @@ export class PostService {
   atualizarLike(postId: string, usuarioId: string) {
     return this.http.post(`${this.apiUrl}/${postId}/like/${usuarioId}`, {});
   }
-
 }

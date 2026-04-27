@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 export interface FeedItem {
   id?: string;
   referenciaId?: string;
-  tipoReferencia?: 'POST' | 'OPORTUNIDADE';
+  tipo?: 'POST' | 'OPORTUNIDADE';
 
   titulo: string;
   corpo?: string;
@@ -15,8 +15,7 @@ export interface FeedItem {
   criado?: string | Date;
 
   imagemBase64?: string;
-
-  ehOportunidade: boolean;
+  imagemPerfil?: string; // base64 ou url da imagem do criador
 
   idLikes?: string[];
   idComentarios?: string[];

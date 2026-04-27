@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+
 public class FeedItem {
 
     @Id
@@ -26,6 +27,7 @@ public class FeedItem {
 
     private String criadorId;
     private String nomeCriador;
+    private String imagemPerfil; // base64 ou url da imagem do criador
     private Date criado;
 
     private String imagemBase64;
@@ -38,4 +40,5 @@ public class FeedItem {
 
     private List<String> alunosCandidatosId = new ArrayList<>();
     private List<String> alunosAprovadosId = new ArrayList<>();
+
 }

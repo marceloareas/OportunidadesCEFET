@@ -15,7 +15,8 @@
         </div>
         <div class="cards">
           <article class="card" *ngFor="let op of minhasOportunidades()">
-            <div class="card-head">
+            <div class="card-head" style="display: flex; align-items: center; gap: 10px;">
+              <img *ngIf="op.imagemPerfil" [src]="op.imagemPerfil" alt="Foto de perfil" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
               <div>
                 <h4>{{ op.nome }}</h4>
                 <p class="meta">Vagas: {{ op.vagasPreenchidas ?? 0 }}/{{ op.quantidadeDeVagas ?? 0 }}</p>
@@ -56,7 +57,8 @@
         </div>
         <div class="cards">
           <article class="card" *ngFor="let op of candidaturas()">
-            <div class="card-head">
+            <div class="card-head" style="display: flex; align-items: center; gap: 10px;">
+              <img *ngIf="op.imagemPerfil" [src]="op.imagemPerfil" alt="Foto de perfil" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
               <div>
                 <h4>{{ op.nome }}</h4>
                 <p class="meta">Status: {{ statusAluno(op) }}</p>
@@ -100,12 +102,15 @@
 
       <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
         <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
-          <div class="cand-dados">
-            <div class="candidato-nome">{{ c.nome || c.id }}</div>
-            <div class="cand-meta">
-              <span *ngIf="c.email">E-mail: {{ c.email }}</span>
-              <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>
-              <span *ngIf="c.funcao"> • {{ c.funcao }}</span>
+          <div class="cand-dados" style="display: flex; align-items: center; gap: 10px;">
+            <img *ngIf="c.imagemPerfil" [src]="c.imagemPerfil" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            <div>
+              <div class="candidato-nome">{{ c.nome || c.id }}</div>
+              <div class="cand-meta">
+                <span *ngIf="c.email">E-mail: {{ c.email }}</span>
+                <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>
+                <span *ngIf="c.funcao"> • {{ c.funcao }}</span>
+              </div>
             </div>
           </div>
           <div class="cand-actions">

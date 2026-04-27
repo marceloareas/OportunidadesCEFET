@@ -21,6 +21,8 @@ export class EditarPerfil {
   userId?: string;
   funcao?: string;
   matricula?: string;
+  imagemPerfilBase64: string | null = null;
+  imagemPreview: string | null = null;
 
   constructor(private usuarioService: UsuarioService, private router: Router) {
     const stored = localStorage.getItem('usuario');
@@ -32,9 +34,25 @@ export class EditarPerfil {
         this.email.set(u.email || '');
         this.funcao = u.funcao;
         this.matricula = u.matricula;
+        if (u.imagemPerfil) {
+          this.imagemPreview = u.imagemPerfil;
+        }
       } catch (e) {
         console.error('Erro ao parsear usuário do localStorage', e);
       }
+    }
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagemPerfilBase64 = reader.result as string;
+        this.imagemPreview = this.imagemPerfilBase64;
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -68,6 +86,9 @@ export class EditarPerfil {
       payload.senha = this.senha();
     }
 
+    if (this.imagemPerfilBase64) {
+      payload.imagemPerfil = this.imagemPerfilBase64;
+    }
     this.usuarioService.atualizar(this.userId, payload).subscribe({
       next: (updated) => {
         alert('Perfil atualizado com sucesso.');
@@ -79,6 +100,7 @@ export class EditarPerfil {
           email: updated.email,
           funcao: funcaoAtualizada,
           matricula: updated.matricula || this.matricula,
+          imagemPerfil: updated.imagemPerfil || this.imagemPreview
         };
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
         if (funcaoAtualizada) {

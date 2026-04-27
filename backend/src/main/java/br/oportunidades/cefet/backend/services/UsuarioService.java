@@ -65,6 +65,9 @@ public class UsuarioService {
             if (usuario.getSenha() != null && !usuario.getSenha().isBlank()) {
                 existing.setSenha(passwordEncoder.encode(usuario.getSenha()));
             }
+            if (usuario.getImagemPerfil() != null) {
+                existing.setImagemPerfil(usuario.getImagemPerfil());
+            }
             return usuarioRepository.save(existing);
         }).orElse(null);
     }

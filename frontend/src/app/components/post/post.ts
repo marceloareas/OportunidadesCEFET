@@ -23,7 +23,7 @@ export class PostComponent {
   usuarioLogado = signal<{ id: string; nome: string; funcao: string } | null>(null);
 
   novoComentario = '';
-  comentarios: Array<{ autor: string; texto: string; data?: string; id?: string }> = [];
+  comentarios: Array<{ autor: string; imagemPerfil?: string; texto: string; data?: string; id?: string }> = [];
 
   jaCandidatado = signal<boolean>(false);
   contadorCandidatos = signal<number>(0);
@@ -106,7 +106,7 @@ export class PostComponent {
 
     const payload = {
       usuarioId: usuario.id,
-      tipoEntidadePai: this.post.ehOportunidade ? 'Oportunidade' : 'Post',
+      tipoEntidadePai: this.post.tipo === 'OPORTUNIDADE' ? 'Oportunidade' : 'Post',
       idPost: this.post.referenciaId || this.post.id,
       texto: this.novoComentario,
       idComentarioPai: null
@@ -137,7 +137,7 @@ export class PostComponent {
     const referenciaId = this.post.referenciaId || this.post.id;
     if (!referenciaId) return;
 
-    const req = this.post.ehOportunidade
+    const req = this.post.tipo === 'OPORTUNIDADE'
       ? this.comentarioService.listarComentariosOportunidade(referenciaId)
       : this.comentarioService.listarComentariosPost(referenciaId);
 
@@ -148,6 +148,7 @@ export class PostComponent {
         if (uniqueIds.length === 0) {
           this.comentarios = arr.map((c) => ({
             autor: 'Anônimo',
+            imagemPerfil: undefined,
             texto: c.texto || '',
             data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
             id: c.id
@@ -163,13 +164,14 @@ export class PostComponent {
 
         forkJoin(requests).subscribe({
           next: (users) => {
-            const nameById: Record<string, string> = {};
+            const userById: Record<string, { nome: string; imagemPerfil?: string }> = {};
             users.forEach((u) => {
-              if (u && u.id) nameById[u.id] = u.nome;
+              if (u && u.id) userById[u.id] = { nome: u.nome, imagemPerfil: u.imagemPerfil };
             });
 
             this.comentarios = arr.map((c) => ({
-              autor: (c.usuarioId && nameById[c.usuarioId]) || 'Anônimo',
+              autor: (c.usuarioId && userById[c.usuarioId]?.nome) || 'Anônimo',
+              imagemPerfil: (c.usuarioId && userById[c.usuarioId]?.imagemPerfil) || undefined,
               texto: c.texto || '',
               data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
               id: c.id
@@ -183,6 +185,7 @@ export class PostComponent {
             console.warn('Erro ao buscar usuarios dos comentarios:', err);
             this.comentarios = arr.map((c) => ({
               autor: c.usuarioId || 'Anônimo',
+              imagemPerfil: undefined,
               texto: c.texto || '',
               data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
               id: c.id
@@ -219,7 +222,7 @@ export class PostComponent {
     const referenciaId = this.post.referenciaId || this.post.id;
     if (!referenciaId) return;
 
-    const req = this.post.ehOportunidade
+    const req = this.post.tipo === 'OPORTUNIDADE'
       ? this.oportunidadeService.curtirOportunidade(referenciaId, usuario.id)
       : this.postService.atualizarLike(referenciaId, usuario.id);
 
@@ -258,7 +261,7 @@ export class PostComponent {
     const usuario = this.usuarioLogado();
     return Boolean(
       usuario &&
-      this.post.ehOportunidade &&
+      this.post.tipo === 'OPORTUNIDADE' &&
       this.post.criadorId &&
       usuario.id === this.post.criadorId
     );
