@@ -29,6 +29,7 @@ export class PostComponent {
   contadorCandidatos = signal<number>(0);
   curtiu = signal<boolean>(false);
   contadorLikes = signal<number>(0);
+  contadorComentarios = signal<number>(0);
 
   newCommentModal = signal<boolean>(false);
   candidatosModal = signal<boolean>(false);
@@ -64,6 +65,7 @@ export class PostComponent {
   ngOnInit() {
     this.contadorCandidatos.set(this.post.alunosCandidatosId?.length ?? 0);
     this.contadorLikes.set(this.post.idLikes?.length ?? 0);
+    this.contadorComentarios.set(this.post.idComentarios?.length ?? 0);
 
     if (!this.post.idLikes) this.post.idLikes = [];
     if (!this.post.idComentarios) this.post.idComentarios = [];
@@ -126,6 +128,8 @@ export class PostComponent {
         if (!this.post.idComentarios) this.post.idComentarios = [];
         if (saved.id) this.post.idComentarios.unshift(saved.id);
 
+        this.contadorComentarios.update(n => n + 1);
+
         this.novoComentario = '';
       },
       error: (err) => {
@@ -145,6 +149,8 @@ export class PostComponent {
 
     req.subscribe({
       next: (arr) => {
+        this.contadorComentarios.set(arr.length);
+
         const uniqueIds = Array.from(new Set(arr.map((c) => c.usuarioId).filter(Boolean)));
 
         if (uniqueIds.length === 0) {

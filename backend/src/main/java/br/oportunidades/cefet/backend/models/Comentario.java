@@ -44,5 +44,4 @@ public class Comentario {
 
     @Builder.Default
     private Set<String> idLikes = new HashSet<>(); // referencia Usuario(id)
-
 }

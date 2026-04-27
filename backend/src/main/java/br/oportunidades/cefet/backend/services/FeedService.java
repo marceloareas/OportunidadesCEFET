@@ -4,12 +4,17 @@ import br.oportunidades.cefet.backend.dto.feed.FeedPageDTO;
 import br.oportunidades.cefet.backend.models.FeedItem;
 import br.oportunidades.cefet.backend.models.Oportunidade;
 import br.oportunidades.cefet.backend.models.Post;
+import br.oportunidades.cefet.backend.models.Comentario;
+import br.oportunidades.cefet.backend.repositories.ComentarioRepository;
 import br.oportunidades.cefet.backend.repositories.FeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import br.oportunidades.cefet.backend.models.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 
@@ -22,8 +27,19 @@ public class FeedService {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private ComentarioRepository comentarioRepository;
+
     public FeedPageDTO listarFeed(int page, int size) {
         Page<FeedItem> feedPage = feedRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
+
+        feedPage.getContent().forEach(item -> {
+            String tipo = "OPORTUNIDADE".equalsIgnoreCase(item.getTipo()) ? "Oportunidade" : "Post";
+            List<Comentario> comentarios = comentarioRepository
+                    .findByTipoEntidadePaiAndIdPostAndIdComentarioPaiIsNull(tipo, item.getReferenciaId());
+            
+            item.setIdComentarios(comentarios.stream().map(Comentario::getId).collect(Collectors.toList()));
+        });
 
         return new FeedPageDTO(
                 feedPage.getContent(),

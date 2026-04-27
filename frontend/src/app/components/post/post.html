@@ -42,7 +42,7 @@
 
     <button class="icon-btn" (click)="openNewComment()">
       <i class="bi bi-chat-left-text"></i>
-      <span>{{ post.idComentarios?.length || 0 }}</span>
+      <span>{{ contadorComentarios() }}</span>
     </button>
 
     <button class="icon-btn">
@@ -80,7 +80,7 @@
     <div class="modal-comentarios">
       <div class="comentario-card" *ngFor="let c of comentarios">
         <div class="comentario-autor" style="display: flex; align-items: center; gap: 8px;">
-          <img *ngIf="c.imagemPerfil" [src]="c.imagemPerfil" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+          <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
           <span>{{ c.autor }}</span>
         </div>
         <div class="comentario-texto">{{ c.texto }}</div>
@@ -118,7 +118,7 @@
       <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
         <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
           <div class="cand-dados" style="display: flex; align-items: center; gap: 10px;">
-            <img *ngIf="c.imagemPerfil" [src]="c.imagemPerfil" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
             <div>
               <div class="candidato-nome">{{ c.nome || c.id }}</div>
               <div class="cand-meta">

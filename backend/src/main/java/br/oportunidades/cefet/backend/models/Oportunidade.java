@@ -46,6 +46,9 @@ public class Oportunidade {
 
     @Builder.Default
     private List<String> idLikes = new ArrayList<>();
+    
+    @Builder.Default
+    private List<String> idComentarios = new ArrayList<>();
 
     @Builder.Default
     private Boolean finalizada = false;

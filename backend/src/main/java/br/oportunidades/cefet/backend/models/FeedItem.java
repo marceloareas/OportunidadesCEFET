@@ -32,6 +32,8 @@ public class FeedItem {
 
     private String imagemBase64;
     private List<String> idLikes = new ArrayList<>();
+    
+    private List<String> idComentarios = new ArrayList<>();
 
     // campos extras de oportunidade
     private Integer quantidadeDeVagas;
