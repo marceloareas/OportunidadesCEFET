@@ -117,7 +117,7 @@ export class PostComponent {
 
     this.comentarioService.criar(payload).subscribe({
       next: (saved) => {
-        this.comentarios.unshift({
+        this.comentarios.push({
           autor: usuario.nome || usuario.id,
           imagemPerfil: usuario.imagemPerfil,
           texto: saved.texto || this.novoComentario,
@@ -126,7 +126,7 @@ export class PostComponent {
         });
 
         if (!this.post.idComentarios) this.post.idComentarios = [];
-        if (saved.id) this.post.idComentarios.unshift(saved.id);
+        if (saved.id) this.post.idComentarios.push(saved.id);
 
         this.contadorComentarios.update(n => n + 1);
 
