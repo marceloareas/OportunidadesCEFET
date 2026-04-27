@@ -6,7 +6,6 @@ import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
-import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-oportunidades',
@@ -16,12 +15,19 @@ import { forkJoin } from 'rxjs';
   styleUrl: './oportunidades.css'
 })
 export class OportunidadesPage {
+
+  candidatosPorOportunidade = signal<Record<string, Usuario[]>>({});
+  paginaAtual = signal(0);
+  tamanhoPagina = signal(10);
+  totalPaginas = signal(0);
+
+  totalPaginasCandidatos = signal(0);
+  paginaAtualCandidatos = signal(0);
+
   usuarioId?: string;
   usuarioFuncao?: string;
 
   minhasOportunidades = signal<Oportunidade[]>([]);
-  candidaturas = signal<Oportunidade[]>([]);
-  candidatosPorOportunidade = signal<Record<string, Usuario[]>>({});
 
   carregando = signal<boolean>(false);
   erro = signal<string>('');
@@ -33,6 +39,7 @@ export class OportunidadesPage {
   aprovando = signal<string | null>(null);
   candidatosErro = signal<string>('');
   candidatosCarregando = signal<boolean>(false);
+  candidaturas = signal<Oportunidade[]>([]);
 
   constructor(
     private oportunidadeService: OportunidadeService,
@@ -50,38 +57,46 @@ export class OportunidadesPage {
 
     this.carregarDados();
   }
+    private carregarDados() {
+      this.carregando.set(true);
+      this.erro.set('');
 
-  private carregarDados() {
-    this.carregando.set(true);
-    this.erro.set('');
+      const request =
+        this.usuarioFuncao === 'professor'
+          ? this.oportunidadeService.listarPorProfessor(
+              this.usuarioId!,
+              this.paginaAtual(),
+              this.tamanhoPagina()
+            )
+          : this.oportunidadeService.listarPorAluno(
+              this.usuarioId!,
+              this.paginaAtual(),
+              this.tamanhoPagina()
+            );
 
-    this.oportunidadeService.listar().subscribe({
-      next: (page) => {
-        const lista = page.content || [];
-        if (this.usuarioFuncao === 'professor') {
-          this.minhasOportunidades.set(lista.filter(o => o.professorId === this.usuarioId));
-        } else {
-          // aluno: candidaturas
-          this.candidaturas.set(
-            lista.filter(o => (o.alunosCandidatosId || []).includes(this.usuarioId!))
-          );
+      request.subscribe({
+        next: (page) => {
+          this.minhasOportunidades.set(page.content || []);
+          this.totalPaginas.set(page.totalPages || 0);
+          this.carregando.set(false);
+        },
+        error: (err) => {
+          console.error('Erro ao carregar oportunidades:', err);
+          this.erro.set('Erro ao carregar oportunidades.');
+          this.carregando.set(false);
         }
-        this.carregando.set(false);
-      },
-      error: (err) => {
-        console.error('Erro ao carregar oportunidades:', err);
-        this.erro.set('Erro ao carregar oportunidades.');
-        this.carregando.set(false);
-      }
-    });
-  }
+      });
+    }
 
-  abrirListaCandidatos(op: Oportunidade) {
-    if (!op.id) return;
-    this.oportunidadeSelecionadaId.set(op.id);
-    this.mostrandoListaCandidatos.set(true);
-    this.carregarCandidatos(op.id);
-  }
+    abrirListaCandidatos(op: Oportunidade) {
+      if (!op.id) return;
+
+      this.oportunidadeSelecionadaId.set(op.id);
+      this.paginaAtualCandidatos.set(0); 
+      this.mostrandoListaCandidatos.set(true);
+
+      this.carregarCandidatos(op.id);
+    }
 
   fecharListaCandidatos() {
     this.mostrandoListaCandidatos.set(false);
@@ -89,37 +104,71 @@ export class OportunidadesPage {
     this.somenteAprovados.set(false);
   }
 
-  private carregarCandidatos(opId: string) {
-    const ids = this.minhasOportunidades().find(o => o.id === opId)?.alunosCandidatosId || [];
-    if (!ids.length) {
-      this.candidatosPorOportunidade.update(m => ({ ...m, [opId]: [] }));
-      return;
-    }
+  carregarCandidatos(opId: string) {
     this.candidatosCarregando.set(true);
     this.candidatosErro.set('');
-    const requests = ids.map(id => this.usuarioService.buscarPorId(id));
-    forkJoin(requests).subscribe({
-      next: (users) => {
-        this.candidatosPorOportunidade.update(m => ({ ...m, [opId]: users.filter(Boolean) as Usuario[] }));
-        this.candidatosCarregando.set(false);
-      },
-      error: (err) => {
-        console.error('Erro ao carregar candidatos:', err);
-        this.candidatosErro.set('Não foi possível carregar candidatos.');
-        this.candidatosCarregando.set(false);
-      }
-    });
+
+    this.oportunidadeService
+      .listarCandidatos(opId, this.paginaAtualCandidatos(), this.tamanhoPagina())
+      .subscribe({
+        next: (page) => {
+          this.candidatosPorOportunidade.update(m => ({
+            ...m,
+            [opId]: page.content
+          }));
+
+          this.totalPaginasCandidatos.set(page.totalPages);
+          this.candidatosCarregando.set(false);
+        },
+        error: () => {
+          this.candidatosErro.set('Erro ao carregar candidatos');
+          this.candidatosCarregando.set(false);
+        }
+      });
   }
 
   candidatosFiltrados(): Usuario[] {
     const opId = this.oportunidadeSelecionadaId();
     if (!opId) return [];
     const lista = this.candidatosPorOportunidade()[opId] || [];
+
     if (!this.somenteAprovados()) return lista;
+
     const aprovados = new Set(
       this.minhasOportunidades().find(o => o.id === opId)?.alunosAprovadosId || []
     );
+
     return lista.filter(c => c.id && aprovados.has(c.id));
+  }
+
+  proximaPaginaCandidatos() {
+    if (this.paginaAtualCandidatos() < this.totalPaginasCandidatos() - 1) {
+      this.paginaAtualCandidatos.update(v => v + 1);
+      const opId = this.oportunidadeSelecionadaId();
+      if (opId) this.carregarCandidatos(opId);
+    }
+  }
+
+  paginaAnteriorCandidatos() {
+    if (this.paginaAtualCandidatos() > 0) {
+      this.paginaAtual.update(v => v - 1);
+      const opId = this.oportunidadeSelecionadaId();
+      if (opId) this.carregarCandidatos(opId);
+    }
+  }
+
+  proximaPaginaOportunidades() {
+    if (this.paginaAtual() < this.totalPaginas() - 1) {
+      this.paginaAtual.update(v => v + 1);
+      this.carregarDados();
+    }
+  }
+
+  paginaAnteriorOportunidades() {
+    if (this.paginaAtual() > 0) {
+      this.paginaAtual.update(v => v - 1);
+      this.carregarDados();
+    }
   }
 
   estaAprovado(candId: string | undefined): boolean {
