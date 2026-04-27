@@ -16,7 +16,7 @@
         <div class="cards">
           <article class="card" *ngFor="let op of minhasOportunidades()">
             <div class="card-head" style="display: flex; align-items: center; gap: 10px;">
-              <img [src]="op.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
+              <!-- <img [src]="op.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" /> -->
               <div>
                 <h4>{{ op.nome }}</h4>
                 <p class="meta">Vagas: {{ op.vagasPreenchidas ?? 0 }}/{{ op.quantidadeDeVagas ?? 0 }}</p>
@@ -58,7 +58,7 @@
         <div class="cards">
           <article class="card" *ngFor="let op of candidaturas()">
             <div class="card-head" style="display: flex; align-items: center; gap: 10px;">
-              <img [src]="op.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
+              <!-- <img [src]="op.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" /> -->
               <div>
                 <h4>{{ op.nome }}</h4>
                 <p class="meta">Status: {{ statusAluno(op) }}</p>
