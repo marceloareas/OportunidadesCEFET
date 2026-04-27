@@ -20,7 +20,7 @@ export class PostComponent {
   @Input() post!: FeedItem;
 
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
-  usuarioLogado = signal<{ id: string; nome: string; funcao: string } | null>(null);
+  usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
 
   novoComentario = '';
   comentarios: Array<{ autor: string; imagemPerfil?: string; texto: string; data?: string; id?: string }> = [];
@@ -42,23 +42,24 @@ export class PostComponent {
   private usuarioService = inject(UsuarioService);
 
   constructor(
-    private oportunidadeService: OportunidadeService,
-    private postService: PostService,
-  ) {
-    const usuario = localStorage.getItem('usuario');
-    if (usuario) {
-      try {
-        const parsed = JSON.parse(usuario);
-        this.usuarioLogado.set({
-          id: parsed.id,
-          nome: parsed.nome,
-          funcao: parsed.funcao?.toUpperCase() || 'ALUNO'
-        });
-      } catch {
-        this.usuarioLogado.set(null);
+      private oportunidadeService: OportunidadeService,
+      private postService: PostService,
+    ) {
+      const usuario = localStorage.getItem('usuario');
+      if (usuario) {
+        try {
+          const parsed = JSON.parse(usuario);
+          this.usuarioLogado.set({
+            id: parsed.id,
+            nome: parsed.nome,
+            funcao: parsed.funcao?.toUpperCase() || 'ALUNO',
+            imagemPerfil: parsed.imagemPerfil // <-- ADICIONE ESTA LINHA
+          });
+        } catch {
+          this.usuarioLogado.set(null);
+        }
       }
     }
-  }
 
   ngOnInit() {
     this.contadorCandidatos.set(this.post.alunosCandidatosId?.length ?? 0);
@@ -116,6 +117,7 @@ export class PostComponent {
       next: (saved) => {
         this.comentarios.unshift({
           autor: usuario.nome || usuario.id,
+          imagemPerfil: usuario.imagemPerfil,
           texto: saved.texto || this.novoComentario,
           data: saved.dataComentario as any,
           id: saved.id
