@@ -1,6 +1,7 @@
 package br.oportunidades.cefet.backend.controllers;
 
 import br.oportunidades.cefet.backend.models.Oportunidade;
+import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.services.OportunidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -88,10 +89,14 @@ public class OportunidadeController {
     }
 
     @GetMapping("/{id}/candidatos")
-    public ResponseEntity<?> listarCandidatos(@PathVariable String id) {
-        return oportunidadeService.listarCandidatos(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Page<Usuario>> listarCandidatos(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                oportunidadeService.listarCandidatos(id, page, size)
+        );
     }
 
     // Lista candidatos apenas se o professor for o dono da oportunidade

@@ -2,6 +2,9 @@ package br.oportunidades.cefet.backend.services;
 
 import br.oportunidades.cefet.backend.models.Usuario; 
 import br.oportunidades.cefet.backend.repositories.UsuarioRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -19,8 +22,9 @@ public class UsuarioService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<Usuario> getAllUsuarios() {
-        return usuarioRepository.findAll();
+    public Page<Usuario> getAllUsuarios(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return usuarioRepository.findAll(pageable);
     }
 
     public Usuario getUsuarioById(String id) {
