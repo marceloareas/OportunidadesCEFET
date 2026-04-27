@@ -17,10 +17,13 @@
 
         <div *ngIf="!carregando() && minhasPublicacoes().length > 0">
           <ng-container *ngFor="let p of minhasPublicacoes()">
-            <article class="post-item">
-              <h3>{{ p.titulo }}</h3>
-              <div class="meta">{{ p.criado ? (p.criado | date:'short') : '' }}</div>
-              <p>{{ p.corpo }}</p>
+            <article class="post-item" style="display: flex; align-items: center; gap: 12px;">
+              <img *ngIf="p.imagemPerfil" [src]="p.imagemPerfil" alt="Foto de perfil" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
+              <div>
+                <h3>{{ p.titulo }}</h3>
+                <div class="meta">{{ p.criado ? (p.criado | date:'short') : '' }}</div>
+                <p>{{ p.corpo }}</p>
+              </div>
             </article>
           </ng-container>
         </div>
