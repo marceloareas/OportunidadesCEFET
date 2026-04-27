@@ -2,7 +2,8 @@ package br.oportunidades.cefet.backend.controllers;
 
 import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.services.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired; 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +18,11 @@ public class UsuarioController {
 
     //Listar todos
     @GetMapping
-    public List<Usuario> getAllUsuarios() {
-        return usuarioService.getAllUsuarios();
+    public ResponseEntity<Page<Usuario>> getAllUsuarios(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(usuarioService.getAllUsuarios(page, size));
     }
 
     //Busca por ID

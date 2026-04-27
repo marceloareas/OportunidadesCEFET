@@ -112,6 +112,7 @@ export class OportunidadesPage {
       .listarCandidatos(opId, this.paginaAtualCandidatos(), this.tamanhoPagina())
       .subscribe({
         next: (page) => {
+
           this.candidatosPorOportunidade.update(m => ({
             ...m,
             [opId]: page.content
@@ -151,7 +152,7 @@ export class OportunidadesPage {
 
   paginaAnteriorCandidatos() {
     if (this.paginaAtualCandidatos() > 0) {
-      this.paginaAtual.update(v => v - 1);
+      this.paginaAtualCandidatos.update(v => v - 1);
       const opId = this.oportunidadeSelecionadaId();
       if (opId) this.carregarCandidatos(opId);
     }

@@ -206,19 +206,23 @@ public class OportunidadeService {
         }
     }
 
-    public Optional<List<Usuario>> listarCandidatos(String idOportunidade) {
+    public Page<Usuario> listarCandidatos(String idOportunidade, int page, int size) {
+
         Optional<Oportunidade> opt = oportunidadeRepository.findById(idOportunidade);
-        if (opt.isEmpty()) return Optional.empty();
+        if (opt.isEmpty()) {
+            return Page.empty();
+        }
 
         Oportunidade oportunidade = opt.get();
         List<String> ids = oportunidade.getAlunosCandidatosId();
 
         if (ids == null || ids.isEmpty()) {
-            return Optional.of(Collections.emptyList());
+            return Page.empty();
         }
 
-        List<Usuario> usuarios = usuarioRepository.findAllById(ids);
-        return Optional.of(usuarios);
+        PageRequest pageable = PageRequest.of(page, size);
+
+        return usuarioRepository.findByIdIn(ids, pageable);
     }
 
     /**
