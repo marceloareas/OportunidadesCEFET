@@ -54,7 +54,7 @@ export class MinhasDiscussoes {
     this.erro.set('');
 
     this.postService
-      .getPosts(this.paginaAtual(), this.tamanhoPagina())
+      .getPostsByUser(this.usuarioId!, this.paginaAtual(), this.tamanhoPagina())
       .subscribe({
         next: (page) => {
           this.minhasPublicacoes.set(page.content || []);
