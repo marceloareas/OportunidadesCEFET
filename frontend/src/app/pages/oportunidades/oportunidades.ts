@@ -47,6 +47,11 @@ export class OportunidadesPage {
   ) {}
 
   ngOnInit() {
+    // Verificar se está no browser (não no SSR)
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const usuarioStr = localStorage.getItem('usuario');
     if (!usuarioStr) return;
     let parsed: any = null;

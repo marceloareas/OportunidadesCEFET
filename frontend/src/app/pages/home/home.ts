@@ -27,7 +27,7 @@ export class Home {
   newPostModal = signal<boolean>(false);
   modoOportunidade = signal<boolean>(false);
 
-  tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
+  tipoUsuario = signal<string>('aluno');
   usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
 
   feedItens = signal<FeedItem[]>([]);
@@ -58,25 +58,33 @@ export class Home {
   }
 
   ngOnInit() {
-    const isLogged = localStorage.getItem('isLogged') === 'true';
-    if (!isLogged) {
+    // Verificar se está no browser (não no SSR)
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    const usuario = localStorage.getItem('usuario');
+
+    if (!token || !usuario) {
       this.router.navigate(['/login']);
       return;
     }
 
-    const usuario = localStorage.getItem('usuario');
-    if (usuario) {
-      try {
-        const parsed = JSON.parse(usuario);
-        this.usuarioLogado.set({
-          id: parsed.id,
-          nome: parsed.nome,
-          funcao: parsed.funcao?.toUpperCase() || 'NADA',
-          imagemPerfil: parsed.imagemPerfil
-        });
-      } catch {
-        this.usuarioLogado.set(null);
-      }
+    try {
+      const parsed = JSON.parse(usuario);
+      this.usuarioLogado.set({
+        id: parsed.id,
+        nome: parsed.nome,
+        funcao: parsed.funcao?.toUpperCase() || 'NADA',
+        imagemPerfil: parsed.imagemPerfil
+      });
+
+      const tipoUsuario = localStorage.getItem('tipoUsuario') || 'aluno';
+      this.tipoUsuario.set(tipoUsuario);
+    } catch {
+      this.router.navigate(['/login']);
+      return;
     }
 
     this.carregarFeed();

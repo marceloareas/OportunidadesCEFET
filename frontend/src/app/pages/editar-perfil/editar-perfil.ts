@@ -24,7 +24,14 @@ export class EditarPerfil {
   imagemPerfilBase64: string | null = null;
   imagemPreview: string | null = null;
 
-  constructor(private usuarioService: UsuarioService, private router: Router) {
+  constructor(private usuarioService: UsuarioService, private router: Router) {}
+
+  ngOnInit() {
+    // Verificar se está no browser (não no SSR)
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const stored = localStorage.getItem('usuario');
     if (stored) {
       try {
