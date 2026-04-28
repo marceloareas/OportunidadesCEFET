@@ -45,3 +45,9 @@
     }
 
 }
+
+.navbar .center img {
+  padding: 2px;   
+  height: 65%;   
+  width: auto;
+}
