@@ -29,12 +29,10 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-    public Page<Post> listarTodos(int page, int size) {
-        return postRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
-    }
-
     public Optional<Post> buscarPorId(String id) {
-        return postRepository.findById(id);
+        Optional<Post> opt = postRepository.findById(id);
+        opt.ifPresent(this::preencherDadosCriador);
+        return opt;
     }
 
     public Post salvar(Post post) {
@@ -92,10 +90,24 @@ public class PostService {
         }
     }
 
+    public Page<Post> listarTodos(int page, int size) {
+        Page<Post> posts = postRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
+        posts.getContent().forEach(this::preencherDadosCriador);
+        return posts;
+    }
+    
     public Page<Post> listarPorUsuario(String criadorId, int page, int size) {
-        return postRepository.findAllByCriadorIdOrderByCriadoDesc(
-                criadorId,
-                PageRequest.of(page, size)
-        );
+        Page<Post> posts = postRepository.findAllByCriadorIdOrderByCriadoDesc(criadorId, PageRequest.of(page, size));
+        posts.getContent().forEach(this::preencherDadosCriador);
+        return posts;
+    }
+
+    private void preencherDadosCriador(Post post) {
+        if (post.getCriadorId() != null) {
+            usuarioRepository.findById(post.getCriadorId()).ifPresent(criador -> {
+                post.setNomeCriador(criador.getNome());
+                post.setImagemPerfil(criador.getImagemPerfil());
+            });
+        }
     }
 }

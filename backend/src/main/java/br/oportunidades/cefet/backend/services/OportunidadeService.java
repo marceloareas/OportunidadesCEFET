@@ -29,12 +29,16 @@ public class OportunidadeService {
     private FeedService feedService;
 
     public Page<Oportunidade> listarTodos(int page, int size) {
-        return oportunidadeRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
+            Page<Oportunidade> ops = oportunidadeRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
+            ops.getContent().forEach(this::preencherDadosCriador);
+            return ops;
     }
 
     public Optional<Oportunidade> buscarPorId(String id) {
-        return oportunidadeRepository.findById(id);
-    }
+            Optional<Oportunidade> opt = oportunidadeRepository.findById(id);
+            opt.ifPresent(this::preencherDadosCriador);
+            return opt;
+        }
 
     public Oportunidade salvar(Oportunidade oportunidade) {
         if (oportunidade.getIdCategoria() == null || oportunidade.getIdCategoria().isBlank()) {
@@ -85,24 +89,24 @@ public class OportunidadeService {
     }
 
     public Page<Oportunidade> listarPorProfessor(String idProfessor, int page, int size) {
-        return oportunidadeRepository
-                .findByProfessorIdOrderByCriadoDesc(
-                        idProfessor,
-                        PageRequest.of(page, size)
-                );
+        Page<Oportunidade> ops = oportunidadeRepository
+                .findByProfessorIdOrderByCriadoDesc(idProfessor, PageRequest.of(page, size));
+        ops.getContent().forEach(this::preencherDadosCriador);
+        return ops;
     }
 
     public Page<Oportunidade> listarPorAluno(String idAluno, int page, int size) {
-        Page<Oportunidade> pageData =
-                oportunidadeRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
+            Page<Oportunidade> pageData =
+                    oportunidadeRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
 
-        return pageData.map(o -> {
-            if (o.getAlunosCandidatosId() != null && o.getAlunosCandidatosId().contains(idAluno)) {
-                return o;
-            }
-            return null;
-        }).map(o -> o);
-    }
+            return pageData.map(o -> {
+                if (o.getAlunosCandidatosId() != null && o.getAlunosCandidatosId().contains(idAluno)) {
+                    preencherDadosCriador(o); 
+                    return o;
+                }
+                return null;
+            }).map(o -> o);
+        }
 
     public Optional<Oportunidade> atualizar(String id, Oportunidade atualizada) {
         return oportunidadeRepository.findById(id).map(existente -> {
@@ -317,5 +321,14 @@ public class OportunidadeService {
         feedService.atualizarFeedOportunidade(salva, nomeCriador);
 
         return Optional.of(salva);
+    }
+
+    private void preencherDadosCriador(Oportunidade op) {
+        if (op.getProfessorId() != null) {
+            usuarioRepository.findById(op.getProfessorId()).ifPresent(criador -> {
+                op.setNomeCriador(criador.getNome());
+                op.setImagemPerfil(criador.getImagemPerfil());
+            });
+        }
     }
 }

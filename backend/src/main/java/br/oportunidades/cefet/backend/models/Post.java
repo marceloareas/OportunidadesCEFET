@@ -4,6 +4,8 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import org.springframework.data.annotation.Transient;
+
 import java.util.*;
 
 @Document("Post")
@@ -41,5 +43,11 @@ public class Post {
     
     @Builder.Default
     private List<String> idLikes = new ArrayList<>();
+
+    @Transient
+    private String nomeCriador;
+
+    @Transient
+    private String imagemPerfil;
 
 }

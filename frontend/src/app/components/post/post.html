@@ -1,6 +1,6 @@
 <div class="post">
   <div class="post-header">
-    <img class="avatar" [src]="post.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" />
+    <img class="avatar" [src]="(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil) || 'pfptemp.ico'" alt="Foto de perfil" />
     <div class="post-info">
       <h2>
         <ng-container *ngIf="usuarioLogado()?.id === post.criadorId; else outroUsuario">

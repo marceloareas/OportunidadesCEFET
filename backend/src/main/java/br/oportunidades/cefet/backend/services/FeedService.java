@@ -16,6 +16,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.oportunidades.cefet.backend.repositories.PostRepository;
+import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
+import java.util.Optional;
+
 @Service
 
 public class FeedService {
@@ -30,6 +34,12 @@ public class FeedService {
     @Autowired
     private ComentarioRepository comentarioRepository;
 
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private OportunidadeRepository oportunidadeRepository;
+
     public FeedPageDTO listarFeed(int page, int size) {
         Page<FeedItem> feedPage = feedRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
 
@@ -39,6 +49,32 @@ public class FeedService {
                     .findByTipoEntidadePaiAndIdPostAndIdComentarioPaiIsNull(tipo, item.getReferenciaId());
             
             item.setIdComentarios(comentarios.stream().map(Comentario::getId).collect(Collectors.toList()));
+
+            String criadorId = item.getCriadorId();
+
+            // FALLBACK E CORREÇÃO DO BANCO: 
+            if (criadorId == null && item.getReferenciaId() != null) {
+                if ("OPORTUNIDADE".equalsIgnoreCase(item.getTipo())) {
+                    Optional<Oportunidade> op = oportunidadeRepository.findById(item.getReferenciaId());
+                    if (op.isPresent()) criadorId = op.get().getProfessorId();
+                } else {
+                    Optional<Post> p = postRepository.findById(item.getReferenciaId());
+                    if (p.isPresent()) criadorId = p.get().getCriadorId();
+                }
+                
+                if (criadorId != null) {
+                    item.setCriadorId(criadorId);
+                    feedRepository.save(item);
+                }
+            }
+
+            if (criadorId != null) {
+                Usuario criador = usuarioService.getUsuarioById(criadorId);
+                if (criador != null) {
+                    item.setNomeCriador(criador.getNome());
+                    item.setImagemPerfil(criador.getImagemPerfil());
+                }
+            }
         });
 
         return new FeedPageDTO(

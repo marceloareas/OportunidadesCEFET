@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import br.oportunidades.cefet.backend.enums.GrandeAreaConhecimento;
 import java.util.*;
 
+import org.springframework.data.annotation.Transient;
+
 @Document(collection = "Oportunidade")
 @Getter
 @Setter
@@ -55,5 +57,11 @@ public class Oportunidade {
 
     @Builder.Default
     private List<GrandeAreaConhecimento> grandesAreas = new ArrayList<>();
+
+    @Transient
+    private String nomeCriador;
+
+    @Transient
+    private String imagemPerfil;
 
 }
