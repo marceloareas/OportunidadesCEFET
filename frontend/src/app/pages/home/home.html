@@ -7,7 +7,7 @@
       <div class="posts" *ngSwitchCase="'home'">
         <div class="new-post">
           <div class="img">
-            <img [src]="usuarioLogado()?.imagemPerfil || 'pfptemp.ico'" />
+            <img [src]="usuarioLogado()?.imagemPerfil || 'favicon.png'" />
           </div>
 
           <div (click)="openNewPost()" class="new-post-btn">
