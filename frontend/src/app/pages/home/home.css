@@ -22,7 +22,8 @@
     height: auto;
     color: black;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 10px;
 
     .img{
         width: 50px;
@@ -36,20 +37,24 @@
     }
 
     .new-post-btn{
-        width: 90%;
+        width: auto;
         height: 50px;
         display: flex;
         background-color: #fff;
+        font-size: medium;
         border: 1px solid black;
         border-radius: 20px;
-        padding: 2vh 1vw;
+        padding: 15px;
         box-sizing: border-box;
         cursor: pointer;
+        color: #313131;
+        transition: background-color 0.2s ease;
+        
+    }
 
-        span{
-            
-            color: #313131;
-        }
+    .new-post-btn:hover {
+        background-color: #212121;
+        color: #fff;
     }
 }
 
@@ -67,6 +72,22 @@ hr {
 
 .titulo-principal {
     margin-top: 4vh;
+}
+
+.feed-load-btn{
+    display: block;
+    margin: 0 auto;
+    background-color: #FFFFFF;
+    border: 1px solid black;
+    border-radius: 6px;
+    padding: 8px 12px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.feed-load-btn:hover {
+    background-color: #212121;
+    color: #FFFFFF;
 }
 
 .modal-overlay {
