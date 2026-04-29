@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
@@ -10,7 +11,7 @@ import { UsuarioService, Usuario } from '../../services/usuario.service';
 @Component({
   selector: 'app-oportunidades',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarTop, NavbarLeft, NavbarRight],
+  imports: [CommonModule, FormsModule, RouterLink, NavbarTop, NavbarLeft, NavbarRight],
   templateUrl: './oportunidades.html',
   styleUrl: './oportunidades.css'
 })

@@ -103,9 +103,27 @@
       <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
         <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
           <div class="cand-dados" style="display: flex; align-items: center; gap: 10px;">
-            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            <a
+              *ngIf="c.id; else candidatoFotoSemPerfil"
+              class="candidato-perfil-link"
+              [routerLink]="['/perfil', c.id]"
+            >
+              <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            </a>
+            <ng-template #candidatoFotoSemPerfil>
+              <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            </ng-template>
             <div>
-              <div class="candidato-nome">{{ c.nome || c.id }}</div>
+              <a
+                *ngIf="c.id; else candidatoNomeSemPerfil"
+                class="candidato-nome candidato-perfil-link"
+                [routerLink]="['/perfil', c.id]"
+              >
+                {{ c.nome || c.id }}
+              </a>
+              <ng-template #candidatoNomeSemPerfil>
+                <div class="candidato-nome">{{ c.nome || c.id }}</div>
+              </ng-template>
               <div class="cand-meta">
                 <span *ngIf="c.email">E-mail: {{ c.email }}</span>
                 <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>

@@ -12,7 +12,7 @@
 .avatar-preview {
     width: 110px;
     height: 110px;
-    border-radius: 50%;
+    border-radius: 10px;
     object-fit: cover;
     border: 2px solid #8393A2;
     background: #eaeaea;
@@ -41,6 +41,30 @@
     font-size: 0.95em;
     margin-top: 0.5em;
 }
+
+.crop-controls {
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    margin-top: 0.75em;
+}
+
+.crop-controls label {
+    height: auto;
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.crop-controls input[type="range"] {
+    width: 100%;
+    height: 18px;
+    padding: 0;
+    cursor: pointer;
+}
+
 .page{
     height: 100vh;
     width: 100vw;
