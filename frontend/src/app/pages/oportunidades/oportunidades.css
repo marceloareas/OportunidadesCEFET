@@ -20,6 +20,13 @@
   margin-top: 4vh;
 }
 
+hr {
+  border: none;
+  height: 1px;
+  border-top: 1px solid black;
+  margin: 4vh 0;
+}
+
 .mensagem-status { color: #333; margin: 12px 0; }
 .mensagem-erro { color: #d32f2f; margin: 12px 0; }
 .mensagem-vazia { color: #666; font-style: italic; margin: 12px 0; }

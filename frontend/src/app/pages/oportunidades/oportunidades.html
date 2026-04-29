@@ -5,6 +5,7 @@
   <main class="content">
     <div class="scroll-content">
       <h2 class="titulo-principal">Oportunidades</h2>
+      <hr />
       <div *ngIf="carregando()" class="mensagem-status">Carregando...</div>
       <div *ngIf="erro()" class="mensagem-erro">{{ erro() }}</div>
 

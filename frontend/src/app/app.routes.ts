@@ -4,6 +4,7 @@ import { Login } from './pages/login/login.component';
 import { EditarPerfil } from './pages/editar-perfil/editar-perfil'
 import { MinhasDiscussoes } from './pages/minhas-discussoes/minhas-discussoes';
 import { OportunidadesPage } from './pages/oportunidades/oportunidades';
+import { ItensSalvosComponent } from './pages/itens-salvos/itens-salvos';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -11,5 +12,6 @@ export const routes: Routes = [
   { path: 'home', component: Home },
   { path: 'config', component: EditarPerfil },
   { path: 'minhas_discussoes', component: MinhasDiscussoes },
-  { path: 'oportunidades', component: OportunidadesPage }
+  { path: 'oportunidades', component: OportunidadesPage },
+  { path: 'itens_salvos', component: ItensSalvosComponent }
 ];

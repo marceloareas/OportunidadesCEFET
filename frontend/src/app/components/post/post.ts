@@ -8,22 +8,34 @@ import { PostService } from '../../services/post.services';
 import { ComentarioService } from '../../services/comentario.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
 import { FeedItem } from '../../services/feed.service';
+import { SavedItemsService } from '../../services/itens-salvos.service';
 
 @Component({
   selector: 'app-post',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './post.html',
-  styleUrl: './post.css'
+  styleUrl: './post.css',
 })
 export class PostComponent {
   @Input() post!: FeedItem;
 
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
-  usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
+  usuarioLogado = signal<{
+    id: string;
+    nome: string;
+    funcao: string;
+    imagemPerfil?: string;
+  } | null>(null);
 
   novoComentario = '';
-  comentarios: Array<{ autor: string; imagemPerfil?: string; texto: string; data?: string; id?: string }> = [];
+  comentarios: Array<{
+    autor: string;
+    imagemPerfil?: string;
+    texto: string;
+    data?: string;
+    id?: string;
+  }> = [];
 
   jaCandidatado = signal<boolean>(false);
   contadorCandidatos = signal<number>(0);
@@ -39,28 +51,31 @@ export class PostComponent {
   aprovando = signal<string | null>(null);
   somenteAprovados = signal<boolean>(false);
 
+  salvo = signal<boolean>(false);
+
   private comentarioService = inject(ComentarioService);
   private usuarioService = inject(UsuarioService);
+  private savedService = inject(SavedItemsService);
 
   constructor(
-      private oportunidadeService: OportunidadeService,
-      private postService: PostService,
-    ) {
-      const usuario = localStorage.getItem('usuario');
-      if (usuario) {
-        try {
-          const parsed = JSON.parse(usuario);
-          this.usuarioLogado.set({
-            id: parsed.id,
-            nome: parsed.nome,
-            funcao: parsed.funcao?.toUpperCase() || 'ALUNO',
-            imagemPerfil: parsed.imagemPerfil // <-- ADICIONE ESTA LINHA
-          });
-        } catch {
-          this.usuarioLogado.set(null);
-        }
+    private oportunidadeService: OportunidadeService,
+    private postService: PostService,
+  ) {
+    const usuario = localStorage.getItem('usuario');
+    if (usuario) {
+      try {
+        const parsed = JSON.parse(usuario);
+        this.usuarioLogado.set({
+          id: parsed.id,
+          nome: parsed.nome,
+          funcao: parsed.funcao?.toUpperCase() || 'ALUNO',
+          imagemPerfil: parsed.imagemPerfil, // <-- ADICIONE ESTA LINHA
+        });
+      } catch {
+        this.usuarioLogado.set(null);
       }
     }
+  }
 
   ngOnInit() {
     this.contadorCandidatos.set(this.post.alunosCandidatosId?.length ?? 0);
@@ -77,6 +92,15 @@ export class PostComponent {
       if (this.post.idLikes?.includes(usuario.id)) this.curtiu.set(true);
       if (this.post.alunosCandidatosId?.includes(usuario.id)) this.jaCandidatado.set(true);
     }
+
+    if (usuario && this.post.id) {
+      this.savedService.listarPorUsuario(usuario.id).subscribe(res => {
+        const ids = res.content.map(item => item.id);
+        if (ids.includes(this.post.id!)) {
+          this.salvo.set(true);
+        }
+      });
+    }
   }
 
   get dataFormatada(): string {
@@ -87,7 +111,7 @@ export class PostComponent {
       month: 'short',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 
@@ -112,7 +136,7 @@ export class PostComponent {
       tipoEntidadePai: this.post.tipo === 'OPORTUNIDADE' ? 'Oportunidade' : 'Post',
       idPost: this.post.referenciaId || this.post.id,
       texto: this.novoComentario,
-      idComentarioPai: null
+      idComentarioPai: null,
     } as any;
 
     this.comentarioService.criar(payload).subscribe({
@@ -122,20 +146,20 @@ export class PostComponent {
           imagemPerfil: usuario.imagemPerfil,
           texto: saved.texto || this.novoComentario,
           data: saved.dataComentario as any,
-          id: saved.id
+          id: saved.id,
         });
 
         if (!this.post.idComentarios) this.post.idComentarios = [];
         if (saved.id) this.post.idComentarios.push(saved.id);
 
-        this.contadorComentarios.update(n => n + 1);
+        this.contadorComentarios.update((n) => n + 1);
 
         this.novoComentario = '';
       },
       error: (err) => {
         console.error('Erro ao enviar comentario:', err);
         alert('Erro ao enviar comentario. Veja o console para mais detalhes.');
-      }
+      },
     });
   }
 
@@ -143,9 +167,10 @@ export class PostComponent {
     const referenciaId = this.post.referenciaId || this.post.id;
     if (!referenciaId) return;
 
-    const req = this.post.tipo === 'OPORTUNIDADE'
-      ? this.comentarioService.listarComentariosOportunidade(referenciaId)
-      : this.comentarioService.listarComentariosPost(referenciaId);
+    const req =
+      this.post.tipo === 'OPORTUNIDADE'
+        ? this.comentarioService.listarComentariosOportunidade(referenciaId)
+        : this.comentarioService.listarComentariosPost(referenciaId);
 
     req.subscribe({
       next: (arr) => {
@@ -159,12 +184,13 @@ export class PostComponent {
             imagemPerfil: undefined,
             texto: c.texto || '',
             data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
-            id: c.id
+            id: c.id,
           }));
-          try { this.post.idComentarios = arr
-            .map((c) => c.id)
-            .filter((id): id is string => Boolean(id)); } 
-          catch {}
+          try {
+            this.post.idComentarios = arr
+              .map((c) => c.id)
+              .filter((id): id is string => Boolean(id));
+          } catch {}
           return;
         }
 
@@ -182,11 +208,12 @@ export class PostComponent {
               imagemPerfil: (c.usuarioId && userById[c.usuarioId]?.imagemPerfil) || undefined,
               texto: c.texto || '',
               data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
-              id: c.id
+              id: c.id,
             }));
-            try { this.post.idComentarios = arr
-              .map((c) => c.id)
-              .filter((id): id is string => Boolean(id)); 
+            try {
+              this.post.idComentarios = arr
+                .map((c) => c.id)
+                .filter((id): id is string => Boolean(id));
             } catch {}
           },
           error: (err) => {
@@ -196,18 +223,19 @@ export class PostComponent {
               imagemPerfil: undefined,
               texto: c.texto || '',
               data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
-              id: c.id
+              id: c.id,
             }));
-            try { this.post.idComentarios = arr
-              .map((c) => c.id)
-              .filter((id): id is string => Boolean(id));
+            try {
+              this.post.idComentarios = arr
+                .map((c) => c.id)
+                .filter((id): id is string => Boolean(id));
             } catch {}
-          }
+          },
         });
       },
       error: (err) => {
         console.warn('Erro ao carregar comentarios:', err);
-      }
+      },
     });
   }
 
@@ -230,12 +258,13 @@ export class PostComponent {
     const referenciaId = this.post.referenciaId || this.post.id;
     if (!referenciaId) return;
 
-    const req = this.post.tipo === 'OPORTUNIDADE'
-      ? this.oportunidadeService.curtirOportunidade(referenciaId, usuario.id)
-      : this.postService.atualizarLike(referenciaId, usuario.id);
+    const req =
+      this.post.tipo === 'OPORTUNIDADE'
+        ? this.oportunidadeService.curtirOportunidade(referenciaId, usuario.id)
+        : this.postService.atualizarLike(referenciaId, usuario.id);
 
     req.subscribe({
-      error: (err) => console.warn('Erro ao curtir:', err)
+      error: (err) => console.warn('Erro ao curtir:', err),
     });
   }
 
@@ -261,7 +290,7 @@ export class PostComponent {
       error: (err) => {
         console.error('Erro ao se candidatar:', err);
         alert('Erro ao se candidatar à vaga.');
-      }
+      },
     });
   }
 
@@ -271,7 +300,7 @@ export class PostComponent {
       usuario &&
       this.post.tipo === 'OPORTUNIDADE' &&
       this.post.criadorId &&
-      usuario.id === this.post.criadorId
+      usuario.id === this.post.criadorId,
     );
   }
 
@@ -286,20 +315,19 @@ export class PostComponent {
     const referenciaId = this.post.referenciaId || this.post.id;
     if (!referenciaId) return;
 
-    this.oportunidadeService.listarCandidatosDoProfessor(referenciaId, usuario.id)
-      .subscribe({
-        next: (lista) => {
-          this.candidatos.set(lista || []);
-          this.candidatosModal.set(true);
-          this.candidatosCarregando.set(false);
-        },
-        error: (err) => {
-          console.error('Erro ao listar candidatos:', err);
-          this.candidatosErro.set('Não foi possível carregar candidatos.');
-          this.candidatosCarregando.set(false);
-          this.candidatosModal.set(true);
-        }
-      });
+    this.oportunidadeService.listarCandidatosDoProfessor(referenciaId, usuario.id).subscribe({
+      next: (lista) => {
+        this.candidatos.set(lista || []);
+        this.candidatosModal.set(true);
+        this.candidatosCarregando.set(false);
+      },
+      error: (err) => {
+        console.error('Erro ao listar candidatos:', err);
+        this.candidatosErro.set('Não foi possível carregar candidatos.');
+        this.candidatosCarregando.set(false);
+        this.candidatosModal.set(true);
+      },
+    });
   }
 
   fecharCandidatos() {
@@ -349,7 +377,22 @@ export class PostComponent {
           console.error('Erro ao aprovar candidato:', err);
           alert('Não foi possível aprovar o candidato.');
           this.aprovando.set(null);
-        }
+        },
       });
+  }
+
+  toggleSalvar() {
+    const usuario = this.usuarioLogado();
+    if (!usuario || !this.post.id) return;
+
+    if (this.salvo()) {
+      this.savedService.remover(usuario.id, this.post.id).subscribe(() => {
+        this.salvo.set(false);
+      });
+    } else {
+      this.savedService.salvar(usuario.id, this.post.id).subscribe(() => {
+        this.salvo.set(true);
+      });
+    }
   }
 }
