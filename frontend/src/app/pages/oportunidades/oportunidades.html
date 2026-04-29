@@ -31,21 +31,27 @@
               </button>
             </div>
           </article>
-          <div class="paginacao"
-              *ngIf="!carregando() && totalPaginas() > 1">
-            <button (click)="paginaAnteriorOportunidades()" [disabled]="paginaAtual() === 0">
-              Anterior
-            </button>
-
-            <span>
-              Página {{ paginaAtual() + 1 }} de {{ totalPaginas() }}
-            </span>
+          <div class="feed-footer" *ngIf="minhasOportunidades().length > 0">
+            <div *ngIf="carregando()" class="feed-state loading">
+              <div class="loader"></div>
+              <span>Carregando mais publicações...</span>
+            </div>
 
             <button
-              (click)="proximaPaginaOportunidades()"
-              [disabled]="paginaAtual() >= totalPaginas() - 1">
-              Próxima
+              *ngIf="!carregando() && hasMoreOportunidades()"
+              class="feed-load-btn"
+              (click)="carregarMaisOportunidades()"
+            >
+              <span>Carregar mais</span>
+              <i class="bi bi-arrow-down"></i>
             </button>
+
+            <div *ngIf="!carregando() && !hasMoreOportunidades()" class="feed-state end">
+              <div>
+                <strong>Fim das publicações</strong>
+                <p>Você viu tudo por enquanto</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
