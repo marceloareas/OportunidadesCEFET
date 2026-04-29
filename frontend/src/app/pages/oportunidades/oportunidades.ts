@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
@@ -46,23 +46,37 @@ export class OportunidadesPage {
     private usuarioService: UsuarioService
   ) {}
 
-  ngOnInit() {
-    // Verificar se está no browser (não no SSR)
-    if (typeof window === 'undefined') {
-      return;
+    ngOnInit() {
+      if (typeof window === 'undefined') return;
+
+      const usuarioStr = localStorage.getItem('usuario');
+      if (!usuarioStr) return;
+
+      let parsed: any = null;
+      try {
+        parsed = JSON.parse(usuarioStr);
+      } catch {
+        return;
+      }
+
+      this.usuarioId = parsed?.id;
+      this.usuarioFuncao = parsed?.funcao?.toLowerCase();
+
+      if (!this.usuarioId) return;
+
+      this.carregarDados(0, false);
     }
 
-    const usuarioStr = localStorage.getItem('usuario');
-    if (!usuarioStr) return;
-    let parsed: any = null;
-    try { parsed = JSON.parse(usuarioStr); } catch { return; }
-    this.usuarioId = parsed?.id;
-    this.usuarioFuncao = parsed?.funcao?.toLowerCase();
-    if (!this.usuarioId) return;
+    carregarMaisOportunidades() {
+      if (this.carregando() || !this.hasMoreOportunidades()) return;
+      this.carregarDados(this.paginaAtual() + 1, true);
+    }
 
-    this.carregarDados();
-  }
-    private carregarDados() {
+    hasMoreOportunidades = computed(
+      () => this.paginaAtual() < this.totalPaginas() - 1
+    );
+
+    private carregarDados(page = 0, append = false) {
       this.carregando.set(true);
       this.erro.set('');
 
@@ -70,19 +84,35 @@ export class OportunidadesPage {
         this.usuarioFuncao === 'professor'
           ? this.oportunidadeService.listarPorProfessor(
               this.usuarioId!,
-              this.paginaAtual(),
+              page,
               this.tamanhoPagina()
             )
           : this.oportunidadeService.listarPorAluno(
               this.usuarioId!,
-              this.paginaAtual(),
+              page,
               this.tamanhoPagina()
             );
 
       request.subscribe({
-        next: (page) => {
-          this.minhasOportunidades.set(page.content || []);
-          this.totalPaginas.set(page.totalPages || 0);
+        next: (res) => {
+          const novas = res.content || [];
+
+          if (this.usuarioFuncao === 'professor') {
+            this.minhasOportunidades.set(
+              append
+                ? [...this.minhasOportunidades(), ...novas]
+                : novas
+            );
+          } else {
+            this.candidaturas.set(
+              append
+                ? [...this.candidaturas(), ...novas]
+                : novas
+            );
+          }
+
+          this.paginaAtual.set(res.number);
+          this.totalPaginas.set(res.totalPages || 0);
           this.carregando.set(false);
         },
         error: (err) => {
@@ -160,20 +190,6 @@ export class OportunidadesPage {
       this.paginaAtualCandidatos.update(v => v - 1);
       const opId = this.oportunidadeSelecionadaId();
       if (opId) this.carregarCandidatos(opId);
-    }
-  }
-
-  proximaPaginaOportunidades() {
-    if (this.paginaAtual() < this.totalPaginas() - 1) {
-      this.paginaAtual.update(v => v + 1);
-      this.carregarDados();
-    }
-  }
-
-  paginaAnteriorOportunidades() {
-    if (this.paginaAtual() > 0) {
-      this.paginaAtual.update(v => v - 1);
-      this.carregarDados();
     }
   }
 
