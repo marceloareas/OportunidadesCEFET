@@ -31,6 +31,8 @@ public class Usuario {
     private FuncaoDeUsuario funcao;
     private Date criado;
     private String imagemPerfil;
+    private String linkPortfolio;
+    private String linkCurriculo;
 
     @Builder.Default
     // Usuário 0:N Posts

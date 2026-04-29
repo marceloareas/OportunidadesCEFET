@@ -177,6 +177,23 @@
     margin-top: 2px;
 }
 
+.candidato-nome{
+    color: #111;
+    font-weight: 700;
+}
+
+.candidato-perfil-link{
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.candidato-perfil-link:hover{
+    color: #0a497e;
+    text-decoration: underline;
+}
+
 .cand-actions{
     display:flex;
     align-items:center;

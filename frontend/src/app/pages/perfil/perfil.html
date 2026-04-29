@@ -1,0 +1,81 @@
+<app-navbar-top></app-navbar-top>
+<div class="page">
+  <app-navbar-left></app-navbar-left>
+
+  <main class="content">
+    <div class="scroll-content">
+      <h2 class="titulo-pagina">Perfil</h2>
+
+      <div class="estado" *ngIf="carregando()">Carregando perfil...</div>
+      <div class="estado erro" *ngIf="erro()">{{ erro() }}</div>
+
+      <section class="card-perfil" *ngIf="!carregando() && !erro() && usuarioPerfil() as perfil">
+        <div class="info-principal">
+          <div class="foto-wrapper">
+            <img [src]="perfil.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" />
+          </div>
+
+          <div class="dados-principais">
+            <h3>{{ perfil.nome }}</h3>
+
+            <div class="linha-secundaria">
+              <span>{{ getTipoUsuarioLabel(perfil.funcao) }}</span>
+              <span class="matricula" *ngIf="perfil.matricula">Matrícula: {{ perfil.matricula }}</span>
+            </div>
+
+            <p class="email">{{ perfil.email }}</p>
+          </div>
+        </div>
+
+        <div class="links-publicos" *ngIf="perfil.linkPortfolio || perfil.linkCurriculo">
+          <h4>Links do perfil</h4>
+          <div class="links-grid">
+            <a *ngIf="perfil.linkPortfolio" [href]="perfil.linkPortfolio" target="_blank" rel="noopener noreferrer">
+              Portfólio
+            </a>
+            <a *ngIf="perfil.linkCurriculo" [href]="perfil.linkCurriculo" target="_blank" rel="noopener noreferrer">
+              Currículo
+            </a>
+          </div>
+        </div>
+
+        <div class="edit-links" *ngIf="isProprioPerfil()">
+          <h4>Editar links do seu perfil</h4>
+          <p class="hint">Você pode adicionar até dois links: um para portfólio e outro para currículo.</p>
+
+          <div class="campos">
+            <label for="portfolio">Link do portfólio</label>
+            <input
+              id="portfolio"
+              type="url"
+              placeholder="https://seu-portfolio.com"
+              [ngModel]="linkPortfolio()"
+              (ngModelChange)="linkPortfolio.set($event)"
+            />
+
+            <label for="curriculo">Link do currículo</label>
+            <input
+              id="curriculo"
+              type="url"
+              placeholder="https://seu-curriculo.com"
+              [ngModel]="linkCurriculo()"
+              (ngModelChange)="linkCurriculo.set($event)"
+            />
+          </div>
+
+          <div class="acoes">
+            <button type="button" (click)="salvarLinks()" [disabled]="salvando()">
+              {{ salvando() ? 'Salvando...' : 'Salvar links' }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="acoes-finais">
+        <button type="button" class="btn-voltar" (click)="voltarInicio()">Voltar</button>
+      </div>
+    </div>
+  </main>
+
+  <app-navbar-right></app-navbar-right>
+</div>

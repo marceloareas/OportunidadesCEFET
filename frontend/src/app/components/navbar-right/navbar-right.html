@@ -4,7 +4,7 @@
       <img src="pfpBackground.PNG" alt="background">
     </div>
 
-    <div class="pfp">
+    <div class="pfp" (click)="goPerfil()" [class.clickable]="usuarioId">
       <img [src]="usuarioImagem || 'pfptemp.ico'" alt="foto de perfil">
     </div>
 
@@ -14,7 +14,7 @@
 
     <div class="profile">
       <!-- Nome e função do usuário -->
-      <h2>{{ usuarioNome }}</h2>
+      <h2 (click)="goPerfil()" [class.clickable]="usuarioId">{{ usuarioNome }}</h2>
       <p class="desc">{{ usuarioFuncao }} {{ usuarioMatricula }}</p>
 
       <div class="item-list">

@@ -1,4 +1,5 @@
 import { Component, Input, signal, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -12,18 +13,20 @@ import { FeedItem } from '../../services/feed.service';
 @Component({
   selector: 'app-post',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './post.html',
   styleUrl: './post.css'
 })
 export class PostComponent {
   @Input() post!: FeedItem;
+  readonly comentariosPorPagina = 10;
 
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
   usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
 
   novoComentario = '';
-  comentarios: Array<{ autor: string; imagemPerfil?: string; texto: string; data?: string; id?: string }> = [];
+  comentarios: Array<{ autor: string; imagemPerfil?: string; texto: string; data?: string; id?: string; usuarioId?: string }> = [];
+  paginaComentarios = signal<number>(1);
 
   jaCandidatado = signal<boolean>(false);
   contadorCandidatos = signal<number>(0);
@@ -45,6 +48,7 @@ export class PostComponent {
   constructor(
       private oportunidadeService: OportunidadeService,
       private postService: PostService,
+      private router: Router
     ) {
       const usuario = localStorage.getItem('usuario');
       if (usuario) {
@@ -90,6 +94,33 @@ export class PostComponent {
       minute: '2-digit'
     });
   }
+  
+  formatarDataComentario(data?: string | Date): string {
+    if (!data) return '';
+
+    const dataComentario = new Date(data);
+    if (Number.isNaN(dataComentario.getTime())) return '';
+
+    const dia = String(dataComentario.getDate()).padStart(2, '0');
+    const mes = String(dataComentario.getMonth() + 1).padStart(2, '0');
+    const ano = dataComentario.getFullYear();
+    const horas = String(dataComentario.getHours()).padStart(2, '0');
+    const minutos = String(dataComentario.getMinutes()).padStart(2, '0');
+
+    return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+  }
+
+  irParaPerfilCriador() {
+    const idUsuario = this.post?.criadorId;
+
+    if (!idUsuario) {
+      console.error('ID do criador do post não encontrado.');
+      return;
+    }
+
+    this.router.navigate(['/perfil', idUsuario]);
+  }
+    
 
   openNewComment() {
     this.newCommentModal.set(true);
@@ -100,6 +131,28 @@ export class PostComponent {
     this.newCommentModal.set(false);
   }
 
+  comentariosDaPaginaAtual(): Array<{ autor: string; imagemPerfil?: string; texto: string; data?: string; id?: string; usuarioId?: string }> {
+    const inicio = (this.paginaComentarios() - 1) * this.comentariosPorPagina;
+    return this.comentarios.slice(inicio, inicio + this.comentariosPorPagina);
+  }
+
+  totalPaginasComentarios(): number {
+    return Math.max(1, Math.ceil(this.comentarios.length / this.comentariosPorPagina));
+  }
+
+  irParaPaginaComentarios(pagina: number) {
+    const paginaValida = Math.min(Math.max(1, pagina), this.totalPaginasComentarios());
+    this.paginaComentarios.set(paginaValida);
+  }
+
+  paginaAnteriorComentarios() {
+    this.irParaPaginaComentarios(this.paginaComentarios() - 1);
+  }
+
+  proximaPaginaComentarios() {
+    this.irParaPaginaComentarios(this.paginaComentarios() + 1);
+  }
+
   enviarComentario() {
     const usuario = this.usuarioLogado();
     if (!usuario || !this.post.id) {
@@ -107,11 +160,17 @@ export class PostComponent {
       return;
     }
 
+    const textoComentario = this.novoComentario.trim();
+    if (!textoComentario) {
+      alert('Comentário não pode ser vazio.');
+      return;
+    }
+
     const payload = {
       usuarioId: usuario.id,
       tipoEntidadePai: this.post.tipo === 'OPORTUNIDADE' ? 'Oportunidade' : 'Post',
       idPost: this.post.referenciaId || this.post.id,
-      texto: this.novoComentario,
+      texto: textoComentario,
       idComentarioPai: null
     } as any;
 
@@ -121,14 +180,16 @@ export class PostComponent {
           autor: usuario.nome || usuario.id,
           imagemPerfil: usuario.imagemPerfil,
           texto: saved.texto || this.novoComentario,
-          data: saved.dataComentario as any,
-          id: saved.id
+          data: saved.dataComentario as string | undefined,
+          id: saved.id,
+          usuarioId: usuario.id
         });
 
         if (!this.post.idComentarios) this.post.idComentarios = [];
         if (saved.id) this.post.idComentarios.push(saved.id);
 
         this.contadorComentarios.update(n => n + 1);
+        this.irParaPaginaComentarios(this.totalPaginasComentarios());
 
         this.novoComentario = '';
       },
@@ -150,6 +211,7 @@ export class PostComponent {
     req.subscribe({
       next: (arr) => {
         this.contadorComentarios.set(arr.length);
+        this.paginaComentarios.set(1);
 
         const uniqueIds = Array.from(new Set(arr.map((c) => c.usuarioId).filter(Boolean)));
 
@@ -158,8 +220,9 @@ export class PostComponent {
             autor: 'Anônimo',
             imagemPerfil: undefined,
             texto: c.texto || '',
-            data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
-            id: c.id
+            data: c.dataComentario as string | undefined,
+            id: c.id,
+            usuarioId: c.usuarioId
           }));
           try { this.post.idComentarios = arr
             .map((c) => c.id)
@@ -181,8 +244,9 @@ export class PostComponent {
               autor: (c.usuarioId && userById[c.usuarioId]?.nome) || 'Anônimo',
               imagemPerfil: (c.usuarioId && userById[c.usuarioId]?.imagemPerfil) || undefined,
               texto: c.texto || '',
-              data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
-              id: c.id
+              data: c.dataComentario as string | undefined,
+              id: c.id,
+              usuarioId: c.usuarioId
             }));
             try { this.post.idComentarios = arr
               .map((c) => c.id)
@@ -195,8 +259,9 @@ export class PostComponent {
               autor: c.usuarioId || 'Anônimo',
               imagemPerfil: undefined,
               texto: c.texto || '',
-              data: c.dataComentario ? new Date(c.dataComentario).toLocaleString() : undefined,
-              id: c.id
+              data: c.dataComentario as string | undefined,
+              id: c.id,
+              usuarioId: c.usuarioId
             }));
             try { this.post.idComentarios = arr
               .map((c) => c.id)

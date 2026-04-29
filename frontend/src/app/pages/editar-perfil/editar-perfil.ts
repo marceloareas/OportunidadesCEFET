@@ -6,6 +6,11 @@ import { Router } from '@angular/router';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import {
+  DEFAULT_PROFILE_IMAGE_CROP,
+  ProfileImageCropPosition,
+  cropProfileImageToSquare
+} from '../../utils/profile-image';
 
 @Component({
   selector: 'app-editar-perfil',
@@ -23,6 +28,9 @@ export class EditarPerfil {
   matricula?: string;
   imagemPerfilBase64: string | null = null;
   imagemPreview: string | null = null;
+  imagemErro: string = '';
+  imagemSelecionada: File | null = null;
+  imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
 
   constructor(private usuarioService: UsuarioService, private router: Router) {}
 
@@ -50,16 +58,45 @@ export class EditarPerfil {
     }
   }
 
-  onImageSelected(event: Event): void {
+  async onImageSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagemPerfilBase64 = reader.result as string;
-        this.imagemPreview = this.imagemPerfilBase64;
-      };
-      reader.readAsDataURL(file);
+      if (!file.type.startsWith('image/')) {
+        this.imagemErro = 'Selecione um arquivo de imagem válido.';
+        this.imagemSelecionada = null;
+        this.imagemPerfilBase64 = null;
+        input.value = '';
+        return;
+      }
+
+      this.imagemSelecionada = file;
+      this.imagemCrop = { ...DEFAULT_PROFILE_IMAGE_CROP };
+      await this.processarImagemPerfilSelecionada();
+    }
+  }
+
+  async atualizarCorteImagemPerfil(axis: 'x' | 'y', event: Event): Promise<void> {
+    const value = Number((event.target as HTMLInputElement).value);
+    this.imagemCrop = {
+      ...this.imagemCrop,
+      [axis]: value
+    };
+
+    await this.processarImagemPerfilSelecionada();
+  }
+
+  private async processarImagemPerfilSelecionada(): Promise<void> {
+    if (!this.imagemSelecionada) return;
+
+    try {
+      this.imagemPerfilBase64 = await cropProfileImageToSquare(this.imagemSelecionada, this.imagemCrop);
+      this.imagemPreview = this.imagemPerfilBase64;
+      this.imagemErro = '';
+    } catch (error) {
+      console.error('Erro ao processar imagem de perfil:', error);
+      this.imagemErro = 'Não foi possível processar a imagem.';
+      this.imagemPerfilBase64 = null;
     }
   }
 

@@ -11,6 +11,8 @@ export interface Usuario {
   funcao?: string;     // 'Aluno', 'Professor'
   matricula?: string;
   imagemPerfil?: string; // base64 ou url
+  linkPortfolio?: string;
+  linkCurriculo?: string;
 }
 
 @Injectable({ providedIn: 'root' })

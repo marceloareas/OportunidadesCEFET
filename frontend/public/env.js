@@ -1,3 +1,3 @@
 window.__APP_ENV__ = {
-  apiBaseUrl: "http://localhost:8080"
+  apiBaseUrl: "http://127.0.0.1:8080"
 };
