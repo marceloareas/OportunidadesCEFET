@@ -5,11 +5,37 @@
   <main class="content">
     <div class="scroll-content">
       <h2 class="titulo-principal">Oportunidades</h2>
-      <div *ngIf="carregando()" class="mensagem-status">Carregando...</div>
       <div *ngIf="erro()" class="mensagem-erro">{{ erro() }}</div>
 
       <section *ngIf="usuarioFuncao === 'professor'">
         <h3>Minhas oportunidades</h3>
+
+        <div *ngIf="carregando() && minhasOportunidades().length === 0" class="cards-skeleton">
+          <div class="card-skeleton" *ngFor="let item of [1,2,3]">
+            <div class="card-skeleton-head">
+              <div class="skeleton skeleton-avatar"></div>
+
+              <div class="card-skeleton-info">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line short"></div>
+              </div>
+
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+
+            <div class="card-skeleton-body">
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line medium"></div>
+            </div>
+
+            <div class="card-skeleton-actions">
+              <div class="skeleton skeleton-btn"></div>
+              <div class="skeleton skeleton-btn"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="mensagem-vazia" *ngIf="!carregando() && minhasOportunidades().length === 0">
           Você ainda não possui oportunidades criadas.
         </div>
@@ -58,6 +84,28 @@
 
       <section *ngIf="usuarioFuncao !== 'professor'">
         <h3>Minhas candidaturas</h3>
+
+        <div *ngIf="carregando() && candidaturas().length === 0" class="cards-skeleton">
+          <div class="card-skeleton" *ngFor="let item of [1,2,3]">
+            <div class="card-skeleton-head">
+              <div class="skeleton skeleton-avatar"></div>
+
+              <div class="card-skeleton-info">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line short"></div>
+              </div>
+
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+
+            <div class="card-skeleton-body">
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line medium"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="mensagem-vazia" *ngIf="!carregando() && candidaturas().length === 0">
           Você ainda não se candidatou a oportunidades.
         </div>
@@ -99,7 +147,18 @@
     </div>
 
     <div class="lista-candidatos">
-      <div *ngIf="candidatosCarregando()">Carregando...</div>
+      <div *ngIf="candidatosCarregando()" class="candidatos-skeleton">
+        <div class="candidato-skeleton" *ngFor="let item of [1,2,3,4]">
+          <div class="skeleton skeleton-avatar small"></div>
+
+          <div class="candidato-skeleton-info">
+            <div class="skeleton skeleton-line medium"></div>
+            <div class="skeleton skeleton-line long"></div>
+          </div>
+
+          <div class="skeleton skeleton-btn small-btn"></div>
+        </div>
+      </div>
       <div *ngIf="candidatosErro()">{{ candidatosErro() }}</div>
 
       <div class="mensagem-vazia" *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length === 0">
