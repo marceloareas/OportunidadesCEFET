@@ -55,9 +55,76 @@
 
       <section class="card-perfil" *ngIf="!carregando() && !erro() && usuarioPerfil() as perfil">
         <div class="info-principal">
-          <div class="foto-wrapper">
+          <div class="foto-wrapper" *ngIf="isProprioPerfil(); else fotoSomenteVisualizacao">
             <img [src]="perfil.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" />
+
+            <div class="foto-overlay" (click)="abrirModalImagem()">
+              <span class="material-icons">edit</span>
+            </div>
           </div>
+
+          <div class="modal-backdrop" *ngIf="modalImagemAberto()" (click)="fecharModalImagem()">
+            <div class="modal-imagem" (click)="$event.stopPropagation()">
+              <h3>Editar foto de perfil</h3>
+
+              <div class="input-group">
+                <label class="input-label">Selecionar imagem</label>
+
+                <label for="imagemPerfil" class="upload-btn">
+                  <span class="material-icons">upload</span>
+                  <span>Procurar imagem</span>
+                </label>
+
+                <input
+                  type="file"
+                  id="imagemPerfil"
+                  accept="image/*"
+                  (change)="onImageSelected($event)"
+                  hidden
+                />
+
+                <span class="file-hint">PNG, JPG ou WEBP</span>
+                <span *ngIf="imagemErro" class="imagem-erro">{{ imagemErro }}</span>
+              </div>
+
+              <div *ngIf="imagemPreview" class="preview-container">
+                <img [src]="imagemPreview" class="profile-image-preview" alt="Prévia da foto de perfil" />
+              </div>
+
+              <div class="crop-controls" *ngIf="imagemSelecionada">
+                <label for="cropX">Posição horizontal</label>
+                <input
+                  id="cropX"
+                  type="range"
+                  min="0"
+                  max="100"
+                  [value]="imagemCrop.x"
+                  (input)="atualizarCorteImagemPerfil('x', $event)"
+                />
+
+                <label for="cropY">Posição vertical</label>
+                <input
+                  id="cropY"
+                  type="range"
+                  min="0"
+                  max="100"
+                  [value]="imagemCrop.y"
+                  (input)="atualizarCorteImagemPerfil('y', $event)"
+                />
+              </div>
+
+              <div class="modal-acoes">
+                <button type="button" class="btn-secundario" (click)="fecharModalImagem()">Cancelar</button>
+                <button type="button" class="btn-primario" (click)="salvarImagemPerfil()">Salvar</button>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #fotoSomenteVisualizacao>
+            <div class="foto-wrapper">
+              <img [src]="perfil.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" />
+            </div>
+          </ng-template>
 
           <div class="dados-principais">
             <h3>{{ perfil.nome }}</h3>

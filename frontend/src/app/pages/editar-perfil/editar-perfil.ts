@@ -58,48 +58,6 @@ export class EditarPerfil {
     }
   }
 
-  async onImageSelected(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      if (!file.type.startsWith('image/')) {
-        this.imagemErro = 'Selecione um arquivo de imagem válido.';
-        this.imagemSelecionada = null;
-        this.imagemPerfilBase64 = null;
-        input.value = '';
-        return;
-      }
-
-      this.imagemSelecionada = file;
-      this.imagemCrop = { ...DEFAULT_PROFILE_IMAGE_CROP };
-      await this.processarImagemPerfilSelecionada();
-    }
-  }
-
-  async atualizarCorteImagemPerfil(axis: 'x' | 'y', event: Event): Promise<void> {
-    const value = Number((event.target as HTMLInputElement).value);
-    this.imagemCrop = {
-      ...this.imagemCrop,
-      [axis]: value
-    };
-
-    await this.processarImagemPerfilSelecionada();
-  }
-
-  private async processarImagemPerfilSelecionada(): Promise<void> {
-    if (!this.imagemSelecionada) return;
-
-    try {
-      this.imagemPerfilBase64 = await cropProfileImageToSquare(this.imagemSelecionada, this.imagemCrop);
-      this.imagemPreview = this.imagemPerfilBase64;
-      this.imagemErro = '';
-    } catch (error) {
-      console.error('Erro ao processar imagem de perfil:', error);
-      this.imagemErro = 'Não foi possível processar a imagem.';
-      this.imagemPerfilBase64 = null;
-    }
-  }
-
   onSubmit(event: Event) {
     event.preventDefault();
 
@@ -130,9 +88,6 @@ export class EditarPerfil {
       payload.senha = this.senha();
     }
 
-    if (this.imagemPerfilBase64) {
-      payload.imagemPerfil = this.imagemPerfilBase64;
-    }
     this.usuarioService.atualizar(this.userId, payload).subscribe({
       next: (updated) => {
         alert('Perfil atualizado com sucesso.');
@@ -143,8 +98,7 @@ export class EditarPerfil {
           nome: updated.nome,
           email: updated.email,
           funcao: funcaoAtualizada,
-          matricula: updated.matricula || this.matricula,
-          imagemPerfil: updated.imagemPerfil || this.imagemPreview
+          matricula: updated.matricula || this.matricula
         };
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
         if (funcaoAtualizada) {
