@@ -46,14 +46,6 @@ export class NavbarRight implements OnInit {
     this.router.navigate(['/config']);
   }
 
-  goPerfil(): void {
-    if (!this.usuarioId) {
-      return;
-    }
-
-    this.router.navigate(['/perfil', this.usuarioId]);
-  }
-
   // 🔹 Função de logout
   logout(): void {
     localStorage.clear();
