@@ -63,10 +63,11 @@
     height: 18px;
     padding: 0;
     cursor: pointer;
+    accent-color: #4b5563;;
 }
 
 .page{
-    height: 100vh;
+    min-height: 100vh;
     width: 100vw;
     display: flex;
     background-image: url('/loginBackground.png');
@@ -108,11 +109,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 32.5vw;
     height: 90vh;
-    padding: 40vh 2vw;
+    padding: 2rem 2vw;
     color:white;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     h2{
         font-size: 32px;
@@ -126,7 +129,7 @@ form{
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 100%;
     height: auto;
 

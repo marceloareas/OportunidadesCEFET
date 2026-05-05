@@ -59,40 +59,6 @@
                     </div>
                   </div>
 
-                  <div class="input-group">
-                    <label for="imagemPerfil">Imagem de Perfil</label>
-                    <input
-                      type="file"
-                      id="imagemPerfil"
-                      name="imagemPerfil"
-                      accept="image/*"
-                      (change)="onImageSelected($event)"
-                    />
-                    <span *ngIf="imagemErro" class="imagem-erro">{{ imagemErro }}</span>
-                  </div>
-                  <div *ngIf="imagemPreview" style="margin-bottom: 1em;">
-                    <img [src]="imagemPreview" class="profile-image-preview" alt="Prévia da foto de perfil" />
-                  </div>
-                  <div class="crop-controls" *ngIf="imagemSelecionada">
-                    <label for="cropX">Posição horizontal</label>
-                    <input
-                      id="cropX"
-                      type="range"
-                      min="0"
-                      max="100"
-                      [value]="imagemCrop.x"
-                      (input)="atualizarCorteImagemPerfil('x', $event)"
-                    />
-                    <label for="cropY">Posição vertical</label>
-                    <input
-                      id="cropY"
-                      type="range"
-                      min="0"
-                      max="100"
-                      [value]="imagemCrop.y"
-                      (input)="atualizarCorteImagemPerfil('y', $event)"
-                    />
-                  </div>
                   <div class="form-actions">
                     <button type="submit" class="send-btn">Salvar</button>
                     <a href="/home" class="cancel-link" (click)="$event.preventDefault(); onCancel()">Cancelar</a>
