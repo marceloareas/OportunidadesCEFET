@@ -72,9 +72,9 @@
       <span>{{ contadorComentarios() }}</span>
     </button>
 
-    <!-- <button class="icon-btn">
-      <i class="bi bi-bookmark"></i>
-    </button> -->
+    <button class="icon-btn" (click)="toggleSalvar(); $event.stopPropagation()">
+      <i class="bi" [ngClass]="salvo() ? 'bi-bookmark-fill' : 'bi-bookmark'"></i>
+    </button> 
 
     <button
       *ngIf="post.tipo === 'OPORTUNIDADE' && tipoUsuario() === 'aluno'"

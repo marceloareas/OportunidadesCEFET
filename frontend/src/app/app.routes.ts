@@ -4,6 +4,7 @@ import { Login } from './pages/login/login.component';
 import { EditarPerfil } from './pages/editar-perfil/editar-perfil'
 import { MinhasDiscussoes } from './pages/minhas-discussoes/minhas-discussoes';
 import { OportunidadesPage } from './pages/oportunidades/oportunidades';
+import { ItensSalvosComponent } from './pages/itens-salvos/itens-salvos';
 import { Perfil } from './pages/perfil/perfil';
 
 export const routes: Routes = [
@@ -13,5 +14,6 @@ export const routes: Routes = [
   { path: 'config', component: EditarPerfil },
   { path: 'minhas_discussoes', component: MinhasDiscussoes },
   { path: 'oportunidades', component: OportunidadesPage },
+  { path: 'itens_salvos', component: ItensSalvosComponent },
   { path: 'perfil/:id', component: Perfil }
 ];
