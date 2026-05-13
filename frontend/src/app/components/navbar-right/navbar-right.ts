@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
   styleUrl: './navbar-right.css'
 })
 export class NavbarRight implements OnInit {
+  usuarioId: string | null = null;
   usuarioNome: string = 'Usuário';
   usuarioFuncao: string = 'Função não definida';
   usuarioMatricula: string = 'Matrícula';
@@ -18,10 +19,15 @@ export class NavbarRight implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const usuarioSalvo = localStorage.getItem('usuario');
     if (usuarioSalvo) {
       try {
         const usuario = JSON.parse(usuarioSalvo);
+        this.usuarioId = usuario.id?.toString() || null;
         this.usuarioNome = usuario.nome || 'Usuário';
         this.usuarioFuncao = usuario.funcao || 'Função não definida';
         this.usuarioMatricula = usuario.matricula || '';

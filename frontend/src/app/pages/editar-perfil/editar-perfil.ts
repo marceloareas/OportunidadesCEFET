@@ -6,6 +6,11 @@ import { Router } from '@angular/router';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import {
+  DEFAULT_PROFILE_IMAGE_CROP,
+  ProfileImageCropPosition,
+  cropProfileImageToSquare
+} from '../../utils/profile-image';
 
 @Component({
   selector: 'app-editar-perfil',
@@ -23,6 +28,9 @@ export class EditarPerfil {
   matricula?: string;
   imagemPerfilBase64: string | null = null;
   imagemPreview: string | null = null;
+  imagemErro: string = '';
+  imagemSelecionada: File | null = null;
+  imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
 
   constructor(private usuarioService: UsuarioService, private router: Router) {}
 
@@ -47,19 +55,6 @@ export class EditarPerfil {
       } catch (e) {
         console.error('Erro ao parsear usuário do localStorage', e);
       }
-    }
-  }
-
-  onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagemPerfilBase64 = reader.result as string;
-        this.imagemPreview = this.imagemPerfilBase64;
-      };
-      reader.readAsDataURL(file);
     }
   }
 
@@ -93,9 +88,6 @@ export class EditarPerfil {
       payload.senha = this.senha();
     }
 
-    if (this.imagemPerfilBase64) {
-      payload.imagemPerfil = this.imagemPerfilBase64;
-    }
     this.usuarioService.atualizar(this.userId, payload).subscribe({
       next: (updated) => {
         alert('Perfil atualizado com sucesso.');
@@ -106,8 +98,7 @@ export class EditarPerfil {
           nome: updated.nome,
           email: updated.email,
           funcao: funcaoAtualizada,
-          matricula: updated.matricula || this.matricula,
-          imagemPerfil: updated.imagemPerfil || this.imagemPreview
+          matricula: updated.matricula || this.matricula
         };
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
         if (funcaoAtualizada) {

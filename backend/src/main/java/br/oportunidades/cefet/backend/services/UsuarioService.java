@@ -72,6 +72,12 @@ public class UsuarioService {
             if (usuario.getImagemPerfil() != null) {
                 existing.setImagemPerfil(usuario.getImagemPerfil());
             }
+            if (usuario.getLinkPortfolio() != null) {
+                existing.setLinkPortfolio(usuario.getLinkPortfolio());
+            }
+            if (usuario.getLinkCurriculo() != null) {
+                existing.setLinkCurriculo(usuario.getLinkCurriculo());
+            }
             return usuarioRepository.save(existing);
         }).orElse(null);
     }

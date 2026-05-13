@@ -27,6 +27,14 @@
     }
 }
 
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    color: #0A497E;
+}
+
 .edit-profile{
     height: auto;
     text-align: end;

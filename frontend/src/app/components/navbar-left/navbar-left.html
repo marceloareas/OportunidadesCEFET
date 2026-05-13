@@ -1,11 +1,29 @@
 <aside class="sidebar-left">
-    <div class="menu-esquerda">
-        <div class="item-list">
-            <a (click)="setView('home')"><i class="bi bi-house"></i> Página inicial</a>
-            <a (click)="setView('minhas_discussoes')"><i class="bi bi-chat-left-text"></i> Minhas Discussões</a>
-            <a (click)="setView('oportunidades')"><i class="bi bi-briefcase"></i> Oportunidades</a>
-            <a (click)="setView('itens_salvos')"><i class="bi bi-bookmark"></i> Itens Salvos</a>
-            <span class="divisor"></span>
-        </div>
+  <div class="menu-esquerda">
+    <div class="item-list">
+      <a (click)="goPerfil()">
+        <i class="bi bi-person-circle"></i> Editar Perfil
+      </a>
+
+      <span class="divisor"></span>
+
+      <a (click)="setView('home')">
+        <i class="bi bi-house"></i> Página inicial
+      </a>
+
+      <a (click)="setView('minhas_discussoes')">
+        <i class="bi bi-chat-left-text"></i> Minhas Discussões
+      </a>
+
+      <a (click)="setView('oportunidades')">
+        <i class="bi bi-briefcase"></i> Oportunidades
+      </a>
+
+      <a (click)="setView('itens_salvos')">
+        <i class="bi bi-bookmark"></i> Itens Salvos
+      </a>
+
+      <span class="divisor"></span>
     </div>
+  </div>
 </aside>

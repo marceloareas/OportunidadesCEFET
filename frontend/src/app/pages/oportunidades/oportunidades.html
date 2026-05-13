@@ -5,12 +5,37 @@
   <main class="content">
     <div class="scroll-content">
       <h2 class="titulo-principal">Oportunidades</h2>
-      <hr />
-      <div *ngIf="carregando()" class="mensagem-status">Carregando...</div>
       <div *ngIf="erro()" class="mensagem-erro">{{ erro() }}</div>
 
       <section *ngIf="usuarioFuncao === 'professor'">
         <h3>Minhas oportunidades</h3>
+
+        <div *ngIf="carregando() && minhasOportunidades().length === 0" class="cards-skeleton">
+          <div class="card-skeleton" *ngFor="let item of [1,2,3]">
+            <div class="card-skeleton-head">
+              <div class="skeleton skeleton-avatar"></div>
+
+              <div class="card-skeleton-info">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line short"></div>
+              </div>
+
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+
+            <div class="card-skeleton-body">
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line medium"></div>
+            </div>
+
+            <div class="card-skeleton-actions">
+              <div class="skeleton skeleton-btn"></div>
+              <div class="skeleton skeleton-btn"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="mensagem-vazia" *ngIf="!carregando() && minhasOportunidades().length === 0">
           Você ainda não possui oportunidades criadas.
         </div>
@@ -32,27 +57,55 @@
               </button>
             </div>
           </article>
-          <div class="paginacao"
-              *ngIf="!carregando() && totalPaginas() > 1">
-            <button (click)="paginaAnteriorOportunidades()" [disabled]="paginaAtual() === 0">
-              Anterior
-            </button>
-
-            <span>
-              Página {{ paginaAtual() + 1 }} de {{ totalPaginas() }}
-            </span>
+          <div class="feed-footer" *ngIf="minhasOportunidades().length > 0">
+            <div *ngIf="carregando()" class="feed-state loading">
+              <div class="loader"></div>
+              <span>Carregando mais publicações...</span>
+            </div>
 
             <button
-              (click)="proximaPaginaOportunidades()"
-              [disabled]="paginaAtual() >= totalPaginas() - 1">
-              Próxima
+              *ngIf="!carregando() && hasMoreOportunidades()"
+              class="feed-load-btn"
+              (click)="carregarMaisOportunidades()"
+            >
+              <span>Carregar mais</span>
+              <i class="bi bi-arrow-down"></i>
             </button>
+
+            <div *ngIf="!carregando() && !hasMoreOportunidades()" class="feed-state end">
+              <div>
+                <strong>Fim das publicações</strong>
+                <p>Você viu tudo por enquanto</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       <section *ngIf="usuarioFuncao !== 'professor'">
         <h3>Minhas candidaturas</h3>
+
+        <div *ngIf="carregando() && candidaturas().length === 0" class="cards-skeleton">
+          <div class="card-skeleton" *ngFor="let item of [1,2,3]">
+            <div class="card-skeleton-head">
+              <div class="skeleton skeleton-avatar"></div>
+
+              <div class="card-skeleton-info">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line short"></div>
+              </div>
+
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+
+            <div class="card-skeleton-body">
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line medium"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="mensagem-vazia" *ngIf="!carregando() && candidaturas().length === 0">
           Você ainda não se candidatou a oportunidades.
         </div>
@@ -94,7 +147,18 @@
     </div>
 
     <div class="lista-candidatos">
-      <div *ngIf="candidatosCarregando()">Carregando...</div>
+      <div *ngIf="candidatosCarregando()" class="candidatos-skeleton">
+        <div class="candidato-skeleton" *ngFor="let item of [1,2,3,4]">
+          <div class="skeleton skeleton-avatar small"></div>
+
+          <div class="candidato-skeleton-info">
+            <div class="skeleton skeleton-line medium"></div>
+            <div class="skeleton skeleton-line long"></div>
+          </div>
+
+          <div class="skeleton skeleton-btn small-btn"></div>
+        </div>
+      </div>
       <div *ngIf="candidatosErro()">{{ candidatosErro() }}</div>
 
       <div class="mensagem-vazia" *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length === 0">
@@ -104,9 +168,27 @@
       <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
         <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
           <div class="cand-dados" style="display: flex; align-items: center; gap: 10px;">
-            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            <a
+              *ngIf="c.id; else candidatoFotoSemPerfil"
+              class="candidato-perfil-link"
+              [routerLink]="['/perfil', c.id]"
+            >
+              <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            </a>
+            <ng-template #candidatoFotoSemPerfil>
+              <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            </ng-template>
             <div>
-              <div class="candidato-nome">{{ c.nome || c.id }}</div>
+              <a
+                *ngIf="c.id; else candidatoNomeSemPerfil"
+                class="candidato-nome candidato-perfil-link"
+                [routerLink]="['/perfil', c.id]"
+              >
+                {{ c.nome || c.id }}
+              </a>
+              <ng-template #candidatoNomeSemPerfil>
+                <div class="candidato-nome">{{ c.nome || c.id }}</div>
+              </ng-template>
               <div class="cand-meta">
                 <span *ngIf="c.email">E-mail: {{ c.email }}</span>
                 <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>

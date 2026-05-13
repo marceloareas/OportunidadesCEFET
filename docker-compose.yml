@@ -25,7 +25,7 @@ services:
     environment:
       SPRING_DATA_MONGODB_URI: ${MONGO_URI}
       SPRING_DATA_MONGODB_DATABASE: ${SPRING_DATA_MONGODB_DATABASE}
-      APP_CORS_ALLOWED_ORIGIN: ${APP_CORS_ALLOWED_ORIGIN}
+      APP_CORS_ALLOWED_ORIGIN: "http://localhost:4200,http://127.0.0.1:4200"
       SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET}
       SECURITY_JWT_EXPIRATION_MS: ${SECURITY_JWT_EXPIRATION_MS}
     depends_on:
@@ -39,6 +39,9 @@ services:
       - "${FRONTEND_PORT}:4200"
     env_file:
       - ./.env
+    environment:
+      NG_ALLOWED_HOSTS: "localhost,127.0.0.1"
+      FRONTEND_API_BASE_URL: "http://127.0.0.1:8080"
     volumes:
       - ./frontend:/app
       - /app/node_modules

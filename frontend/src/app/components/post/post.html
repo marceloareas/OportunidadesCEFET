@@ -1,15 +1,42 @@
 <div class="post">
   <div class="post-header">
-    <img class="avatar" [src]="(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil) || 'pfptemp.ico'" alt="Foto de perfil" />
+    <a
+      *ngIf="post.criadorId; else avatarSemPerfil"
+      class="perfil-link"
+      [routerLink]="['/perfil', post.criadorId]"
+      aria-label="Abrir perfil"
+    >
+      <img
+        class="avatar perfil-click"
+        [src]="(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil) || 'pfptemp.ico'"
+        alt="Foto de perfil"
+      />
+    </a>
+    <ng-template #avatarSemPerfil>
+      <img
+        class="avatar"
+        [src]="(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil) || 'pfptemp.ico'"
+        alt="Foto de perfil"
+      />
+    </ng-template>
     <div class="post-info">
-      <h2>
-        <ng-container *ngIf="usuarioLogado()?.id === post.criadorId; else outroUsuario">
-          {{ post.nomeCriador }} é você
-        </ng-container>
-        <ng-template #outroUsuario>
-          {{ post.nomeCriador || 'Usuário Anônimo' }}
-        </ng-template>
-      </h2>
+      <a
+        *ngIf="post.criadorId; else nomeSemPerfil"
+        class="perfil-link"
+        [routerLink]="['/perfil', post.criadorId]"
+      >
+        <h2 class="perfil-click">
+          <ng-container *ngIf="usuarioLogado()?.id === post.criadorId; else outroUsuario">
+            {{ post.nomeCriador }} é você
+          </ng-container>
+          <ng-template #outroUsuario>
+            {{ post.nomeCriador || 'Usuário Anônimo' }}
+          </ng-template>
+        </h2>
+      </a>
+      <ng-template #nomeSemPerfil>
+        <h2>{{ post.nomeCriador || 'Usuário Anônimo' }}</h2>
+      </ng-template>
       <span class="date">{{ dataFormatada }}</span>
     </div>
   </div>
@@ -65,27 +92,60 @@
   <div class="modal-conteudo card-modal" (click)="$event.stopPropagation()">
     <div class="modal-topo-lista">
       <h3>Comentários</h3>
-      <button class="btn-fechar" type="button" (click)="closeNewComment()">Fechar</button>
+      <button class="btn-comentario" type="button" (click)="closeNewComment()">Fechar</button>
     </div>
     <div class="modal-topo">
       <textarea
         placeholder="Escreva seu comentário..."
         [(ngModel)]="novoComentario"></textarea>
 
-      <button (click)="enviarComentario()">
+      <button class="btn-comentario" (click)="enviarComentario()" [disabled]="!novoComentario.trim()">
         Enviar
       </button>
     </div>
 
     <div class="modal-comentarios">
-      <div class="comentario-card" *ngFor="let c of comentarios">
+      <div class="comentario-card" *ngFor="let c of comentariosDaPaginaAtual()">
         <div class="comentario-autor" style="display: flex; align-items: center; gap: 8px;">
-          <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
-          <span>{{ c.autor }}</span>
+          <a
+            *ngIf="c.usuarioId; else comentarioFotoSemPerfil"
+            class="comentario-perfil-link"
+            [routerLink]="['/perfil', c.usuarioId]"
+          >
+            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+          </a>
+          <ng-template #comentarioFotoSemPerfil>
+            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+          </ng-template>
+          <a
+            *ngIf="c.usuarioId; else comentarioNomeSemPerfil"
+            class="comentario-perfil-link"
+            [routerLink]="['/perfil', c.usuarioId]"
+          >
+            {{ c.autor }}
+          </a>
+          <ng-template #comentarioNomeSemPerfil>
+            <span>{{ c.autor }}</span>
+          </ng-template>
+          <span class="comentario-data" *ngIf="formatarDataComentario(c.data)">• {{ formatarDataComentario(c.data) }}</span>
         </div>
         <div class="comentario-texto">{{ c.texto }}</div>
       </div>
       <div class="mensagem-vazia" *ngIf="comentarios.length === 0">Nenhum comentário ainda.</div>
+
+      <div class="comentarios-paginacao" *ngIf="comentarios.length > comentariosPorPagina">
+        <button type="button" class="btn-paginacao" (click)="paginaAnteriorComentarios()" [disabled]="paginaComentarios() === 1">
+          Anterior
+        </button>
+
+        <span class="paginacao-info">
+          Página {{ paginaComentarios() }} de {{ totalPaginasComentarios() }}
+        </span>
+
+        <button type="button" class="btn-paginacao" (click)="proximaPaginaComentarios()" [disabled]="paginaComentarios() === totalPaginasComentarios()">
+          Próxima
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -118,9 +178,27 @@
       <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
         <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
           <div class="cand-dados" style="display: flex; align-items: center; gap: 10px;">
-            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            <a
+              *ngIf="c.id; else candidatoFotoSemPerfil"
+              class="candidato-perfil-link"
+              [routerLink]="['/perfil', c.id]"
+            >
+              <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            </a>
+            <ng-template #candidatoFotoSemPerfil>
+              <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            </ng-template>
             <div>
-              <div class="candidato-nome">{{ c.nome || c.id }}</div>
+              <a
+                *ngIf="c.id; else candidatoNomeSemPerfil"
+                class="candidato-nome candidato-perfil-link"
+                [routerLink]="['/perfil', c.id]"
+              >
+                {{ c.nome || c.id }}
+              </a>
+              <ng-template #candidatoNomeSemPerfil>
+                <div class="candidato-nome">{{ c.nome || c.id }}</div>
+              </ng-template>
               <div class="cand-meta">
                 <span *ngIf="c.email">E-mail: {{ c.email }}</span>
                 <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>

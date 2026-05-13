@@ -20,31 +20,44 @@
 
           <hr />
 
-          <!-- Status da requisição -->
-          <div *ngIf="carregando()" class="mensagem-status">
-            Carregando publicações...
-          </div>
           <div *ngIf="erro()" class="mensagem-erro">
             {{ erro() }}
           </div>
 
-          <!-- Lista de feed -->
-          <div *ngIf="feedItens().length > 0; else semItens">
+          <!-- SKELETON -->
+          <div *ngIf="carregando()" class="feed-skeleton">
+            <div class="post-skeleton" *ngFor="let item of [1,2,3,4]">
+              <div class="post-skeleton-header">
+                <div class="skeleton skeleton-avatar"></div>
+                <div class="post-skeleton-user">
+                  <div class="skeleton skeleton-line short"></div>
+                  <div class="skeleton skeleton-line tiny"></div>
+                </div>
+              </div>
 
+              <div class="post-skeleton-body">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line long"></div>
+                <div class="skeleton skeleton-line long"></div>
+                <div class="skeleton skeleton-line short"></div>
+              </div>
+
+              <div class="skeleton skeleton-image"></div>
+            </div>
+          </div>
+
+          <!-- FEED -->
+          <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
             <ng-container *ngFor="let p of feedItens(); trackBy: trackByFeedId">
               <app-post [post]="p"></app-post>
             </ng-container>
 
-            <!-- Footer do feed -->
             <div class="feed-footer">
-
-              <!-- LOADING -->
               <div *ngIf="carregando()" class="feed-state loading">
                 <div class="loader"></div>
                 <span>Carregando novas publicações...</span>
               </div>
 
-              <!-- CARREGAR MAIS -->
               <button
                 *ngIf="!carregando() && hasMore()"
                 class="feed-load-btn"
@@ -54,16 +67,13 @@
                 <i class="bi bi-arrow-down"></i>
               </button>
 
-              <!-- FIM -->
               <div *ngIf="!carregando() && !hasMore()" class="feed-state end">
                 <div>
                   <strong>Fim do feed</strong>
                   <p>Você viu tudo por enquanto</p>
                 </div>
               </div>
-
             </div>
-
           </div>
           <!-- EMPTY STATE FORA DO NGIF -->
           <ng-template #semItens>
