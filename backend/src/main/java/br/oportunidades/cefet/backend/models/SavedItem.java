@@ -26,8 +26,6 @@ public class SavedItem {
 
     private LocalDateTime createdAt;
 
-    public SavedItem() {}
-
     public SavedItem(String userId, String feedItemId) {
         this.userId = userId;
         this.feedItemId = feedItemId;
