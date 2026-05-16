@@ -16,7 +16,6 @@ import java.util.Optional;
 @Service
 public class PostService {
 
-    @Autowired
     private PostRepository postRepository;
 
     @Autowired
@@ -38,11 +37,7 @@ public class PostService {
     public Post salvar(Post post) {
         Post salvo = postRepository.save(post);
 
-        String nomeCriador = usuarioRepository.findById(salvo.getCriadorId())
-                .map(Usuario::getNome)
-                .orElse("Usuário Anônimo");
-
-        feedService.criarFeedPost(salvo, nomeCriador);
+        feedService.criarFeedPost(salvo);
 
         return salvo;
     }
@@ -67,11 +62,7 @@ public class PostService {
 
             Post salvo = postRepository.save(post);
 
-            String nomeCriador = usuarioRepository.findById(salvo.getCriadorId())
-                    .map(Usuario::getNome)
-                    .orElse("Usuário Anônimo");
-
-            feedService.atualizarFeedPost(salvo, nomeCriador);
+            feedService.atualizarFeedPost(salvo);
 
             return "Like removido.";
         } else {
@@ -80,11 +71,7 @@ public class PostService {
 
             Post salvo = postRepository.save(post);
 
-            String nomeCriador = usuarioRepository.findById(salvo.getCriadorId())
-                    .map(Usuario::getNome)
-                    .orElse("Usuário Anônimo");
-
-            feedService.atualizarFeedPost(salvo, nomeCriador);
+            feedService.atualizarFeedPost(salvo);
 
             return "Like adicionado.";
         }

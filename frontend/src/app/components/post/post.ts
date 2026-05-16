@@ -86,6 +86,7 @@ export class PostComponent {
     if (!this.post.alunosAprovadosId) this.post.alunosAprovadosId = [];
 
     const usuario = this.usuarioLogado();
+    
     if (usuario) {
       if (this.post.idLikes?.includes(usuario.id)) this.curtiu.set(true);
       if (this.post.alunosCandidatosId?.includes(usuario.id)) this.jaCandidatado.set(true);
@@ -102,8 +103,8 @@ export class PostComponent {
   }
 
   get dataFormatada(): string {
-    if (!this.post.criado) return '';
-    const data = new Date(this.post.criado);
+    if (!this.post.createdAt) return '';
+    const data = new Date(this.post.createdAt);
     return data.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'short',
@@ -116,14 +117,14 @@ export class PostComponent {
   formatarDataComentario(data?: string | Date): string {
     if (!data) return '';
 
-    const dataComentario = new Date(data);
-    if (Number.isNaN(dataComentario.getTime())) return '';
+    const createdAt = new Date(data);
+    if (Number.isNaN(createdAt.getTime())) return '';
 
-    const dia = String(dataComentario.getDate()).padStart(2, '0');
-    const mes = String(dataComentario.getMonth() + 1).padStart(2, '0');
-    const ano = dataComentario.getFullYear();
-    const horas = String(dataComentario.getHours()).padStart(2, '0');
-    const minutos = String(dataComentario.getMinutes()).padStart(2, '0');
+    const dia = String(createdAt.getDate()).padStart(2, '0');
+    const mes = String(createdAt.getMonth() + 1).padStart(2, '0');
+    const ano = createdAt.getFullYear();
+    const horas = String(createdAt.getHours()).padStart(2, '0');
+    const minutos = String(createdAt.getMinutes()).padStart(2, '0');
 
     return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
   }
@@ -186,10 +187,9 @@ export class PostComponent {
 
     const payload = {
       usuarioId: usuario.id,
-      tipoEntidadePai: this.post.tipo === 'OPORTUNIDADE' ? 'Oportunidade' : 'Post',
+      tipoEntidadePai: this.post.tipo,
       idPost: this.post.referenciaId || this.post.id,
-      texto: textoComentario,
-      idComentarioPai: null
+      texto: textoComentario
     } as any;
 
     this.comentarioService.criar(payload).subscribe({
@@ -198,7 +198,7 @@ export class PostComponent {
           autor: usuario.nome || usuario.id,
           imagemPerfil: usuario.imagemPerfil,
           texto: saved.texto || this.novoComentario,
-          data: saved.dataComentario as string | undefined,
+          data: saved.createdAt as string | undefined,
           id: saved.id,
           usuarioId: usuario.id
         });
@@ -239,7 +239,7 @@ export class PostComponent {
             autor: 'Anônimo',
             imagemPerfil: undefined,
             texto: c.texto || '',
-            data: c.dataComentario as string | undefined,
+            data: c.createdAt as string | undefined,
             id: c.id,
             usuarioId: c.usuarioId
           }));
@@ -264,7 +264,7 @@ export class PostComponent {
               autor: (c.usuarioId && userById[c.usuarioId]?.nome) || 'Anônimo',
               imagemPerfil: (c.usuarioId && userById[c.usuarioId]?.imagemPerfil) || undefined,
               texto: c.texto || '',
-              data: c.dataComentario as string | undefined,
+              data: c.createdAt as string | undefined,
               id: c.id,
               usuarioId: c.usuarioId
             }));
@@ -280,7 +280,7 @@ export class PostComponent {
               autor: c.usuarioId || 'Anônimo',
               imagemPerfil: undefined,
               texto: c.texto || '',
-              data: c.dataComentario as string | undefined,
+              data: c.createdAt as string | undefined,
               id: c.id,
               usuarioId: c.usuarioId
             }));

@@ -35,14 +35,6 @@ public class Usuario {
     private String linkCurriculo;
 
     @Builder.Default
-    // Usuário 0:N Posts
-    private List<Post> posts = new ArrayList<>(); // referencia Post(id)
-
-    @Builder.Default
-    // Usuário 0:N Comentários
-    private List<Comentario> comentarios = new ArrayList<>(); // rerefencia Comentario(id)
-
-    @Builder.Default
     private List<String> idCandidaturas = new ArrayList<>(); // referencia Oportunidade(id)
 
 }

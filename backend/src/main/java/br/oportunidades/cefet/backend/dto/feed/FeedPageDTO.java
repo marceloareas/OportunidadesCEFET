@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FeedPageDTO {
-    private List<FeedItem> content;
+    private List<FeedResponseDTO> content;
     private int page;
     private int size;
     private long totalElements;

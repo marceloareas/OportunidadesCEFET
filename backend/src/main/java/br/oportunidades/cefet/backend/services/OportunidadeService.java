@@ -79,11 +79,7 @@ public class OportunidadeService {
 
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-        String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
-                .map(Usuario::getNome)
-                .orElse("Professor");
-
-        feedService.criarFeedOportunidade(salva, nomeCriador);
+        feedService.criarFeedOportunidade(salva);
 
         return salva;
     }
@@ -128,11 +124,7 @@ public class OportunidadeService {
 
             Oportunidade salva = oportunidadeRepository.save(existente);
 
-            String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
-                    .map(Usuario::getNome)
-                    .orElse("Professor");
-
-            feedService.atualizarFeedOportunidade(salva, nomeCriador);
+            feedService.atualizarFeedOportunidade(salva);
 
             return salva;
         });
@@ -161,11 +153,7 @@ public class OportunidadeService {
             oportunidade.setAlunosCandidatosId(candidatos);
             Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-            String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
-                    .map(Usuario::getNome)
-                    .orElse("Professor");
-
-            feedService.atualizarFeedOportunidade(salva, nomeCriador);
+            feedService.atualizarFeedOportunidade(salva);
         }
 
         return Optional.of(oportunidade);
@@ -187,24 +175,15 @@ public class OportunidadeService {
             oportunidade.setIdLikes(likes);
             Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-            String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
-                    .map(Usuario::getNome)
-                    .orElse("Professor");
-
-            feedService.atualizarFeedOportunidade(salva, nomeCriador);
+            feedService.atualizarFeedOportunidade(salva);
 
             return "Like removido.";
         } else {
             likes.add(idUsuario);
             oportunidade.setIdLikes(likes);
-            oportunidadeRepository.save(oportunidade);
             Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-            String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
-                    .map(Usuario::getNome)
-                    .orElse("Professor");
-
-            feedService.atualizarFeedOportunidade(salva, nomeCriador);
+            feedService.atualizarFeedOportunidade(salva);
 
             return "Like adicionado.";
         }
@@ -292,11 +271,7 @@ public class OportunidadeService {
 
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-        String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
-                .map(Usuario::getNome)
-                .orElse("Professor");
-
-        feedService.atualizarFeedOportunidade(salva, nomeCriador);
+        feedService.atualizarFeedOportunidade(salva);
 
         return Optional.of(salva);
     }
@@ -314,11 +289,7 @@ public class OportunidadeService {
         oportunidade.setFinalizada(true);
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-        String nomeCriador = usuarioRepository.findById(salva.getProfessorId())
-                .map(Usuario::getNome)
-                .orElse("Professor");
-
-        feedService.atualizarFeedOportunidade(salva, nomeCriador);
+        feedService.atualizarFeedOportunidade(salva);
 
         return Optional.of(salva);
     }

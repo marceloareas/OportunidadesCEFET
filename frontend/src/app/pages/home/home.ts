@@ -10,7 +10,6 @@ import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { PostComponent } from '../../components/post/post';
 import { PostService, Post } from '../../services/post.services';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
-import { UsuarioService, Usuario } from '../../services/usuario.service';
 import { FeedItem, FeedService } from '../../services/feed.service';
 
 @Component({
@@ -230,7 +229,7 @@ export class Home {
       titulo: this.titulo(),
       corpo: this.corpo(),
       criadorId: usuario?.id || 'usuarioAnonimo',
-      criado: new Date(),
+      createdAt: new Date(),
       imagemBase64: this.imagemBase64() ?? undefined,
       nomeCriador: usuario?.nome || 'Usuário',
     } as any;
