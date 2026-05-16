@@ -75,17 +75,15 @@ public class OportunidadeController {
 
     @PostMapping("/{id}/finalizar")
     public ResponseEntity<?> finalizar(@PathVariable String id) {
-        Optional<Oportunidade> opt = oportunidadeService.buscarPorId(id);
 
-        if (opt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+        try {
+            return oportunidadeService.finalizar(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        Oportunidade oportunidade = opt.get();
-        oportunidade.setFinalizada(true);
-        oportunidadeService.salvar(oportunidade);
-
-        return ResponseEntity.ok(oportunidade);
     }
 
     @GetMapping("/{id}/candidatos")

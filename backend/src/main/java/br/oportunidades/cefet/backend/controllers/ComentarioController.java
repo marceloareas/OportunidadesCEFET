@@ -34,16 +34,6 @@ public class ComentarioController {
         );
     }
 
-    // 🔹 Respostas de um comentário
-    @GetMapping("/respostas/{idComentario}")
-    public ResponseEntity<List<Comentario>> listarRespostas(
-            @PathVariable String idComentario
-    ) {
-        return ResponseEntity.ok(
-                comentarioService.listarRespostas(idComentario)
-        );
-    }
-
     @PostMapping
     public ResponseEntity<Comentario> criar(@RequestBody Comentario comentario) {
         return ResponseEntity.ok(comentarioService.salvar(comentario));

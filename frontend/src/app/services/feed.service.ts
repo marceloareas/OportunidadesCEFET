@@ -12,7 +12,7 @@ export interface FeedItem {
 
   criadorId?: string;
   nomeCriador?: string;
-  criado?: string | Date;
+  createdAt?: string | Date;
 
   imagemBase64?: string;
   imagemPerfil?: string; // base64 ou url da imagem do criador

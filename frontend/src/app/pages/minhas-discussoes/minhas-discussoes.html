@@ -38,13 +38,7 @@
         <!-- LISTA -->
         <div *ngIf="minhasPublicacoes().length > 0">
           <ng-container *ngFor="let p of minhasPublicacoes()">
-            <article class="post-item">
-              <div>
-                <h3>{{ p.titulo }}</h3>
-                <div class="meta">{{ p.criado ? (p.criado | date:'short') : '' }}</div>
-                <p>{{ p.corpo }}</p>
-              </div>
-            </article>
+            <app-post [post]="p"></app-post>
           </ng-container>
 
           <div class="feed-footer">

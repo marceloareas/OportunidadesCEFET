@@ -15,7 +15,7 @@ export interface Oportunidade {
   idCategoria?: string;
   grandesAreas?: string[];
   imagemBase64?: string;
-  criado?: string | Date;
+  createdAt?: string | Date;
   alunosCandidatosId?: string[];
   idLikes?: string[];
   alunosAprovadosId?: string[];

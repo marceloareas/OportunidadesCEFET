@@ -1,11 +1,10 @@
 package br.oportunidades.cefet.backend.services;
 
 import br.oportunidades.cefet.backend.dto.feed.FeedPageDTO;
+import br.oportunidades.cefet.backend.dto.feed.FeedResponseDTO;
 import br.oportunidades.cefet.backend.models.FeedItem;
 import br.oportunidades.cefet.backend.models.Oportunidade;
 import br.oportunidades.cefet.backend.models.Post;
-import br.oportunidades.cefet.backend.models.Comentario;
-import br.oportunidades.cefet.backend.repositories.ComentarioRepository;
 import br.oportunidades.cefet.backend.repositories.FeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import br.oportunidades.cefet.backend.models.Usuario;
@@ -14,7 +13,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import br.oportunidades.cefet.backend.repositories.PostRepository;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
@@ -24,15 +22,11 @@ import java.util.Optional;
 
 public class FeedService {
 
-
-    @Autowired
-    private FeedRepository feedRepository;
-
     @Autowired
     private UsuarioService usuarioService;
 
     @Autowired
-    private ComentarioRepository comentarioRepository;
+    private FeedRepository feedRepository;
 
     @Autowired
     private PostRepository postRepository;
@@ -41,44 +35,19 @@ public class FeedService {
     private OportunidadeRepository oportunidadeRepository;
 
     public FeedPageDTO listarFeed(int page, int size) {
-        Page<FeedItem> feedPage = feedRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
 
-        feedPage.getContent().forEach(item -> {
-            String tipo = "OPORTUNIDADE".equalsIgnoreCase(item.getTipo()) ? "Oportunidade" : "Post";
-            List<Comentario> comentarios = comentarioRepository
-                    .findByTipoEntidadePaiAndIdPostAndIdComentarioPaiIsNull(tipo, item.getReferenciaId());
-            
-            item.setIdComentarios(comentarios.stream().map(Comentario::getId).collect(Collectors.toList()));
+        Page<FeedItem> feedPage =
+                feedRepository.findAllByOrderByCreatedAtDesc(
+                        PageRequest.of(page, size)
+                );
 
-            String criadorId = item.getCriadorId();
-
-            // FALLBACK E CORREÇÃO DO BANCO: 
-            if (criadorId == null && item.getReferenciaId() != null) {
-                if ("OPORTUNIDADE".equalsIgnoreCase(item.getTipo())) {
-                    Optional<Oportunidade> op = oportunidadeRepository.findById(item.getReferenciaId());
-                    if (op.isPresent()) criadorId = op.get().getProfessorId();
-                } else {
-                    Optional<Post> p = postRepository.findById(item.getReferenciaId());
-                    if (p.isPresent()) criadorId = p.get().getCriadorId();
-                }
-                
-                if (criadorId != null) {
-                    item.setCriadorId(criadorId);
-                    feedRepository.save(item);
-                }
-            }
-
-            if (criadorId != null) {
-                Usuario criador = usuarioService.getUsuarioById(criadorId);
-                if (criador != null) {
-                    item.setNomeCriador(criador.getNome());
-                    item.setImagemPerfil(criador.getImagemPerfil());
-                }
-            }
-        });
+        List<FeedResponseDTO> items = feedPage.getContent()
+                .stream()
+                .map(this::montarFeedItem)
+                .toList();
 
         return new FeedPageDTO(
-                feedPage.getContent(),
+                items,
                 feedPage.getNumber(),
                 feedPage.getSize(),
                 feedPage.getTotalElements(),
@@ -86,98 +55,145 @@ public class FeedService {
         );
     }
 
-    public void criarFeedPost(Post post, String nomeCriador) {
-
-
-        String imagemPerfil = null;
-        if (post.getCriadorId() != null) {
-            Usuario usuario = usuarioService.getUsuarioById(post.getCriadorId());
-            if (usuario != null) {
-                imagemPerfil = usuario.getImagemPerfil();
-            }
-        }
+    public void criarFeedPost(Post post) {
 
         FeedItem item = FeedItem.builder()
-            .referenciaId(post.getId())
-            .tipo("POST")
-            .titulo(post.getTitulo())
-            .corpo(post.getCorpo())
-            .criadorId(post.getCriadorId())
-            .nomeCriador(nomeCriador)
-            .criado(post.getCriado())
-            .imagemBase64(post.getImagemBase64())
-            .idLikes(post.getIdLikes())
-            .imagemPerfil(imagemPerfil)
-            .build();
+                .referenciaId(post.getId())
+                .tipo("POST")
+                .likesCount(post.getIdLikes().size())
+                .comentariosCount(0)
+                .createdAt(post.getCriado())
+                .build();
 
         feedRepository.save(item);
     }
 
-    public void atualizarFeedPost(Post post, String nomeCriador) {
-        feedRepository.findByReferenciaId(post.getId()).ifPresent(item -> {
-            item.setTitulo(post.getTitulo());
-            item.setCorpo(post.getCorpo());
-            item.setCriadorId(post.getCriadorId());
-            item.setNomeCriador(nomeCriador);
-            item.setImagemBase64(post.getImagemBase64());
-            item.setIdLikes(post.getIdLikes());
+    public void atualizarFeedPost(Post post) {
 
-            feedRepository.save(item);
-        });
+        feedRepository.findByReferenciaId(post.getId())
+                .ifPresent(item -> {
+
+                    item.setLikesCount(post.getIdLikes().size());
+
+                    feedRepository.save(item);
+                });
     }
 
-    public void criarFeedOportunidade(Oportunidade op, String nomeCriador) {
-
-
-        String imagemPerfil = null;
-        if (op.getProfessorId() != null) {
-            Usuario usuario = usuarioService.getUsuarioById(op.getProfessorId());
-            if (usuario != null) {
-                imagemPerfil = usuario.getImagemPerfil();
-            }
-        }
+    public void criarFeedOportunidade(Oportunidade op) {
 
         FeedItem item = FeedItem.builder()
-            .referenciaId(op.getId())
-            .tipo("OPORTUNIDADE")
-            .titulo(op.getNome())
-            .corpo(op.getDescricao())
-            .criadorId(op.getProfessorId())
-            .nomeCriador(nomeCriador)
-            .criado(op.getCriado())
-            .imagemBase64(op.getImagemBase64())
-            .idLikes(op.getIdLikes())
-            .quantidadeDeVagas(op.getQuantidadeDeVagas())
-            .vagasPreenchidas(op.getVagasPreenchidas())
-            .finalizada(op.getFinalizada())
-            .alunosCandidatosId(op.getAlunosCandidatosId())
-            .alunosAprovadosId(op.getAlunosAprovadosId())
-            .imagemPerfil(imagemPerfil)
-            .build();
+                .referenciaId(op.getId())
+                .tipo("OPORTUNIDADE")
+                .likesCount(op.getIdLikes().size())
+                .comentariosCount(0)
+                .createdAt(op.getCriado())
+                .build();
 
         feedRepository.save(item);
     }
 
-    public void atualizarFeedOportunidade(Oportunidade op, String nomeCriador) {
-        feedRepository.findByReferenciaId(op.getId()).ifPresent(item -> {
-            item.setTitulo(op.getNome());
-            item.setCorpo(op.getDescricao());
-            item.setCriadorId(op.getProfessorId());
-            item.setNomeCriador(nomeCriador);
-            item.setImagemBase64(op.getImagemBase64());
-            item.setIdLikes(op.getIdLikes());
+    public void atualizarFeedOportunidade(Oportunidade op) {
 
-            item.setQuantidadeDeVagas(op.getQuantidadeDeVagas());
-            item.setVagasPreenchidas(op.getVagasPreenchidas());
-            item.setFinalizada(op.getFinalizada());
-            item.setAlunosCandidatosId(op.getAlunosCandidatosId());
-            item.setAlunosAprovadosId(op.getAlunosAprovadosId());
+        feedRepository.findByReferenciaId(op.getId())
+                .ifPresent(item -> {
 
-            feedRepository.save(item);
-        });
+                    item.setLikesCount(op.getIdLikes().size());
+
+                    feedRepository.save(item);
+                });
     }
 
     public void deletarFeedItem(String referenciaId) {
         feedRepository.deleteByReferenciaId(referenciaId);
+    }
+
+    private FeedResponseDTO montarFeedItem(FeedItem item) {
+
+        if ("POST".equalsIgnoreCase(item.getTipo())) {
+
+            Optional<Post> opt = postRepository.findById(item.getReferenciaId());
+
+            if (opt.isEmpty()) return null;
+
+            Post post = opt.get();
+
+            Usuario criador = usuarioService.getUsuarioById(post.getCriadorId());
+
+            return FeedResponseDTO.builder()
+                    .id(post.getId())
+                    .referenciaId(item.getReferenciaId())
+
+                    .tipo("POST")
+
+                    .criadorId(post.getCriadorId())
+
+                    .titulo(post.getTitulo())
+                    .corpo(post.getCorpo())
+
+                    .imagemBase64(post.getImagemBase64())
+
+                    .likesCount(item.getLikesCount())
+                    .comentariosCount(item.getComentariosCount())
+
+                    .idLikes(post.getIdLikes())
+
+                    .createdAt(item.getCreatedAt())
+
+                    .nomeCriador(
+                            criador != null ? criador.getNome() : null
+                    )
+
+                    .imagemPerfil(
+                            criador != null ? criador.getImagemPerfil() : null
+                    )
+
+                    .build();
+        }
+
+        Optional<Oportunidade> opt =
+                oportunidadeRepository.findById(item.getReferenciaId());
+
+        if (opt.isEmpty()) return null;
+
+        Oportunidade op = opt.get();
+
+        Usuario criador = usuarioService.getUsuarioById(op.getProfessorId());
+
+        return FeedResponseDTO.builder()
+                .id(item.getId())
+                .referenciaId(item.getReferenciaId())
+
+                .tipo("OPORTUNIDADE")
+
+                .criadorId(op.getProfessorId())
+
+                .titulo(op.getNome())
+                .corpo(op.getDescricao())
+
+                .imagemBase64(op.getImagemBase64())
+
+                .likesCount(item.getLikesCount())
+                .comentariosCount(item.getComentariosCount())
+
+                .idLikes(op.getIdLikes())
+
+                .createdAt(item.getCreatedAt())
+
+                .nomeCriador(
+                        criador != null ? criador.getNome() : null
+                )
+
+                .imagemPerfil(
+                        criador != null ? criador.getImagemPerfil() : null
+                )
+
+                .quantidadeDeVagas(op.getQuantidadeDeVagas())
+                .vagasPreenchidas(op.getVagasPreenchidas())
+                .finalizada(op.getFinalizada())
+
+                .alunosCandidatosId(op.getAlunosCandidatosId())
+                .alunosAprovadosId(op.getAlunosAprovadosId())
+
+                .build();
     }
 }

@@ -1,5 +1,6 @@
 package br.oportunidades.cefet.backend.services;
 
+import br.oportunidades.cefet.backend.enums.TipoFeed;
 import br.oportunidades.cefet.backend.models.Comentario;
 import br.oportunidades.cefet.backend.repositories.ComentarioRepository;
 
@@ -22,27 +23,23 @@ public class ComentarioService {
 
     public List<Comentario> listarComentariosDePost(String idPost) {
         return comentarioRepository
-                .findByTipoEntidadePaiAndIdPostAndIdComentarioPaiIsNull(
-                        "Post",
+                .findByTipoEntidadePaiAndIdPost(
+                        TipoFeed.POST,
                         idPost
                 );
     }
 
     public List<Comentario> listarComentariosDeOportunidade(String idOportunidade) {
         return comentarioRepository
-                .findByTipoEntidadePaiAndIdPostAndIdComentarioPaiIsNull(
-                        "Oportunidade",
+                .findByTipoEntidadePaiAndIdPost(
+                        TipoFeed.OPORTUNIDADE,
                         idOportunidade
                 );
     }
 
-    public List<Comentario> listarRespostas(String idComentarioPai) {
-        return comentarioRepository.findByIdComentarioPai(idComentarioPai);
-    }
-
     public Comentario salvar(Comentario comentario) {
-        if (comentario.getDataComentario() == null) {
-            comentario.setDataComentario(new Date());
+        if (comentario.getCreatedAt() == null) {
+            comentario.setCreatedAt(new Date());
         }
         return comentarioRepository.save(comentario);
     }

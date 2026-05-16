@@ -9,7 +9,7 @@ export interface Comentario {
   idComentarioPai?: string | null;
   tipoEntidadePai?: string;
   idPost?: string;
-  dataComentario?: string | Date;
+  createdAt?: string | Date;
   texto?: string;
   idLikes?: string[];
 }

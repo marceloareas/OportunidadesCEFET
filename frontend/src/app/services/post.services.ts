@@ -17,7 +17,7 @@ export interface Post {
   corpo: string;
   criadorId?: string;
   nomeCriador?: string;
-  criado?: string | Date;
+  createdAt?: string | Date;
   idLikes?: string[];
   idComentarios?: any[];
   imagemBase64?: string;

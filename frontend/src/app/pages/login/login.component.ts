@@ -129,7 +129,6 @@ export class Login {
         localStorage.setItem('tipoUsuario', tipo);
 
         alert(`Bem-vindo, ${authResponse.usuario.nome}!`);
-        console.log('Usuário logado:', usuarioNormalizado.nome, '| Tipo:', tipo);
         this.router.navigate(['/home']);
       },
       error: (err) => {
@@ -158,7 +157,6 @@ export class Login {
 
     this.usuarioService.cadastrar(novoUsuario).subscribe({
       next: (usuario) => {
-        console.log('Usuário cadastrado com sucesso:', usuario);
         alert('Cadastro realizado! Faça login.');
         this.toggleForm();
       },

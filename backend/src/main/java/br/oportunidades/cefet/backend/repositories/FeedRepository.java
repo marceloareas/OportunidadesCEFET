@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface FeedRepository extends MongoRepository<FeedItem, String> {
 
-    Page<FeedItem> findAllByOrderByCriadoDesc(Pageable pageable);
+    Page<FeedItem> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     Optional<FeedItem> findByReferenciaId(String referenciaId);
 

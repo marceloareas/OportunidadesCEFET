@@ -4,12 +4,13 @@ import { PostService, Post } from '../../services/post.services';
 import { FormsModule } from '@angular/forms';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
+import { PostComponent } from '../../components/post/post';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 
 @Component({
   selector: 'app-minhas-discussoes',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarTop, NavbarLeft, NavbarRight],
+  imports: [CommonModule, FormsModule, NavbarTop, NavbarLeft, NavbarRight, PostComponent],
   templateUrl: './minhas-discussoes.html',
   styleUrls: ['./minhas-discussoes.css']
 })
