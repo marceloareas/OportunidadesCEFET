@@ -1,5 +1,6 @@
 package br.oportunidades.cefet.backend.dto.feed;
 
+import br.oportunidades.cefet.backend.enums.StatusOportunidade;
 import lombok.Builder;
 import lombok.Data;
 
@@ -24,6 +25,8 @@ public class FeedResponseDTO {
 
     // datas
     private Date createdAt;
+    private Date dataInicioInscricao;
+    private Date dataFimInscricao;
 
     // conteúdo
     private String titulo;
@@ -37,9 +40,12 @@ public class FeedResponseDTO {
     private List<String> idLikes;
 
     // oportunidade
+    private String idCategoria;
+    private List<String> grandesAreas;
     private Integer quantidadeDeVagas;
     private Integer vagasPreenchidas;
     private Boolean finalizada;
+    private StatusOportunidade status;
 
     private List<String> alunosCandidatosId;
     private List<String> alunosAprovadosId;

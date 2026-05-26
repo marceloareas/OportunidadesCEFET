@@ -145,6 +145,24 @@
               />
             </div>
             <div class="campo">
+              <label for="inicioInscricao">Data inicial das inscrições</label>
+              <input
+                id="inicioInscricao"
+                type="date"
+                [ngModel]="dataInicioInscricao()"
+                (ngModelChange)="dataInicioInscricao.set($event)"
+              />
+            </div>
+            <div class="campo">
+              <label for="fimInscricao">Data final das inscrições</label>
+              <input
+                id="fimInscricao"
+                type="date"
+                [ngModel]="dataFimInscricao()"
+                (ngModelChange)="dataFimInscricao.set($event)"
+              />
+            </div>
+            <div class="campo">
               <label>Grandes áreas *</label>
 
               <label>
@@ -154,7 +172,7 @@
               </label>
 
               <label>
-                <input type="checkbox" value="ENGENHARIAS"
+                <input type="checkbox" value="CIENCIAS_BIOLOGICAS"
                        (change)="onAreaChange($event)" />
                 Ciências Biológicas
               </label>
@@ -172,31 +190,31 @@
               </label>
 
               <label>
-                <input type="checkbox" value="ENGENHARIAS"
+                <input type="checkbox" value="CIENCIAS_AGRARIAS"
                        (change)="onAreaChange($event)" />
                 Ciências Agrárias
               </label>
 
               <label>
-                <input type="checkbox" value="ENGENHARIAS"
+                <input type="checkbox" value="CIENCIAS_SOCIAIS_APLICADAS"
                        (change)="onAreaChange($event)" />
                 Ciências Sociais Aplicadas
               </label>
 
               <label>
-                <input type="checkbox" value="ENGENHARIAS"
+                <input type="checkbox" value="CIENCIAS_HUMANAS"
                        (change)="onAreaChange($event)" />
                 Ciências Humanas
               </label>
 
               <label>
-                <input type="checkbox" value="ENGENHARIAS"
+                <input type="checkbox" value="LINGUISTICA_LETRAS_E_ARTES"
                        (change)="onAreaChange($event)" />
                 Linguística, Letras e Artes
               </label>
 
               <label>
-                <input type="checkbox" value="ENGENHARIAS"
+                <input type="checkbox" value="MULTIDISCIPLINAR"
                        (change)="onAreaChange($event)" />
                 Multidisciplinar
               </label>

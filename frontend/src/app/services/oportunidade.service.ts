@@ -10,12 +10,17 @@ export interface Oportunidade {
   nome: string;
   descricao?: string;
   professorId?: string;
+  nomeCriador?: string;
   quantidadeDeVagas?: number;
   vagasPreenchidas?: number;
   idCategoria?: string;
   grandesAreas?: string[];
   imagemBase64?: string;
   createdAt?: string | Date;
+  criado?: string | Date;
+  dataInicioInscricao?: string | Date;
+  dataFimInscricao?: string | Date;
+  status?: 'INSCRICOES_EM_BREVE' | 'INSCRICOES_ABERTAS' | 'INSCRICOES_ENCERRADAS' | 'FINALIZADA';
   alunosCandidatosId?: string[];
   idLikes?: string[];
   alunosAprovadosId?: string[];

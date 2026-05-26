@@ -22,6 +22,26 @@ export class PostComponent {
   @Input() post!: FeedItem;
   readonly comentariosPorPagina = 10;
 
+  private readonly categoriaLabels: Record<string, string> = {
+    MONITORIA: 'Monitoria',
+    EXTENSAO: 'Extensão',
+    PESQUISA: 'Pesquisa',
+    ESTAGIO: 'Estágio',
+    ORIENTACAO_TCC: 'Orientação TCC',
+  };
+
+  private readonly areaLabels: Record<string, string> = {
+    CIENCIAS_AGRARIAS: 'Ciências Agrárias',
+    CIENCIAS_BIOLOGICAS: 'Ciências Biológicas',
+    CIENCIAS_DA_SAUDE: 'Ciências da Saúde',
+    CIENCIAS_EXATAS_E_DA_TERRA: 'Ciências Exatas e da Terra',
+    ENGENHARIAS: 'Engenharias',
+    CIENCIAS_HUMANAS: 'Ciências Humanas',
+    CIENCIAS_SOCIAIS_APLICADAS: 'Ciências Sociais Aplicadas',
+    LINGUISTICA_LETRAS_E_ARTES: 'Linguística, Letras e Artes',
+    MULTIDISCIPLINAR: 'Multidisciplinar',
+  };
+
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
   usuarioLogado = signal<{
     id: string;
@@ -176,6 +196,11 @@ export class PostComponent {
     const usuario = this.usuarioLogado();
     if (!usuario || !this.post.id) {
       alert('Usuário ou post não identificado.');
+      return;
+    }
+
+    if (this.post.tipo === 'OPORTUNIDADE' && this.post.status === 'FINALIZADA') {
+      alert('Esta oportunidade está finalizada e não aceita mensagens.');
       return;
     }
 
@@ -334,6 +359,11 @@ export class PostComponent {
       return;
     }
 
+    if (!this.podeCandidatar()) {
+      alert('As inscrições não estão abertas para esta oportunidade.');
+      return;
+    }
+
     const referenciaId = this.post.referenciaId || this.post.id;
     if (!referenciaId) return;
 
@@ -351,6 +381,53 @@ export class PostComponent {
         alert('Erro ao se candidatar à vaga.');
       },
     });
+  }
+
+  statusDescricao(): string {
+    switch (this.post.status) {
+      case 'INSCRICOES_EM_BREVE':
+        return 'Inscrições em breve';
+      case 'INSCRICOES_ABERTAS':
+        return 'Inscrições abertas';
+      case 'INSCRICOES_ENCERRADAS':
+        return 'Inscrições encerradas';
+      case 'FINALIZADA':
+        return 'Finalizada';
+      default:
+        return this.post.finalizada ? 'Finalizada' : 'Status indefinido';
+    }
+  }
+
+  periodoInscricao(): string {
+    const inicio = this.post.dataInicioInscricao ? new Date(this.post.dataInicioInscricao) : null;
+    const fim = this.post.dataFimInscricao ? new Date(this.post.dataFimInscricao) : null;
+
+    if (!inicio || !fim || Number.isNaN(inicio.getTime()) || Number.isNaN(fim.getTime())) {
+      return '';
+    }
+
+    return `${inicio.toLocaleDateString('pt-BR')} até ${fim.toLocaleDateString('pt-BR')}`;
+  }
+
+  categoriaDescricao(): string {
+    if (!this.post.idCategoria) return 'Categoria não informada';
+    return this.categoriaLabels[this.post.idCategoria] || this.post.idCategoria;
+  }
+
+  areasDescricao(): string {
+    const areas = this.post.grandesAreas || [];
+
+    if (areas.length === 0) return 'Área não informada';
+
+    return areas.map((area) => this.areaLabels[area] || area).join(' · ');
+  }
+
+  podeCandidatar(): boolean {
+    return this.post.tipo === 'OPORTUNIDADE' && this.tipoUsuario() === 'aluno' && this.post.status === 'INSCRICOES_ABERTAS';
+  }
+
+  mensagensBloqueadas(): boolean {
+    return this.post.tipo === 'OPORTUNIDADE' && this.post.status === 'FINALIZADA';
   }
 
   podeVerCandidatos(): boolean {

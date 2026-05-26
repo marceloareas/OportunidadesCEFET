@@ -135,8 +135,6 @@ public class FeedService {
                     .likesCount(item.getLikesCount())
                     .comentariosCount(item.getComentariosCount())
 
-                    .idLikes(post.getIdLikes())
-
                     .createdAt(item.getCreatedAt())
 
                     .nomeCriador(
@@ -159,6 +157,8 @@ public class FeedService {
 
         Usuario criador = usuarioService.getUsuarioById(op.getProfessorId());
 
+        OportunidadeStatusHelper.aplicarStatus(op);
+
         return FeedResponseDTO.builder()
                 .id(item.getId())
                 .referenciaId(item.getReferenciaId())
@@ -171,6 +171,16 @@ public class FeedService {
                 .corpo(op.getDescricao())
 
                 .imagemBase64(op.getImagemBase64())
+
+                .dataInicioInscricao(op.getDataInicioInscricao())
+                .dataFimInscricao(op.getDataFimInscricao())
+                .status(op.getStatus())
+                .idCategoria(op.getIdCategoria())
+                .grandesAreas(
+                        op.getGrandesAreas() == null
+                                ? java.util.Collections.emptyList()
+                                : op.getGrandesAreas().stream().map(Enum::name).toList()
+                )
 
                 .likesCount(item.getLikesCount())
                 .comentariosCount(item.getComentariosCount())

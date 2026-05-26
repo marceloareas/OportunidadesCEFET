@@ -4,7 +4,12 @@
 
   <main class="content">
     <div class="scroll-content">
-      <h2 class="titulo-principal">Oportunidades</h2>
+      <div class="cabecalho-pagina">
+        <h2 class="titulo-principal">Oportunidades</h2>
+        <button *ngIf="usuarioFuncao === 'professor'" class="btn-nova-oportunidade" type="button" (click)="novaOportunidade()">
+          Criar nova oportunidade
+        </button>
+      </div>
       <div *ngIf="erro()" class="mensagem-erro">{{ erro() }}</div>
 
       <section *ngIf="usuarioFuncao === 'professor'">
@@ -39,24 +44,8 @@
         <div class="mensagem-vazia" *ngIf="!carregando() && minhasOportunidades().length === 0">
           Você ainda não possui oportunidades criadas.
         </div>
-        <div class="cards">
-          <article class="card" *ngFor="let op of minhasOportunidades()">
-            <div class="card-head" style="display: flex; align-items: center; gap: 10px;">
-              <!-- <img [src]="op.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" /> -->
-              <div>
-                <h4>{{ op.nome }}</h4>
-                <p class="meta">Vagas: {{ op.vagasPreenchidas ?? 0 }}/{{ op.quantidadeDeVagas ?? 0 }}</p>
-              </div>
-              <span class="badge" [class.finalizada]="op.finalizada">{{ op.finalizada ? 'Finalizada' : 'Aberta' }}</span>
-            </div>
-            <p class="descricao">{{ op.descricao }}</p>
-            <div class="acoes">
-              <button class="btn" (click)="abrirListaCandidatos(op)">Ver candidatos ({{ op.alunosCandidatosId?.length || 0 }})</button>
-              <button class="btn btn-sec" [disabled]="op.finalizada" (click)="finalizar(op)">
-                {{ op.finalizada ? 'Finalizada' : 'Finalizar' }}
-              </button>
-            </div>
-          </article>
+        <div class="feed-cards">
+          <app-post *ngFor="let op of minhasOportunidades()" [post]="oportunidadeComoFeedItem(op)"></app-post>
           <div class="feed-footer" *ngIf="minhasOportunidades().length > 0">
             <div *ngIf="carregando()" class="feed-state loading">
               <div class="loader"></div>
@@ -109,126 +98,12 @@
         <div class="mensagem-vazia" *ngIf="!carregando() && candidaturas().length === 0">
           Você ainda não se candidatou a oportunidades.
         </div>
-        <div class="cards">
-          <article class="card" *ngFor="let op of candidaturas()">
-            <div class="card-head" style="display: flex; align-items: center; gap: 10px;">
-              <!-- <img [src]="op.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" /> -->
-              <div>
-                <h4>{{ op.nome }}</h4>
-                <p class="meta">Status: {{ statusAluno(op) }}</p>
-              </div>
-              <span class="badge" [class.finalizada]="op.finalizada">{{ op.finalizada ? 'Finalizada' : 'Aberta' }}</span>
-            </div>
-            <p class="descricao">{{ op.descricao }}</p>
-          </article>
+        <div class="feed-cards">
+          <app-post *ngFor="let op of candidaturas()" [post]="oportunidadeComoFeedItem(op)"></app-post>
         </div>
       </section>
     </div>
   </main>
 
   <app-navbar-right></app-navbar-right>
-</div>
-
-<!-- Modal candidatos -->
-<div class="modal-overlay" *ngIf="mostrandoListaCandidatos()" (click)="fecharListaCandidatos()">
-  <div class="modal-conteudo card-modal" (click)="$event.stopPropagation()">
-    <div class="modal-topo-lista">
-      <div class="cabecalho-esq">
-        <h3>Candidatos</h3>
-        <div class="sub">Oportunidade: {{ oportunidadeSelecionadaId() }}</div>
-      </div>
-      <div class="acoes-topo">
-        <label class="filtro-aprovados">
-          <input type="checkbox" [checked]="somenteAprovados()" (change)="somenteAprovados.set($any($event.target).checked)" />
-          Somente aprovados
-        </label>
-        <button class="btn-fechar" type="button" (click)="fecharListaCandidatos()">Fechar</button>
-      </div>
-    </div>
-
-    <div class="lista-candidatos">
-      <div *ngIf="candidatosCarregando()" class="candidatos-skeleton">
-        <div class="candidato-skeleton" *ngFor="let item of [1,2,3,4]">
-          <div class="skeleton skeleton-avatar small"></div>
-
-          <div class="candidato-skeleton-info">
-            <div class="skeleton skeleton-line medium"></div>
-            <div class="skeleton skeleton-line long"></div>
-          </div>
-
-          <div class="skeleton skeleton-btn small-btn"></div>
-        </div>
-      </div>
-      <div *ngIf="candidatosErro()">{{ candidatosErro() }}</div>
-
-      <div class="mensagem-vazia" *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length === 0">
-        Nenhum candidato encontrado.
-      </div>
-
-      <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
-        <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
-          <div class="cand-dados" style="display: flex; align-items: center; gap: 10px;">
-            <a
-              *ngIf="c.id; else candidatoFotoSemPerfil"
-              class="candidato-perfil-link"
-              [routerLink]="['/perfil', c.id]"
-            >
-              <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
-            </a>
-            <ng-template #candidatoFotoSemPerfil>
-              <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
-            </ng-template>
-            <div>
-              <a
-                *ngIf="c.id; else candidatoNomeSemPerfil"
-                class="candidato-nome candidato-perfil-link"
-                [routerLink]="['/perfil', c.id]"
-              >
-                {{ c.nome || c.id }}
-              </a>
-              <ng-template #candidatoNomeSemPerfil>
-                <div class="candidato-nome">{{ c.nome || c.id }}</div>
-              </ng-template>
-              <div class="cand-meta">
-                <span *ngIf="c.email">E-mail: {{ c.email }}</span>
-                <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>
-                <span *ngIf="c.funcao"> • {{ c.funcao }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="cand-actions">
-            <span class="badge aprovado" *ngIf="estaAprovado(c.id)">Aprovado</span>
-            <button
-              class="btn-aprovar"
-              type="button"
-              [disabled]="aprovando() === c.id || estaAprovado(c.id)"
-              (click)="aprovarCandidato(c)"
-            >
-              {{ aprovando() === c.id ? 'Aprovando...' : 'Aprovar' }}
-            </button>
-          </div>
-        </li>
-      </ul>
-      <div class="paginacao"
-     *ngIf="!candidatosCarregando() 
-            && !candidatosErro() 
-            && totalPaginasCandidatos() > 1">
-        <button
-          (click)="paginaAnteriorCandidatos()"
-          [disabled]="paginaAtualCandidatos() === 0">
-          Anterior
-        </button>
-
-        <span>
-          Página {{ paginaAtualCandidatos() + 1 }} de {{ totalPaginasCandidatos() }}
-        </span>
-
-        <button
-          (click)="proximaPaginaCandidatos()"
-          [disabled]="paginaAtualCandidatos() >= totalPaginasCandidatos() - 1">
-          Próxima
-        </button>
-      </div>
-    </div>
-  </div>
 </div>

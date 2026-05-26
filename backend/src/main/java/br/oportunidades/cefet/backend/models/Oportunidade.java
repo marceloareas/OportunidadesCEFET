@@ -1,13 +1,14 @@
 package br.oportunidades.cefet.backend.models;
 
+import br.oportunidades.cefet.backend.enums.GrandeAreaConhecimento;
+import br.oportunidades.cefet.backend.enums.StatusOportunidade;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import br.oportunidades.cefet.backend.enums.GrandeAreaConhecimento;
-import java.util.*;
 
-import org.springframework.data.annotation.Transient;
+import java.util.*;
 
 @Document(collection = "Oportunidade")
 @Getter
@@ -41,6 +42,9 @@ public class Oportunidade {
     @Builder.Default
     private Date criado = new Date();
 
+    private Date dataInicioInscricao;
+    private Date dataFimInscricao;
+
     @Builder.Default
     private List<String> alunosCandidatosId = new ArrayList<>();
 
@@ -52,6 +56,9 @@ public class Oportunidade {
 
     @Builder.Default
     private Boolean finalizada = false;
+
+    @Transient
+    private StatusOportunidade status;
 
     @Builder.Default
     private List<GrandeAreaConhecimento> grandesAreas = new ArrayList<>();

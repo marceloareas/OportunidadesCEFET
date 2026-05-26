@@ -49,6 +49,8 @@ public class OportunidadeService {
             throw new IllegalArgumentException("Informe ao menos uma grande área do conhecimento.");
         }
 
+        validarPeriodoInscricao(oportunidade);
+
         try {
             CategoriaOportunidade.valueOf(oportunidade.getIdCategoria().toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -77,7 +79,13 @@ public class OportunidadeService {
             oportunidade.setQuantidadeDeVagas(0);
         }
 
+        if (oportunidade.getFinalizada() == null) {
+            oportunidade.setFinalizada(false);
+        }
+
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
+
+        aplicarStatus(salva);
 
         feedService.criarFeedOportunidade(salva);
 
@@ -114,6 +122,16 @@ public class OportunidadeService {
             existente.setIdCategoria(atualizada.getIdCategoria());
             existente.setImagemBase64(atualizada.getImagemBase64());
 
+            if (atualizada.getDataInicioInscricao() != null) {
+                existente.setDataInicioInscricao(atualizada.getDataInicioInscricao());
+            }
+
+            if (atualizada.getDataFimInscricao() != null) {
+                existente.setDataFimInscricao(atualizada.getDataFimInscricao());
+            }
+
+            validarPeriodoOpcional(existente);
+
             if (existente.getAlunosCandidatosId() == null) {
                 existente.setAlunosCandidatosId(new ArrayList<>());
             }
@@ -123,6 +141,8 @@ public class OportunidadeService {
             }
 
             Oportunidade salva = oportunidadeRepository.save(existente);
+
+            aplicarStatus(salva);
 
             feedService.atualizarFeedOportunidade(salva);
 
@@ -146,6 +166,10 @@ public class OportunidadeService {
             throw new IllegalStateException("Oportunidade finalizada. Não é possível se candidatar.");
         }
 
+        if (!OportunidadeStatusHelper.estaComInscricoesAbertas(oportunidade)) {
+            throw new IllegalStateException("As inscrições não estão abertas para esta oportunidade.");
+        }
+
         if (candidatos == null) candidatos = new ArrayList<>();
 
         if (!candidatos.contains(idAluno)) {
@@ -153,9 +177,14 @@ public class OportunidadeService {
             oportunidade.setAlunosCandidatosId(candidatos);
             Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
+            aplicarStatus(salva);
+
             feedService.atualizarFeedOportunidade(salva);
+
+            return Optional.of(salva);
         }
 
+        aplicarStatus(oportunidade);
         return Optional.of(oportunidade);
     }
 
@@ -271,6 +300,8 @@ public class OportunidadeService {
 
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
+        aplicarStatus(salva);
+
         feedService.atualizarFeedOportunidade(salva);
 
         return Optional.of(salva);
@@ -289,6 +320,8 @@ public class OportunidadeService {
         oportunidade.setFinalizada(true);
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
+        aplicarStatus(salva);
+
         feedService.atualizarFeedOportunidade(salva);
 
         return Optional.of(salva);
@@ -300,6 +333,30 @@ public class OportunidadeService {
                 op.setNomeCriador(criador.getNome());
                 op.setImagemPerfil(criador.getImagemPerfil());
             });
+        }
+
+        aplicarStatus(op);
+    }
+
+    private void aplicarStatus(Oportunidade oportunidade) {
+        OportunidadeStatusHelper.aplicarStatus(oportunidade);
+    }
+
+    private void validarPeriodoInscricao(Oportunidade oportunidade) {
+        if (oportunidade.getDataInicioInscricao() == null || oportunidade.getDataFimInscricao() == null) {
+            throw new IllegalArgumentException("Informe a data inicial e final das inscrições.");
+        }
+
+        validarPeriodoOpcional(oportunidade);
+    }
+
+    private void validarPeriodoOpcional(Oportunidade oportunidade) {
+        if (oportunidade.getDataInicioInscricao() == null || oportunidade.getDataFimInscricao() == null) {
+            return;
+        }
+
+        if (oportunidade.getDataFimInscricao().before(oportunidade.getDataInicioInscricao())) {
+            throw new IllegalArgumentException("A data final das inscrições deve ser igual ou posterior à data inicial.");
         }
     }
 }

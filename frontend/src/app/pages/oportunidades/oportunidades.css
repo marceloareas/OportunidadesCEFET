@@ -20,6 +20,31 @@
   margin-top: 4vh;
 }
 
+.cabecalho-pagina {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-nova-oportunidade {
+  background: linear-gradient(135deg, #0a497e, #155a95);
+  color: #fff;
+  border: none;
+  padding: 0.85rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(10, 73, 126, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-nova-oportunidade:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(10, 73, 126, 0.24);
+}
+
 hr {
   border: none;
   height: 1px;

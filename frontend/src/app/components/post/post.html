@@ -48,8 +48,14 @@
     <img *ngIf="post.imagemBase64" [src]="post.imagemBase64" alt="Imagem do post" class="post-image" />
 
     <div *ngIf="post.tipo === 'OPORTUNIDADE'" class="oportunidade-info">
-      <p>Vagas: {{ post.vagasPreenchidas ?? 0 }}/{{ post.quantidadeDeVagas }}</p>
-      <p class="candidatos">Candidatos: {{ contadorCandidatos() }}</p>
+      <div class="oportunidade-detalhes">
+        <p class="status">Status: {{ statusDescricao() }}</p>
+        <p class="categoria">Categoria: {{ categoriaDescricao() }}</p>
+        <p class="areas">Área(s): {{ areasDescricao() }}</p>
+        <p *ngIf="periodoInscricao()" class="periodo">Inscrições: {{ periodoInscricao() }}</p>
+        <p>Vagas: {{ post.vagasPreenchidas ?? 0 }}/{{ post.quantidadeDeVagas }}</p>
+        <p class="candidatos">Candidatos: {{ contadorCandidatos() }}</p>
+      </div>
       <button
         *ngIf="podeVerCandidatos()"
         class="btn-candidatos"
@@ -79,10 +85,10 @@
     <button
       *ngIf="post.tipo === 'OPORTUNIDADE' && tipoUsuario() === 'aluno'"
       class="btn-candidatar"
-      [disabled]="jaCandidatado() || post.finalizada"
+      [disabled]="jaCandidatado() || !podeCandidatar()"
       (click)="candidatar()"
     >
-      {{ post.finalizada ? 'Finalizada' : (jaCandidatado() ? 'CANDIDATADO ✔' : 'CANDIDATAR-SE') }}
+      {{ !podeCandidatar() ? statusDescricao() : (jaCandidatado() ? 'CANDIDATADO ✔' : 'CANDIDATAR-SE') }}
     </button>
   </div>
 </div>
@@ -95,13 +101,20 @@
       <button class="btn-comentario" type="button" (click)="closeNewComment()">Fechar</button>
     </div>
     <div class="modal-topo">
-      <textarea
-        placeholder="Escreva seu comentário..."
-        [(ngModel)]="novoComentario"></textarea>
+      <ng-container *ngIf="!mensagensBloqueadas(); else comentariosBloqueados">
+        <textarea
+          placeholder="Escreva seu comentário..."
+          [(ngModel)]="novoComentario"></textarea>
 
-      <button class="btn-comentario" (click)="enviarComentario()" [disabled]="!novoComentario.trim()">
-        Enviar
-      </button>
+        <button class="btn-comentario" (click)="enviarComentario()" [disabled]="!novoComentario.trim()">
+          Enviar
+        </button>
+      </ng-container>
+      <ng-template #comentariosBloqueados>
+        <div class="mensagem-bloqueio">
+          Esta oportunidade foi finalizada e não aceita novas mensagens.
+        </div>
+      </ng-template>
     </div>
 
     <div class="modal-comentarios">

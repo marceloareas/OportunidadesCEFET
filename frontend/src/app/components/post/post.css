@@ -66,7 +66,7 @@
 /* ✅ Vagas e candidatos */
 .oportunidade-info {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   border-top: 1px solid #ddd;
   margin-top: 10px;
@@ -74,10 +74,23 @@
   gap: 10px;
 }
 
+.oportunidade-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .oportunidade-info p {
   font-size: 0.9rem;
   color: #444;
   margin: 0;
+}
+
+.oportunidade-info .status,
+.oportunidade-info .categoria,
+.oportunidade-info .areas,
+.oportunidade-info .periodo {
+  font-weight: 600;
 }
 
 .btn-candidatos {

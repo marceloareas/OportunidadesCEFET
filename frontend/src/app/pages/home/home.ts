@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
@@ -42,6 +42,8 @@ export class Home {
   imagemBase64 = signal<string | null>(null);
   imagemErro = signal<string>('');
   vagasTotais = signal<number>(1);
+  dataInicioInscricao = signal<string>('');
+  dataFimInscricao = signal<string>('');
   categoria = signal<string>('');
   grandesAreas = signal<string[]>([]);
 
@@ -49,6 +51,7 @@ export class Home {
     private postService: PostService,
     private oportunidadeService: OportunidadeService,
     private feedService: FeedService,
+    private route: ActivatedRoute,
     private router: Router
   ) {}
 
@@ -81,6 +84,11 @@ export class Home {
 
       const tipoUsuario = localStorage.getItem('tipoUsuario') || 'aluno';
       this.tipoUsuario.set(tipoUsuario);
+
+      if (this.route.snapshot.queryParamMap.get('modo') === 'oportunidade') {
+        this.modoOportunidade.set(true);
+        this.newPostModal.set(true);
+      }
     } catch {
       this.router.navigate(['/login']);
       return;
@@ -170,7 +178,7 @@ export class Home {
 
     this.grandesAreas.update(lista =>
       checkbox.checked
-        ? [...lista, valor]
+        ? Array.from(new Set([...lista, valor]))
         : lista.filter(v => v !== valor)
     );
   }
@@ -209,6 +217,8 @@ export class Home {
     this.titulo.set('');
     this.corpo.set('');
     this.vagasTotais.set(1);
+    this.dataInicioInscricao.set('');
+    this.dataFimInscricao.set('');
     this.categoria.set('');
     this.removerImagem();
   }
@@ -262,6 +272,27 @@ export class Home {
 
     const categoriaSelecionada = this.categoria()?.trim();
 
+    const dataInicio = this.dataInicioInscricao().trim();
+    const dataFim = this.dataFimInscricao().trim();
+
+    if (!dataInicio || !dataFim) {
+      alert('Informe a data inicial e final das inscrições.');
+      return;
+    }
+
+    const inicio = new Date(`${dataInicio}T00:00:00`);
+    const fim = new Date(`${dataFim}T23:59:59`);
+
+    if (Number.isNaN(inicio.getTime()) || Number.isNaN(fim.getTime())) {
+      alert('Informe um período de inscrição válido.');
+      return;
+    }
+
+    if (fim < inicio) {
+      alert('A data final das inscrições deve ser igual ou posterior à data inicial.');
+      return;
+    }
+
     if (!categoriaSelecionada) {
       alert('Selecione uma categoria.');
       return;
@@ -274,7 +305,9 @@ export class Home {
       quantidadeDeVagas: quantidade,
       idCategoria: categoriaSelecionada.toUpperCase(),
       grandesAreas: this.grandesAreas(),
-      imagemBase64: this.imagemBase64() ?? undefined
+      imagemBase64: this.imagemBase64() ?? undefined,
+      dataInicioInscricao: inicio.toISOString(),
+      dataFimInscricao: fim.toISOString()
     };
 
     this.oportunidadeService.criar(novaOportunidade).subscribe({

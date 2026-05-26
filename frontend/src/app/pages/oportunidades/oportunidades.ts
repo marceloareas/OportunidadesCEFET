@@ -1,17 +1,19 @@
 import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
+import { PostComponent } from '../../components/post/post';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
+import { FeedItem } from '../../services/feed.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
 
 @Component({
   selector: 'app-oportunidades',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavbarTop, NavbarLeft, NavbarRight],
+  imports: [CommonModule, FormsModule, RouterLink, NavbarTop, NavbarLeft, NavbarRight, PostComponent],
   templateUrl: './oportunidades.html',
   styleUrl: './oportunidades.css'
 })
@@ -44,7 +46,8 @@ export class OportunidadesPage {
 
   constructor(
     private oportunidadeService: OportunidadeService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private router: Router
   ) {}
 
     ngOnInit() {
@@ -241,5 +244,61 @@ export class OportunidadesPage {
         alert('Não foi possível finalizar.');
       }
     });
+  }
+
+  novaOportunidade() {
+    this.router.navigate(['/home'], { queryParams: { modo: 'oportunidade' } });
+  }
+
+  statusDescricao(status?: Oportunidade['status']): string {
+    switch (status) {
+      case 'INSCRICOES_EM_BREVE':
+        return 'Inscrições em breve';
+      case 'INSCRICOES_ABERTAS':
+        return 'Inscrições abertas';
+      case 'INSCRICOES_ENCERRADAS':
+        return 'Inscrições encerradas';
+      case 'FINALIZADA':
+        return 'Finalizada';
+      default:
+        return 'Status indefinido';
+    }
+  }
+
+  periodoInscricao(op: Oportunidade): string {
+    const inicio = op.dataInicioInscricao ? new Date(op.dataInicioInscricao) : null;
+    const fim = op.dataFimInscricao ? new Date(op.dataFimInscricao) : null;
+
+    if (!inicio || !fim || Number.isNaN(inicio.getTime()) || Number.isNaN(fim.getTime())) {
+      return 'Período não informado';
+    }
+
+    return `${inicio.toLocaleDateString('pt-BR')} até ${fim.toLocaleDateString('pt-BR')}`;
+  }
+
+  oportunidadeComoFeedItem(op: Oportunidade): FeedItem {
+    return {
+      id: op.id,
+      referenciaId: op.id,
+      tipo: 'OPORTUNIDADE',
+      titulo: op.nome,
+      corpo: op.descricao,
+      criadorId: op.professorId,
+      nomeCriador: op.nomeCriador,
+      createdAt: (op as any).criado ?? op.createdAt,
+      imagemBase64: op.imagemBase64,
+      imagemPerfil: op.imagemPerfil,
+      idLikes: op.idLikes || [],
+      dataInicioInscricao: op.dataInicioInscricao,
+      dataFimInscricao: op.dataFimInscricao,
+      idCategoria: op.idCategoria,
+      grandesAreas: op.grandesAreas,
+      quantidadeDeVagas: op.quantidadeDeVagas,
+      vagasPreenchidas: op.vagasPreenchidas,
+      finalizada: op.finalizada,
+      status: op.status,
+      alunosCandidatosId: op.alunosCandidatosId,
+      alunosAprovadosId: op.alunosAprovadosId,
+    };
   }
 }

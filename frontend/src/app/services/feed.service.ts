@@ -20,9 +20,14 @@ export interface FeedItem {
   idLikes?: string[];
   idComentarios?: string[];
 
+  dataInicioInscricao?: string | Date;
+  dataFimInscricao?: string | Date;
+  idCategoria?: string;
+  grandesAreas?: string[];
   quantidadeDeVagas?: number;
   vagasPreenchidas?: number;
   finalizada?: boolean;
+  status?: 'INSCRICOES_EM_BREVE' | 'INSCRICOES_ABERTAS' | 'INSCRICOES_ENCERRADAS' | 'FINALIZADA';
   alunosCandidatosId?: string[];
   alunosAprovadosId?: string[];
 }
