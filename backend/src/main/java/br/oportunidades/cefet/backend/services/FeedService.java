@@ -201,9 +201,6 @@ public class FeedService {
                 .vagasPreenchidas(op.getVagasPreenchidas())
                 .finalizada(op.getFinalizada())
 
-                .alunosCandidatosId(op.getAlunosCandidatosId())
-                .alunosAprovadosId(op.getAlunosAprovadosId())
-
                 .build();
     }
 }

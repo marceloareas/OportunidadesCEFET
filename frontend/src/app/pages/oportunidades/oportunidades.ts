@@ -98,8 +98,9 @@ export class OportunidadesPage {
             );
 
       request.subscribe({
-        next: (res) => {
-          const novas = res.content || [];
+          next: (res) => {
+            const novas = res.content || [];
+            console.log('candidaturas:', novas);
 
           if (this.usuarioFuncao === 'professor') {
             this.minhasOportunidades.set(

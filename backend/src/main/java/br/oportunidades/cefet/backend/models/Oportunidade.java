@@ -44,13 +44,7 @@ public class Oportunidade {
 
     private Date dataInicioInscricao;
     private Date dataFimInscricao;
-
-    @Builder.Default
-    private List<String> alunosCandidatosId = new ArrayList<>();
-
-    @Builder.Default
-    private List<String> alunosAprovadosId = new ArrayList<>();
-
+    
     @Builder.Default
     private List<String> idLikes = new ArrayList<>();
 
