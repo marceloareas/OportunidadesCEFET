@@ -1,4 +1,4 @@
-import { Component, Input, signal, inject } from '@angular/core';
+import { Component, Input, signal, inject, Output, EventEmitter } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +20,7 @@ import { SavedItemsService } from '../../services/itens-salvos.service';
 })
 export class PostComponent {
   @Input() post!: FeedItem;
+  @Output() abrirModalCandidatos = new EventEmitter<any>();
   readonly comentariosPorPagina = 10;
 
   private readonly categoriaLabels: Record<string, string> = {
@@ -445,25 +446,8 @@ export class PostComponent {
     const usuario = this.usuarioLogado();
     if (!usuario) return;
 
-    this.candidatosCarregando.set(true);
-    this.candidatosErro.set('');
-
-    const referenciaId = this.post.referenciaId || this.post.id;
-    if (!referenciaId) return;
-
-    this.oportunidadeService.listarCandidatosDoProfessor(referenciaId, usuario.id).subscribe({
-      next: (lista) => {
-        this.candidatos.set(lista || []);
-        this.candidatosModal.set(true);
-        this.candidatosCarregando.set(false);
-      },
-      error: (err) => {
-        console.error('Erro ao listar candidatos:', err);
-        this.candidatosErro.set('Não foi possível carregar candidatos.');
-        this.candidatosCarregando.set(false);
-        this.candidatosModal.set(true);
-      },
-    });
+    // Emitir evento para a página pai gerenciar a seleção em lote
+    this.abrirModalCandidatos.emit({ oportunidadeId: this.post.id, professorId: usuario.id });
   }
 
   fecharCandidatos() {

@@ -44,6 +44,11 @@ export class OportunidadesPage {
   candidatosCarregando = signal<boolean>(false);
   candidaturas = signal<Oportunidade[]>([]);
 
+  // seleção em lote e modal de confirmação
+  candidatosSelecionados = signal<Set<string>>(new Set());
+  mostrandoModalConfirmacao = signal<boolean>(false);
+  finalizandoOportunidade = signal<boolean>(false);
+
   constructor(
     private oportunidadeService: OportunidadeService,
     private usuarioService: UsuarioService,
@@ -98,8 +103,9 @@ export class OportunidadesPage {
             );
 
       request.subscribe({
-        next: (res) => {
-          const novas = res.content || [];
+          next: (res) => {
+            const novas = res.content || [];
+            console.log('candidaturas:', novas);
 
           if (this.usuarioFuncao === 'professor') {
             this.minhasOportunidades.set(
@@ -131,7 +137,8 @@ export class OportunidadesPage {
       if (!op.id) return;
 
       this.oportunidadeSelecionadaId.set(op.id);
-      this.paginaAtualCandidatos.set(0); 
+      this.paginaAtualCandidatos.set(0);
+      this.candidatosSelecionados.set(new Set()); // Resetar seleção
       this.mostrandoListaCandidatos.set(true);
 
       this.carregarCandidatos(op.id);
@@ -141,26 +148,30 @@ export class OportunidadesPage {
     this.mostrandoListaCandidatos.set(false);
     this.oportunidadeSelecionadaId.set(null);
     this.somenteAprovados.set(false);
+    this.candidatosSelecionados.set(new Set());
+    this.mostrandoModalConfirmacao.set(false);
   }
 
   carregarCandidatos(opId: string) {
+    if (!this.usuarioId) return;
+    
     this.candidatosCarregando.set(true);
     this.candidatosErro.set('');
 
     this.oportunidadeService
-      .listarCandidatos(opId, this.paginaAtualCandidatos(), this.tamanhoPagina())
+      .listarCandidatosDoProfessor(opId, this.usuarioId)
       .subscribe({
-        next: (page) => {
-
+        next: (lista: Usuario[]) => {
           this.candidatosPorOportunidade.update(m => ({
             ...m,
-            [opId]: page.content
+            [opId]: lista || []
           }));
 
-          this.totalPaginasCandidatos.set(page.totalPages);
+          this.totalPaginasCandidatos.set(1);
           this.candidatosCarregando.set(false);
         },
-        error: () => {
+        error: (err) => {
+          console.error('Erro ao carregar candidatos:', err);
           this.candidatosErro.set('Erro ao carregar candidatos');
           this.candidatosCarregando.set(false);
         }
@@ -301,4 +312,71 @@ export class OportunidadesPage {
       alunosAprovadosId: op.alunosAprovadosId,
     };
   }
-}
+
+  // Seleção em lote
+  toggleCandidato(candId: string | undefined) {
+    if (!candId) return;
+    const selecionados = new Set(this.candidatosSelecionados());
+    if (selecionados.has(candId)) {
+      selecionados.delete(candId);
+    } else {
+      selecionados.add(candId);
+    }
+    this.candidatosSelecionados.set(selecionados);
+  }
+
+  isCandidatoSelecionado(candId: string | undefined): boolean {
+    return candId ? this.candidatosSelecionados().has(candId) : false;
+  }
+
+  abrirModalConfirmacao() {
+    if (this.candidatosSelecionados().size === 0) {
+      alert('Selecione pelo menos um aluno para finalizar.');
+      return;
+    }
+    this.mostrandoModalConfirmacao.set(true);
+  }
+
+  fecharModalConfirmacao() {
+    this.mostrandoModalConfirmacao.set(false);
+  }
+
+  confirmarFinalizacao() {
+    const opId = this.oportunidadeSelecionadaId();
+    if (!opId || !this.usuarioId) return;
+
+    const selecionados = Array.from(this.candidatosSelecionados());
+    if (selecionados.length === 0) return;
+
+    this.finalizandoOportunidade.set(true);
+    this.mostrandoModalConfirmacao.set(false);
+
+    // Aprovar todos os selecionados
+    const aprovacoes = selecionados.map(idAluno =>
+      this.oportunidadeService.aprovarCandidatoDoProfessor(opId, idAluno, this.usuarioId!)
+    );
+
+    // Usar Promise.all para aprovar todos em paralelo
+    Promise.all(aprovacoes.map(obs => obs.toPromise())).then(
+      (resultados: any[]) => {
+        // Atualizar a oportunidade com o último resultado válido
+        const ultimaOp = resultados.find(r => r && r.id);
+        if (ultimaOp) {
+          this.minhasOportunidades.update(list =>
+            list.map(o => o.id === ultimaOp.id ? ultimaOp : o)
+          );
+        }
+
+        // Limpar seleção e fechar
+        this.candidatosSelecionados.set(new Set());
+        this.finalizandoOportunidade.set(false);
+        alert('Alunos aprovados com sucesso!');
+        this.fecharListaCandidatos();
+      },
+      (err) => {
+        console.error('Erro ao aprovar candidatos:', err);
+        alert('Erro ao aprovar alguns candidatos.');
+        this.finalizandoOportunidade.set(false);
+      }
+    );
+  }}
