@@ -49,7 +49,7 @@
           <!-- FEED -->
           <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
             <ng-container *ngFor="let p of feedItens(); trackBy: trackByFeedId">
-              <app-post [post]="p"></app-post>
+              <app-post [post]="p" (abrirModalCandidatos)="abrirModalCandidatos(p)"></app-post>
             </ng-container>
 
             <div class="feed-footer">
@@ -296,3 +296,12 @@
 
   <app-navbar-right></app-navbar-right>
 </div>
+
+<app-candidatos-modal
+  *ngIf="mostrandoModalCandidatos()"
+  [oportunidadeId]="oportunidadeSelecionadaId()"
+  [professorId]="professorSelecionadoId()"
+  [finalizada]="oportunidadeSelecionadaFinalizada()"
+  (fechar)="fecharModalCandidatos()"
+  (aprovados)="aoAprovarCandidatos($event)"
+></app-candidatos-modal>
