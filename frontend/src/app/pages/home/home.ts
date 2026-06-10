@@ -8,6 +8,7 @@ import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { PostComponent } from '../../components/post/post';
+import { CandidatosModal } from '../../components/candidatos-modal/candidatos-modal';
 import { PostService, Post } from '../../services/post.services';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { FeedItem, FeedService } from '../../services/feed.service';
@@ -15,7 +16,7 @@ import { FeedItem, FeedService } from '../../services/feed.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarTop, NavbarLeft, NavbarRight, PostComponent],
+  imports: [CommonModule, FormsModule, NavbarTop, NavbarLeft, NavbarRight, PostComponent, CandidatosModal],
   templateUrl: './home.html',
   styleUrls: ['./home.css']
 })
@@ -36,6 +37,12 @@ export class Home {
 
   carregando = signal<boolean>(false);
   erro = signal<string>('');
+
+  // modal de candidatos (professor vendo candidatos de uma oportunidade do feed)
+  mostrandoModalCandidatos = signal<boolean>(false);
+  oportunidadeSelecionadaId = signal<string | null>(null);
+  professorSelecionadoId = signal<string | null>(null);
+  oportunidadeSelecionadaFinalizada = signal<boolean>(false);
 
   titulo = signal<string>('');
   corpo = signal<string>('');
@@ -127,6 +134,46 @@ export class Home {
   carregarMais() {
     if (this.carregando() || !this.hasMore()) return;
     this.carregarFeed(false);
+  }
+
+  abrirModalCandidatos(item: FeedItem) {
+    const refId = item.referenciaId || item.id;
+    if (!refId) return;
+
+    this.oportunidadeSelecionadaId.set(refId);
+    this.professorSelecionadoId.set(item.criadorId ?? null);
+    this.oportunidadeSelecionadaFinalizada.set(
+      Boolean(item.finalizada) || item.status === 'FINALIZADA'
+    );
+    this.mostrandoModalCandidatos.set(true);
+  }
+
+  fecharModalCandidatos() {
+    this.mostrandoModalCandidatos.set(false);
+    this.oportunidadeSelecionadaId.set(null);
+    this.professorSelecionadoId.set(null);
+    this.oportunidadeSelecionadaFinalizada.set(false);
+  }
+
+  aoAprovarCandidatos(oportunidade: Oportunidade) {
+    this.feedItens.update(lista =>
+      lista.map(item => {
+        const refId = item.referenciaId || item.id;
+        return refId === oportunidade.id
+          ? { ...item, ...this.oportunidadeComoAtualizacaoFeed(oportunidade) }
+          : item;
+      })
+    );
+  }
+
+  private oportunidadeComoAtualizacaoFeed(op: Oportunidade): Partial<FeedItem> {
+    return {
+      vagasPreenchidas: op.vagasPreenchidas,
+      finalizada: op.finalizada,
+      status: op.status,
+      alunosAprovadosId: op.alunosAprovadosId,
+      alunosCandidatosId: op.alunosCandidatosId,
+    };
   }
 
   openNewPost() {

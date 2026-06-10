@@ -27,7 +27,7 @@
         <!-- LISTA -->
         <div *ngIf="!carregando && itens.length > 0">
           <ng-container *ngFor="let p of itens; trackBy: trackById">
-            <app-post [post]="p"></app-post>
+            <app-post [post]="p" (abrirModalCandidatos)="abrirModalCandidatos(p)"></app-post>
           </ng-container>
         </div>
 
@@ -38,3 +38,12 @@
 
   <app-navbar-right></app-navbar-right>
 </div>
+
+<app-candidatos-modal
+  *ngIf="mostrandoModalCandidatos()"
+  [oportunidadeId]="oportunidadeSelecionadaId()"
+  [professorId]="professorSelecionadoId()"
+  [finalizada]="oportunidadeSelecionadaFinalizada()"
+  (fechar)="fecharModalCandidatos()"
+  (aprovados)="aoAprovarCandidatos($event)"
+></app-candidatos-modal>

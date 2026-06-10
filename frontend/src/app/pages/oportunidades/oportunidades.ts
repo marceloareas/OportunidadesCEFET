@@ -6,26 +6,22 @@ import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { PostComponent } from '../../components/post/post';
-import { OportunidadeService, Oportunidade, CandidatoComStatus } from '../../services/oportunidade.service';
+import { CandidatosModal } from '../../components/candidatos-modal/candidatos-modal';
+import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { FeedItem } from '../../services/feed.service';
-import { UsuarioService, Usuario } from '../../services/usuario.service';
 
 @Component({
   selector: 'app-oportunidades',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavbarTop, NavbarLeft, NavbarRight, PostComponent],
+  imports: [CommonModule, FormsModule, RouterLink, NavbarTop, NavbarLeft, NavbarRight, PostComponent, CandidatosModal],
   templateUrl: './oportunidades.html',
   styleUrl: './oportunidades.css'
 })
 export class OportunidadesPage {
 
-  candidatosPorOportunidade = signal<Record<string, CandidatoComStatus[]>>({});
   paginaAtual = signal(0);
   tamanhoPagina = signal(10);
   totalPaginas = signal(0);
-
-  totalPaginasCandidatos = signal(0);
-  paginaAtualCandidatos = signal(0);
 
   usuarioId?: string;
   usuarioFuncao?: string;
@@ -38,20 +34,10 @@ export class OportunidadesPage {
   // modal candidatos
   mostrandoListaCandidatos = signal<boolean>(false);
   oportunidadeSelecionadaId = signal<string | null>(null);
-  somenteAprovados = signal<boolean>(false);
-  aprovando = signal<string | null>(null);
-  candidatosErro = signal<string>('');
-  candidatosCarregando = signal<boolean>(false);
   candidaturas = signal<Oportunidade[]>([]);
-
-  // seleção em lote e modal de confirmação
-  candidatosSelecionados = signal<Set<string>>(new Set());
-  mostrandoModalConfirmacao = signal<boolean>(false);
-  finalizandoOportunidade = signal<boolean>(false);
 
   constructor(
     private oportunidadeService: OportunidadeService,
-    private usuarioService: UsuarioService,
     private router: Router
   ) {}
 
@@ -137,55 +123,12 @@ export class OportunidadesPage {
       if (!op.id) return;
 
       this.oportunidadeSelecionadaId.set(op.id);
-      this.paginaAtualCandidatos.set(0);
-      this.candidatosSelecionados.set(new Set()); // Resetar seleção
       this.mostrandoListaCandidatos.set(true);
-
-      this.carregarCandidatos(op.id);
     }
 
   fecharListaCandidatos() {
     this.mostrandoListaCandidatos.set(false);
     this.oportunidadeSelecionadaId.set(null);
-    this.somenteAprovados.set(false);
-    this.candidatosSelecionados.set(new Set());
-    this.mostrandoModalConfirmacao.set(false);
-  }
-
-  carregarCandidatos(opId: string) {
-    if (!this.usuarioId) return;
-    
-    this.candidatosCarregando.set(true);
-    this.candidatosErro.set('');
-
-    this.oportunidadeService
-      .listarCandidatosDoProfessor(opId, this.usuarioId)
-      .subscribe({
-        next: (lista: CandidatoComStatus[]) => {
-          this.candidatosPorOportunidade.update(m => ({
-            ...m,
-            [opId]: lista || []
-          }));
-
-          this.totalPaginasCandidatos.set(1);
-          this.candidatosCarregando.set(false);
-        },
-        error: (err) => {
-          console.error('Erro ao carregar candidatos:', err);
-          this.candidatosErro.set('Erro ao carregar candidatos');
-          this.candidatosCarregando.set(false);
-        }
-      });
-  }
-
-  candidatosFiltrados(): CandidatoComStatus[] {
-    const opId = this.oportunidadeSelecionadaId();
-    if (!opId) return [];
-    const lista = this.candidatosPorOportunidade()[opId] || [];
-
-    if (!this.somenteAprovados()) return lista;
-
-    return lista.filter(c => c.status === 'APROVADO');
   }
 
   oportunidadeSelecionadaFinalizada(): boolean {
@@ -195,55 +138,10 @@ export class OportunidadesPage {
     return Boolean(op?.finalizada) || op?.status === 'FINALIZADA';
   }
 
-  proximaPaginaCandidatos() {
-    if (this.paginaAtualCandidatos() < this.totalPaginasCandidatos() - 1) {
-      this.paginaAtualCandidatos.update(v => v + 1);
-      const opId = this.oportunidadeSelecionadaId();
-      if (opId) this.carregarCandidatos(opId);
-    }
-  }
-
-  paginaAnteriorCandidatos() {
-    if (this.paginaAtualCandidatos() > 0) {
-      this.paginaAtualCandidatos.update(v => v - 1);
-      const opId = this.oportunidadeSelecionadaId();
-      if (opId) this.carregarCandidatos(opId);
-    }
-  }
-
-  estaAprovado(candidato: CandidatoComStatus): boolean {
-    return candidato.status === 'APROVADO';
-  }
-
-  statusCandidaturaDescricao(status: CandidatoComStatus['status']): string {
-    switch (status) {
-      case 'APROVADO':
-        return 'Aprovado';
-      case 'RESERVA':
-        return 'Reserva';
-      default:
-        return 'Concorrendo';
-    }
-  }
-
-  aprovarCandidato(c: Usuario) {
-    const opId = this.oportunidadeSelecionadaId();
-    if (!opId || !c.id || !this.usuarioId) return;
-    this.aprovando.set(c.id);
-    this.oportunidadeService.aprovarCandidatoDoProfessor(opId, c.id, this.usuarioId).subscribe({
-      next: (op) => {
-        // atualiza listas
-        this.minhasOportunidades.update(list =>
-          list.map(o => o.id === op.id ? op : o)
-        );
-        this.aprovando.set(null);
-      },
-      error: (err) => {
-        console.error('Erro ao aprovar candidato:', err);
-        alert('Não foi possível aprovar o candidato.');
-        this.aprovando.set(null);
-      }
-    });
+  aoAprovarCandidatos(op: Oportunidade) {
+    this.minhasOportunidades.update(list =>
+      list.map(o => o.id === op.id ? op : o)
+    );
   }
 
   statusAluno(op: Oportunidade): string {
@@ -343,80 +241,4 @@ export class OportunidadesPage {
       alunosAprovadosId: op.alunosAprovadosId,
     };
   }
-
-  // Seleção em lote
-  toggleCandidato(candId: string | undefined) {
-    if (!candId || this.oportunidadeSelecionadaFinalizada()) return;
-    const selecionados = new Set(this.candidatosSelecionados());
-    if (selecionados.has(candId)) {
-      selecionados.delete(candId);
-    } else {
-      selecionados.add(candId);
-    }
-    this.candidatosSelecionados.set(selecionados);
-  }
-
-  isCandidatoSelecionado(candId: string | undefined): boolean {
-    return candId ? this.candidatosSelecionados().has(candId) : false;
-  }
-
-  abrirModalConfirmacao() {
-    if (this.oportunidadeSelecionadaFinalizada()) {
-      alert('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
-      return;
-    }
-    if (this.candidatosSelecionados().size === 0) {
-      alert('Selecione pelo menos um aluno para finalizar.');
-      return;
-    }
-    this.mostrandoModalConfirmacao.set(true);
-  }
-
-  fecharModalConfirmacao() {
-    this.mostrandoModalConfirmacao.set(false);
-  }
-
-  confirmarFinalizacao() {
-    const opId = this.oportunidadeSelecionadaId();
-    if (!opId || !this.usuarioId) return;
-    if (this.oportunidadeSelecionadaFinalizada()) {
-      this.mostrandoModalConfirmacao.set(false);
-      alert('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
-      return;
-    }
-
-    const selecionados = Array.from(this.candidatosSelecionados());
-    if (selecionados.length === 0) return;
-
-    this.finalizandoOportunidade.set(true);
-    this.mostrandoModalConfirmacao.set(false);
-
-    // Aprovar todos os selecionados
-    const aprovacoes = selecionados.map(idAluno =>
-      this.oportunidadeService.aprovarCandidatoDoProfessor(opId, idAluno, this.usuarioId!)
-    );
-
-    // Usar Promise.all para aprovar todos em paralelo
-    Promise.all(aprovacoes.map(obs => obs.toPromise())).then(
-      (resultados: any[]) => {
-        // Atualizar a oportunidade com o último resultado válido
-        const ultimaOp = resultados.find(r => r && r.id);
-        if (ultimaOp) {
-          this.minhasOportunidades.update(list =>
-            list.map(o => o.id === ultimaOp.id ? ultimaOp : o)
-          );
-        }
-
-        // Limpar seleção e fechar
-        this.candidatosSelecionados.set(new Set());
-        this.finalizandoOportunidade.set(false);
-        alert('Alunos aprovados com sucesso!');
-        this.fecharListaCandidatos();
-      },
-      (err) => {
-        console.error('Erro ao aprovar candidatos:', err);
-        alert('Erro ao aprovar alguns candidatos.');
-        this.finalizandoOportunidade.set(false);
-      }
-    );
-  }}
+}
