@@ -6,7 +6,7 @@ import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { PostComponent } from '../../components/post/post';
-import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
+import { OportunidadeService, Oportunidade, CandidatoComStatus } from '../../services/oportunidade.service';
 import { FeedItem } from '../../services/feed.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
 
@@ -19,7 +19,7 @@ import { UsuarioService, Usuario } from '../../services/usuario.service';
 })
 export class OportunidadesPage {
 
-  candidatosPorOportunidade = signal<Record<string, Usuario[]>>({});
+  candidatosPorOportunidade = signal<Record<string, CandidatoComStatus[]>>({});
   paginaAtual = signal(0);
   tamanhoPagina = signal(10);
   totalPaginas = signal(0);
@@ -161,7 +161,7 @@ export class OportunidadesPage {
     this.oportunidadeService
       .listarCandidatosDoProfessor(opId, this.usuarioId)
       .subscribe({
-        next: (lista: Usuario[]) => {
+        next: (lista: CandidatoComStatus[]) => {
           this.candidatosPorOportunidade.update(m => ({
             ...m,
             [opId]: lista || []
@@ -178,18 +178,21 @@ export class OportunidadesPage {
       });
   }
 
-  candidatosFiltrados(): Usuario[] {
+  candidatosFiltrados(): CandidatoComStatus[] {
     const opId = this.oportunidadeSelecionadaId();
     if (!opId) return [];
     const lista = this.candidatosPorOportunidade()[opId] || [];
 
     if (!this.somenteAprovados()) return lista;
 
-    const aprovados = new Set(
-      this.minhasOportunidades().find(o => o.id === opId)?.alunosAprovadosId || []
-    );
+    return lista.filter(c => c.status === 'APROVADO');
+  }
 
-    return lista.filter(c => c.id && aprovados.has(c.id));
+  oportunidadeSelecionadaFinalizada(): boolean {
+    const opId = this.oportunidadeSelecionadaId();
+    if (!opId) return false;
+    const op = this.minhasOportunidades().find(o => o.id === opId);
+    return Boolean(op?.finalizada) || op?.status === 'FINALIZADA';
   }
 
   proximaPaginaCandidatos() {
@@ -208,11 +211,19 @@ export class OportunidadesPage {
     }
   }
 
-  estaAprovado(candId: string | undefined): boolean {
-    const opId = this.oportunidadeSelecionadaId();
-    if (!opId || !candId) return false;
-    const aprovados = this.minhasOportunidades().find(o => o.id === opId)?.alunosAprovadosId || [];
-    return aprovados.includes(candId);
+  estaAprovado(candidato: CandidatoComStatus): boolean {
+    return candidato.status === 'APROVADO';
+  }
+
+  statusCandidaturaDescricao(status: CandidatoComStatus['status']): string {
+    switch (status) {
+      case 'APROVADO':
+        return 'Aprovado';
+      case 'RESERVA':
+        return 'Reserva';
+      default:
+        return 'Concorrendo';
+    }
   }
 
   aprovarCandidato(c: Usuario) {
@@ -236,9 +247,29 @@ export class OportunidadesPage {
   }
 
   statusAluno(op: Oportunidade): string {
-    if (!this.usuarioId) return 'Pendente';
-    if ((op.alunosAprovadosId || []).includes(this.usuarioId)) return 'Aprovado';
-    return 'Pendente';
+    switch (op.statusCandidaturaAluno) {
+      case 'APROVADO':
+        return 'Aprovado';
+      case 'RESERVA':
+        return 'Reserva';
+      case 'CONCORRENDO':
+        return 'Concorrendo';
+      default:
+        return 'Pendente';
+    }
+  }
+
+  corStatusAluno(op: Oportunidade): string {
+    switch (op.statusCandidaturaAluno) {
+      case 'APROVADO':
+        return '#4CAF50';
+      case 'RESERVA':
+        return '#9e9e9e';
+      case 'CONCORRENDO':
+        return '#1976d2';
+      default:
+        return '#9e9e9e';
+    }
   }
 
   finalizar(op: Oportunidade) {
@@ -315,7 +346,7 @@ export class OportunidadesPage {
 
   // Seleção em lote
   toggleCandidato(candId: string | undefined) {
-    if (!candId) return;
+    if (!candId || this.oportunidadeSelecionadaFinalizada()) return;
     const selecionados = new Set(this.candidatosSelecionados());
     if (selecionados.has(candId)) {
       selecionados.delete(candId);
@@ -330,6 +361,10 @@ export class OportunidadesPage {
   }
 
   abrirModalConfirmacao() {
+    if (this.oportunidadeSelecionadaFinalizada()) {
+      alert('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
+      return;
+    }
     if (this.candidatosSelecionados().size === 0) {
       alert('Selecione pelo menos um aluno para finalizar.');
       return;
@@ -344,6 +379,11 @@ export class OportunidadesPage {
   confirmarFinalizacao() {
     const opId = this.oportunidadeSelecionadaId();
     if (!opId || !this.usuarioId) return;
+    if (this.oportunidadeSelecionadaFinalizada()) {
+      this.mostrandoModalConfirmacao.set(false);
+      alert('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
+      return;
+    }
 
     const selecionados = Array.from(this.candidatosSelecionados());
     if (selecionados.length === 0) return;

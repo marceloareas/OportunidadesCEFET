@@ -12,10 +12,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 import br.oportunidades.cefet.backend.repositories.PostRepository;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
+import br.oportunidades.cefet.backend.repositories.CandidaturaRepository;
+import br.oportunidades.cefet.backend.repositories.ComentarioRepository;
+import br.oportunidades.cefet.backend.models.Candidatura;
+import br.oportunidades.cefet.backend.enums.StatusCandidatura;
+import br.oportunidades.cefet.backend.enums.TipoFeed;
 import java.util.Optional;
 
 @Service
@@ -33,6 +39,12 @@ public class FeedService {
 
     @Autowired
     private OportunidadeRepository oportunidadeRepository;
+
+    @Autowired
+    private CandidaturaRepository candidaturaRepository;
+
+    @Autowired
+    private ComentarioRepository comentarioRepository;
 
     public FeedPageDTO listarFeed(int page, int size) {
 
@@ -62,7 +74,7 @@ public class FeedService {
                 .tipo("POST")
                 .likesCount(post.getIdLikes().size())
                 .comentariosCount(0)
-                .createdAt(post.getCriado())
+                .createdAt(post.getCriado() != null ? post.getCriado() : new Date())
                 .build();
 
         feedRepository.save(item);
@@ -107,7 +119,7 @@ public class FeedService {
         feedRepository.deleteByReferenciaId(referenciaId);
     }
 
-    private FeedResponseDTO montarFeedItem(FeedItem item) {
+    FeedResponseDTO montarFeedItem(FeedItem item) {
 
         if ("POST".equalsIgnoreCase(item.getTipo())) {
 
@@ -133,7 +145,13 @@ public class FeedService {
                     .imagemBase64(post.getImagemBase64())
 
                     .likesCount(item.getLikesCount())
-                    .comentariosCount(item.getComentariosCount())
+                    .comentariosCount(
+                            (int) comentarioRepository.countByTipoEntidadePaiAndIdPost(
+                                    TipoFeed.POST, post.getId()
+                            )
+                    )
+
+                    .idLikes(post.getIdLikes())
 
                     .createdAt(item.getCreatedAt())
 
@@ -159,6 +177,17 @@ public class FeedService {
 
         OportunidadeStatusHelper.aplicarStatus(op);
 
+        List<Candidatura> candidaturas =
+                candidaturaRepository.findByOportunidadeId(op.getId());
+
+        List<String> alunosCandidatosId =
+                candidaturas.stream().map(Candidatura::getAlunoId).toList();
+
+        List<String> alunosAprovadosId = candidaturas.stream()
+                .filter(c -> c.getStatus() == StatusCandidatura.APROVADO)
+                .map(Candidatura::getAlunoId)
+                .toList();
+
         return FeedResponseDTO.builder()
                 .id(item.getId())
                 .referenciaId(item.getReferenciaId())
@@ -183,7 +212,11 @@ public class FeedService {
                 )
 
                 .likesCount(item.getLikesCount())
-                .comentariosCount(item.getComentariosCount())
+                .comentariosCount(
+                        (int) comentarioRepository.countByTipoEntidadePaiAndIdPost(
+                                TipoFeed.OPORTUNIDADE, op.getId()
+                        )
+                )
 
                 .idLikes(op.getIdLikes())
 
@@ -200,6 +233,9 @@ public class FeedService {
                 .quantidadeDeVagas(op.getQuantidadeDeVagas())
                 .vagasPreenchidas(op.getVagasPreenchidas())
                 .finalizada(op.getFinalizada())
+
+                .alunosCandidatosId(alunosCandidatosId)
+                .alunosAprovadosId(alunosAprovadosId)
 
                 .build();
     }

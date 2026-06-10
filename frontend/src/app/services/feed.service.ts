@@ -19,6 +19,7 @@ export interface FeedItem {
 
   idLikes?: string[];
   idComentarios?: string[];
+  comentariosCount?: number;
 
   dataInicioInscricao?: string | Date;
   dataFimInscricao?: string | Date;

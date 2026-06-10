@@ -16,8 +16,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import br.oportunidades.cefet.backend.dto.candidatura.CandidatoStatusDTO;
 import br.oportunidades.cefet.backend.models.Candidatura;
 import br.oportunidades.cefet.backend.enums.StatusCandidatura;
 
@@ -112,10 +117,20 @@ public class OportunidadeService {
                 .map(Candidatura::getOportunidadeId)
                 .toList();
 
+        Map<String, StatusCandidatura> statusPorOportunidade = candidaturas.stream()
+                .collect(Collectors.toMap(
+                        Candidatura::getOportunidadeId,
+                        Candidatura::getStatus,
+                        (a, b) -> a
+                ));
+
         List<Oportunidade> oportunidades =
                 oportunidadeRepository.findAllById(oportunidadesIds);
 
-        oportunidades.forEach(this::preencherDadosCriador);
+        oportunidades.forEach(op -> {
+            preencherDadosCriador(op);
+            op.setStatusCandidaturaAluno(statusPorOportunidade.get(op.getId()));
+        });
 
         return new PageImpl<>(
                 oportunidades,
@@ -256,8 +271,9 @@ public class OportunidadeService {
 
     /**
      * Lista candidatos apenas se o solicitante for o professor dono da oportunidade.
+     * Retorna o aluno acompanhado do status da candidatura (CONCORRENDO, APROVADO ou RESERVA).
      */
-    public Optional<List<Usuario>> listarCandidatosDoProfessor(String idOportunidade, String idProfessor) {
+    public Optional<List<CandidatoStatusDTO>> listarCandidatosDoProfessor(String idOportunidade, String idProfessor) {
         Optional<Oportunidade> opt = oportunidadeRepository.findById(idOportunidade);
         if (opt.isEmpty()) return Optional.empty();
 
@@ -278,11 +294,19 @@ public class OportunidadeService {
                 .map(Candidatura::getAlunoId)
                 .toList();
 
-        if (ids == null || ids.isEmpty()) {
-            return Optional.of(Collections.emptyList());
-        }
-        List<Usuario> usuarios = usuarioRepository.findAllById(ids);
-        return Optional.of(usuarios);
+        Map<String, Usuario> usuariosPorId = usuarioRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Usuario::getId, Function.identity()));
+
+        List<CandidatoStatusDTO> candidatos = candidaturas.stream()
+                .map(c -> {
+                    Usuario aluno = usuariosPorId.get(c.getAlunoId());
+                    if (aluno == null) return null;
+                    return new CandidatoStatusDTO(aluno, c.getStatus());
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+        return Optional.of(candidatos);
     }
 
     public Optional<Oportunidade> aprovarCandidato(String idOportunidade, String idAluno) {
@@ -400,7 +424,34 @@ public class OportunidadeService {
             });
         }
 
+        preencherCandidaturas(op);
+
         aplicarStatus(op);
+    }
+
+    /**
+     * Deriva, a partir da coleção Candidatura, as listas de alunos candidatos e aprovados
+     * usadas pelo frontend (contador de candidatos, estado do botão de candidatura, etc.).
+     */
+    private void preencherCandidaturas(Oportunidade op) {
+        if (op.getId() == null) {
+            op.setAlunosCandidatosId(new ArrayList<>());
+            op.setAlunosAprovadosId(new ArrayList<>());
+            return;
+        }
+
+        List<Candidatura> candidaturas = candidaturaRepository.findByOportunidadeId(op.getId());
+
+        op.setAlunosCandidatosId(
+                candidaturas.stream().map(Candidatura::getAlunoId).toList()
+        );
+
+        op.setAlunosAprovadosId(
+                candidaturas.stream()
+                        .filter(c -> c.getStatus() == StatusCandidatura.APROVADO)
+                        .map(Candidatura::getAlunoId)
+                        .toList()
+        );
     }
 
     private void aplicarStatus(Oportunidade oportunidade) {
