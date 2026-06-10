@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import br.oportunidades.cefet.backend.repositories.PostRepository;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
@@ -57,7 +56,6 @@ public class FeedService {
         List<FeedResponseDTO> items = feedPage.getContent()
                 .stream()
                 .map(this::montarFeedItem)
-                .filter(Objects::nonNull)
                 .toList();
 
         return new FeedPageDTO(
