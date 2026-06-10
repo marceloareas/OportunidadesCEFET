@@ -20,6 +20,68 @@
 
           <hr />
 
+          <!-- FILTROS DE OPORTUNIDADES -->
+          <div class="filtros">
+            <div class="filtro-campo">
+              <label for="filtroStatus">Status</label>
+              <select
+                id="filtroStatus"
+                [ngModel]="filtroStatus()"
+                (ngModelChange)="filtroStatus.set($event); aplicarFiltros()"
+              >
+                <option value="">Todos</option>
+                <option value="INSCRICOES_EM_BREVE">Em breve</option>
+                <option value="INSCRICOES_ABERTAS">Aberto</option>
+                <option value="FINALIZADA">Finalizada</option>
+              </select>
+            </div>
+
+            <div class="filtro-campo">
+              <label for="filtroCategoria">Categoria</label>
+              <select
+                id="filtroCategoria"
+                [ngModel]="filtroCategoria()"
+                (ngModelChange)="filtroCategoria.set($event); aplicarFiltros()"
+              >
+                <option value="">Todas</option>
+                <option value="PESQUISA">Pesquisa</option>
+                <option value="EXTENSAO">Extensão</option>
+                <option value="MONITORIA">Monitoria</option>
+                <option value="ESTAGIO">Estágio</option>
+                <option value="ORIENTACAO_TCC">Orientação TCC</option>
+              </select>
+            </div>
+
+            <div class="filtro-campo">
+              <label for="filtroArea">Grande área</label>
+              <select
+                id="filtroArea"
+                [ngModel]="filtroArea()"
+                (ngModelChange)="filtroArea.set($event); aplicarFiltros()"
+              >
+                <option value="">Todas</option>
+                <option value="CIENCIAS_EXATAS_E_DA_TERRA">Ciências Exatas e da Terra</option>
+                <option value="CIENCIAS_BIOLOGICAS">Ciências Biológicas</option>
+                <option value="ENGENHARIAS">Engenharias</option>
+                <option value="CIENCIAS_DA_SAUDE">Ciências da Saúde</option>
+                <option value="CIENCIAS_AGRARIAS">Ciências Agrárias</option>
+                <option value="CIENCIAS_SOCIAIS_APLICADAS">Ciências Sociais Aplicadas</option>
+                <option value="CIENCIAS_HUMANAS">Ciências Humanas</option>
+                <option value="LINGUISTICA_LETRAS_E_ARTES">Linguística, Letras e Artes</option>
+                <option value="MULTIDISCIPLINAR">Multidisciplinar</option>
+              </select>
+            </div>
+
+            <button
+              *ngIf="filtrosAtivos()"
+              type="button"
+              class="filtro-limpar"
+              (click)="limparFiltros()"
+            >
+              Limpar filtros
+            </button>
+          </div>
+
           <div *ngIf="erro()" class="mensagem-erro">
             {{ erro() }}
           </div>
@@ -77,8 +139,13 @@
           </div>
           <!-- EMPTY STATE FORA DO NGIF -->
           <ng-template #semItens>
-            <div class="mensagem-vazia">
-              Nenhum post ou oportunidade encontrado.
+            <div *ngIf="!carregando()" class="mensagem-vazia">
+              <ng-container *ngIf="filtrosAtivos(); else semItensSemFiltro">
+                Nenhuma oportunidade encontrada para os filtros selecionados.
+              </ng-container>
+              <ng-template #semItensSemFiltro>
+                Nenhum post ou oportunidade encontrado.
+              </ng-template>
             </div>
           </ng-template>
         </section>

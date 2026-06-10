@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface FeedItem {
@@ -33,6 +33,12 @@ export interface FeedItem {
   alunosAprovadosId?: string[];
 }
 
+export interface FeedFiltros {
+  status?: string;
+  categoria?: string;
+  area?: string;
+}
+
 export interface FeedPage {
   content: FeedItem[];
   page: number;
@@ -49,7 +55,15 @@ export class FeedService {
 
   constructor(private http: HttpClient) {}
 
-  listar(page = 0, size = 10): Observable<FeedPage> {
-    return this.http.get<FeedPage>(`${this.api}?page=${page}&size=${size}`);
+  listar(page = 0, size = 10, filtros?: FeedFiltros): Observable<FeedPage> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (filtros?.status) params = params.set('status', filtros.status);
+    if (filtros?.categoria) params = params.set('categoria', filtros.categoria);
+    if (filtros?.area) params = params.set('area', filtros.area);
+
+    return this.http.get<FeedPage>(this.api, { params });
   }
 }

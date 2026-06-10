@@ -74,6 +74,60 @@ hr {
     margin-top: 4vh;
 }
 
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 3vh;
+}
+
+.filtro-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 160px;
+  min-width: 140px;
+}
+
+.filtro-campo label {
+  font-size: 13px;
+  color: #313131;
+  font-weight: 500;
+}
+
+.filtro-campo select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #313131;
+  cursor: pointer;
+}
+
+.filtro-campo select:focus {
+  outline: none;
+  border-color: #0A497E;
+}
+
+.filtro-limpar {
+  padding: 8px 14px;
+  height: fit-content;
+  border: 1px solid #0A497E;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #0A497E;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.filtro-limpar:hover {
+  background-color: #0A497E;
+  color: #fff;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

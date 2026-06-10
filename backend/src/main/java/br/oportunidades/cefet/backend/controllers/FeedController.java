@@ -17,8 +17,11 @@ public class FeedController {
     @GetMapping
     public FeedPageDTO listarFeed(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String area
     ) {
-        return feedService.listarFeed(page, size);
+        return feedService.listarFeed(page, size, status, categoria, area);
     }
 }
