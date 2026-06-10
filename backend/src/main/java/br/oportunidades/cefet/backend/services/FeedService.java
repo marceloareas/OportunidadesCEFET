@@ -10,10 +10,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import br.oportunidades.cefet.backend.models.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import br.oportunidades.cefet.backend.repositories.PostRepository;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
@@ -46,7 +55,27 @@ public class FeedService {
     @Autowired
     private ComentarioRepository comentarioRepository;
 
-    public FeedPageDTO listarFeed(int page, int size) {
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    public FeedPageDTO listarFeed(int page, int size, String status, String categoria, String area) {
+
+        boolean temFiltro =
+                (status != null && !status.isBlank())
+                        || (categoria != null && !categoria.isBlank())
+                        || (area != null && !area.isBlank());
+
+        // Sem filtro: feed completo (posts + oportunidades), como antes.
+        if (!temFiltro) {
+            return listarFeedCompleto(page, size);
+        }
+
+        // Com filtro: os campos filtráveis (status/categoria/área) só existem em
+        // Oportunidade, então consultamos essa coleção diretamente (posts ficam de fora).
+        return listarOportunidadesFiltradas(page, size, status, categoria, area);
+    }
+
+    private FeedPageDTO listarFeedCompleto(int page, int size) {
 
         Page<FeedItem> feedPage =
                 feedRepository.findAllByOrderByCreatedAtDesc(
@@ -65,6 +94,103 @@ public class FeedService {
                 feedPage.getTotalElements(),
                 feedPage.getTotalPages()
         );
+    }
+
+    private FeedPageDTO listarOportunidadesFiltradas(
+            int page, int size, String status, String categoria, String area) {
+
+        List<Criteria> condicoes = new ArrayList<>();
+
+        if (categoria != null && !categoria.isBlank()) {
+            condicoes.add(Criteria.where("idCategoria").is(categoria.trim().toUpperCase()));
+        }
+
+        if (area != null && !area.isBlank()) {
+            // grandesAreas é uma lista; $in casa quando a lista contém o valor.
+            condicoes.add(Criteria.where("grandesAreas").in(area.trim().toUpperCase()));
+        }
+
+        if (status != null && !status.isBlank()) {
+            condicoes.add(criteriaParaStatus(status.trim().toUpperCase()));
+        }
+
+        Query baseQuery = new Query();
+        if (!condicoes.isEmpty()) {
+            baseQuery.addCriteria(new Criteria().andOperator(condicoes.toArray(new Criteria[0])));
+        }
+
+        long total = mongoTemplate.count(baseQuery, Oportunidade.class);
+
+        Query pageQuery = Query.of(baseQuery)
+                .with(Sort.by(Sort.Direction.DESC, "criado"))
+                .skip((long) page * size)
+                .limit(size);
+
+        List<Oportunidade> oportunidades = mongoTemplate.find(pageQuery, Oportunidade.class);
+
+        // Recupera o FeedItem correspondente (id do documento de feed, likes, createdAt).
+        List<String> ids = oportunidades.stream().map(Oportunidade::getId).toList();
+        Map<String, FeedItem> feedPorReferencia = feedRepository.findByReferenciaIdIn(ids)
+                .stream()
+                .collect(Collectors.toMap(
+                        FeedItem::getReferenciaId,
+                        Function.identity(),
+                        (a, b) -> a
+                ));
+
+        List<FeedResponseDTO> items = oportunidades.stream()
+                .map(op -> {
+                    FeedItem feedItem = feedPorReferencia.get(op.getId());
+                    return feedItem != null ? montarFeedItem(feedItem) : null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+        int totalPages = size > 0 ? (int) Math.ceil((double) total / size) : 0;
+
+        return new FeedPageDTO(items, page, size, total, totalPages);
+    }
+
+    // Traduz o status (calculado dinamicamente a partir das datas e do flag
+    // 'finalizada') em condições sobre os campos persistidos da Oportunidade.
+    private Criteria criteriaParaStatus(String status) {
+
+        Date agora = new Date();
+        Criteria naoFinalizada = Criteria.where("finalizada").ne(true);
+
+        switch (status) {
+            case "FINALIZADA":
+                return Criteria.where("finalizada").is(true);
+
+            case "INSCRICOES_EM_BREVE":
+                // ainda não começou: dataInicioInscricao > agora (gt já exclui null)
+                return new Criteria().andOperator(
+                        naoFinalizada,
+                        Criteria.where("dataInicioInscricao").gt(agora)
+                );
+
+            case "INSCRICOES_ENCERRADAS":
+                // período acabou: dataFimInscricao < agora (lt já exclui null)
+                return new Criteria().andOperator(
+                        naoFinalizada,
+                        Criteria.where("dataFimInscricao").lt(agora)
+                );
+
+            case "INSCRICOES_ABERTAS":
+            default:
+                // não finalizada, já começou (ou sem início) e ainda não terminou (ou sem fim)
+                return new Criteria().andOperator(
+                        naoFinalizada,
+                        new Criteria().orOperator(
+                                Criteria.where("dataInicioInscricao").is(null),
+                                Criteria.where("dataInicioInscricao").lte(agora)
+                        ),
+                        new Criteria().orOperator(
+                                Criteria.where("dataFimInscricao").is(null),
+                                Criteria.where("dataFimInscricao").gte(agora)
+                        )
+                );
+        }
     }
 
     public void criarFeedPost(Post post) {

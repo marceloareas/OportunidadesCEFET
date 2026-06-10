@@ -35,6 +35,15 @@ export class Home {
   size = 10;
   hasMore = signal<boolean>(true);
 
+  // filtros de oportunidades (enviados ao backend; ver carregarFeed)
+  filtroStatus = signal<string>('');
+  filtroCategoria = signal<string>('');
+  filtroArea = signal<string>('');
+
+  filtrosAtivos = computed(() =>
+    Boolean(this.filtroStatus() || this.filtroCategoria() || this.filtroArea())
+  );
+
   carregando = signal<boolean>(false);
   erro = signal<string>('');
 
@@ -64,6 +73,18 @@ export class Home {
 
   trackByFeedId(index: number, item: FeedItem): string {
     return item.id!;
+  }
+
+  // Chamado quando qualquer filtro muda: recarrega o feed do backend já filtrado.
+  aplicarFiltros() {
+    this.carregarFeed(true);
+  }
+
+  limparFiltros() {
+    this.filtroStatus.set('');
+    this.filtroCategoria.set('');
+    this.filtroArea.set('');
+    this.carregarFeed(true);
   }
 
   ngOnInit() {
@@ -114,7 +135,13 @@ export class Home {
     this.carregando.set(true);
     this.erro.set('');
 
-    this.feedService.listar(this.page(), this.size).subscribe({
+    const filtros = {
+      status: this.filtroStatus() || undefined,
+      categoria: this.filtroCategoria() || undefined,
+      area: this.filtroArea() || undefined,
+    };
+
+    this.feedService.listar(this.page(), this.size, filtros).subscribe({
       next: (res) => {
         this.feedItens.update(lista => [...lista, ...res.content]);
 
