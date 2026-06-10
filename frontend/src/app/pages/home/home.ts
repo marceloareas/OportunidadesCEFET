@@ -55,8 +55,8 @@ export class Home {
     private router: Router
   ) {}
 
-  trackByFeedId(index: number, item: FeedItem): string {
-    return item.id!;
+  trackByFeedId(index: number, item: FeedItem | null): string {
+    return item?.id || item?.referenciaId || String(index);
   }
 
   ngOnInit() {
@@ -109,7 +109,11 @@ export class Home {
 
     this.feedService.listar(this.page(), this.size).subscribe({
       next: (res) => {
-        this.feedItens.update(lista => [...lista, ...res.content]);
+        const itensValidos = (res.content || []).filter(
+          (item): item is FeedItem => Boolean(item?.id || item?.referenciaId)
+        );
+
+        this.feedItens.update(lista => [...lista, ...itensValidos]);
 
         this.hasMore.set(this.page() + 1 < res.totalPages);
         this.page.set(this.page() + 1);

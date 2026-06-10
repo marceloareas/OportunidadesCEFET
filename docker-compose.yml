@@ -17,7 +17,7 @@ services:
       - mongo
 
   mongo:
-    image: mongo:6
+    image: mongo:7
     container_name: mongo-oportunidades-cefet
     ports:
       - "${MONGO_PORT}:27017"
