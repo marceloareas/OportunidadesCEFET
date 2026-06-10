@@ -14,4 +14,9 @@ public interface ComentarioRepository extends MongoRepository<Comentario, String
             TipoFeed tipoEntidadePai,
             String idPost
     );
+
+    long countByTipoEntidadePaiAndIdPost(
+            TipoFeed tipoEntidadePai,
+            String idPost
+    );
 }

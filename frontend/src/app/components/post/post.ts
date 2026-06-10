@@ -7,7 +7,7 @@ import { forkJoin } from 'rxjs';
 import { OportunidadeService } from '../../services/oportunidade.service';
 import { PostService } from '../../services/post.services';
 import { ComentarioService } from '../../services/comentario.service';
-import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { UsuarioService } from '../../services/usuario.service';
 import { FeedItem } from '../../services/feed.service';
 import { SavedItemsService } from '../../services/itens-salvos.service';
 
@@ -62,12 +62,6 @@ export class PostComponent {
   contadorComentarios = signal<number>(0);
 
   newCommentModal = signal<boolean>(false);
-  candidatosModal = signal<boolean>(false);
-  candidatos = signal<Usuario[]>([]);
-  candidatosCarregando = signal<boolean>(false);
-  candidatosErro = signal<string>('');
-  aprovando = signal<string | null>(null);
-  somenteAprovados = signal<boolean>(false);
 
   salvo = signal<boolean>(false);
 
@@ -99,7 +93,7 @@ export class PostComponent {
   ngOnInit() {
     this.contadorCandidatos.set(this.post.alunosCandidatosId?.length ?? 0);
     this.contadorLikes.set(this.post.idLikes?.length ?? 0);
-    this.contadorComentarios.set(this.post.idComentarios?.length ?? 0);
+    this.contadorComentarios.set(this.post.comentariosCount ?? this.post.idComentarios?.length ?? 0);
 
     if (!this.post.idLikes) this.post.idLikes = [];
     if (!this.post.idComentarios) this.post.idComentarios = [];
@@ -113,10 +107,11 @@ export class PostComponent {
       if (this.post.alunosCandidatosId?.includes(usuario.id)) this.jaCandidatado.set(true);
     }
 
-    if (usuario && this.post.id) {
+    const refId = this.post.referenciaId || this.post.id;
+    if (usuario && refId) {
       this.savedService.listarPorUsuario(usuario.id).subscribe(res => {
-        const ids = res.content.map(item => item.id);
-        if (ids.includes(this.post.id!)) {
+        const refs = res.content.map(item => item.referenciaId || item.id);
+        if (refs.includes(refId)) {
           this.salvo.set(true);
         }
       });
@@ -450,67 +445,17 @@ export class PostComponent {
     this.abrirModalCandidatos.emit({ oportunidadeId: this.post.id, professorId: usuario.id });
   }
 
-  fecharCandidatos() {
-    this.candidatosModal.set(false);
-  }
-
-  candidatoAprovado(idAluno: string | undefined): boolean {
-    if (!idAluno) return false;
-    return this.post.alunosAprovadosId?.includes(idAluno) ?? false;
-  }
-
-  candidatosFiltrados(): Usuario[] {
-    const lista = this.candidatos() || [];
-    if (!this.somenteAprovados()) return lista;
-    const aprovados = new Set(this.post.alunosAprovadosId || []);
-    return lista.filter((c) => c.id && aprovados.has(c.id));
-  }
-
-  vagasRestantes(): number {
-    const total = this.post.quantidadeDeVagas ?? 0;
-    const preenchidas = this.post.vagasPreenchidas ?? 0;
-    return Math.max(0, total - preenchidas);
-  }
-
-  aprovarCandidato(candidato: Usuario) {
-    const usuario = this.usuarioLogado();
-    const postId = this.post.referenciaId || this.post.id;
-    const candidatoId = candidato.id;
-    if (!usuario || !postId || !candidatoId) return;
-    if (this.vagasRestantes() <= 0) {
-      alert('Todas as vagas já foram preenchidas.');
-      return;
-    }
-    this.aprovando.set(candidatoId);
-    this.oportunidadeService
-      .aprovarCandidatoDoProfessor(postId, candidatoId, usuario.id)
-      .subscribe({
-        next: (op) => {
-          if (!this.post.alunosAprovadosId) this.post.alunosAprovadosId = [];
-          this.post.alunosAprovadosId.push(candidatoId);
-          this.post.vagasPreenchidas = op.vagasPreenchidas ?? this.post.vagasPreenchidas;
-          this.post.finalizada = op.finalizada ?? this.post.finalizada;
-          this.aprovando.set(null);
-          alert('Candidato aprovado e vaga atribuída.');
-        },
-        error: (err) => {
-          console.error('Erro ao aprovar candidato:', err);
-          alert('Não foi possível aprovar o candidato.');
-          this.aprovando.set(null);
-        },
-      });
-  }
-
   toggleSalvar() {
     const usuario = this.usuarioLogado();
-    if (!usuario || !this.post.id) return;
+    const refId = this.post.referenciaId || this.post.id;
+    if (!usuario || !refId) return;
 
     if (this.salvo()) {
-      this.savedService.remover(usuario.id, this.post.id).subscribe(() => {
+      this.savedService.remover(usuario.id, refId).subscribe(() => {
         this.salvo.set(false);
       });
     } else {
-      this.savedService.salvar(usuario.id, this.post.id).subscribe(() => {
+      this.savedService.salvar(usuario.id, refId).subscribe(() => {
         this.salvo.set(true);
       });
     }

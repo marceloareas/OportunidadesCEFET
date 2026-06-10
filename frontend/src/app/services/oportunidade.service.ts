@@ -26,6 +26,14 @@ export interface Oportunidade {
   alunosAprovadosId?: string[];
   finalizada?: boolean;
   imagemPerfil?: string; // url ou base64 da foto do professor/criador
+  statusCandidaturaAluno?: StatusCandidatura; // status da candidatura do aluno logado (listagem por aluno)
+}
+
+export type StatusCandidatura = 'CONCORRENDO' | 'APROVADO' | 'RESERVA';
+
+export interface CandidatoComStatus {
+  aluno: Usuario;
+  status: StatusCandidatura;
 }
 
 @Injectable({
@@ -99,7 +107,7 @@ export class OportunidadeService {
   }
 
   listarCandidatosDoProfessor(idOportunidade: string, idProfessor: string) {
-    return this.http.get<Usuario[]>(`${this.apiUrl}/${idOportunidade}/candidatos/professor/${idProfessor}`);
+    return this.http.get<CandidatoComStatus[]>(`${this.apiUrl}/${idOportunidade}/candidatos/professor/${idProfessor}`);
   }
 
 }

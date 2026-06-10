@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.oportunidades.cefet.backend.dto.item_salvo.SavedItemDTO;
-import br.oportunidades.cefet.backend.models.FeedItem;
+import br.oportunidades.cefet.backend.dto.feed.FeedResponseDTO;
 import br.oportunidades.cefet.backend.services.SavedItemService;
 
 @RestController
@@ -43,7 +43,7 @@ public class SavedItemController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Page<FeedItem>> listar(
+    public ResponseEntity<Page<FeedResponseDTO>> listar(
             @PathVariable String userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {

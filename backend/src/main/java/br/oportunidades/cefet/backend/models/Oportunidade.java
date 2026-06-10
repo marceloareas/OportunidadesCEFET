@@ -1,6 +1,7 @@
 package br.oportunidades.cefet.backend.models;
 
 import br.oportunidades.cefet.backend.enums.GrandeAreaConhecimento;
+import br.oportunidades.cefet.backend.enums.StatusCandidatura;
 import br.oportunidades.cefet.backend.enums.StatusOportunidade;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -62,5 +63,16 @@ public class Oportunidade {
 
     @Transient
     private String imagemPerfil;
+
+    // Derivados da coleção Candidatura (não persistidos).
+    @Transient
+    private List<String> alunosCandidatosId;
+
+    @Transient
+    private List<String> alunosAprovadosId;
+
+    // Status da candidatura do aluno solicitante (preenchido em listagens por aluno).
+    @Transient
+    private StatusCandidatura statusCandidaturaAluno;
 
 }

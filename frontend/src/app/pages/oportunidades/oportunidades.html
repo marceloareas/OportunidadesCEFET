@@ -103,7 +103,18 @@
           Você ainda não se candidatou a oportunidades.
         </div>
         <div class="feed-cards">
-          <app-post *ngFor="let op of candidaturas()" [post]="oportunidadeComoFeedItem(op)"></app-post>
+          <div class="candidatura-item" *ngFor="let op of candidaturas()">
+            <div class="candidatura-status" style="display: flex; justify-content: flex-end; margin-bottom: 4px;">
+              <span
+                class="badge-status"
+                [style.background]="corStatusAluno(op)"
+                style="color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;"
+              >
+                {{ statusAluno(op) }}
+              </span>
+            </div>
+            <app-post [post]="oportunidadeComoFeedItem(op)"></app-post>
+          </div>
         </div>
       </section>
     </div>
@@ -132,34 +143,40 @@
         Nenhum candidato encontrado.
       </div>
 
+      <div *ngIf="!candidatosCarregando() && oportunidadeSelecionadaFinalizada()" style="padding: 12px; background: #fff8e1; border-bottom: 1px solid #e0e0e0; color: #8a6d3b; font-size: 13px;">
+        Oportunidade finalizada. A seleção de candidatos está encerrada.
+      </div>
+
       <div *ngFor="let candidato of candidatosFiltrados()" class="candidato-item" style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #e0e0e0;">
-        <input 
-          type="checkbox" 
-          [checked]="isCandidatoSelecionado(candidato.id)"
-          (change)="toggleCandidato(candidato.id)"
+        <input
+          *ngIf="!oportunidadeSelecionadaFinalizada()"
+          type="checkbox"
+          [checked]="isCandidatoSelecionado(candidato.aluno.id)"
+          [disabled]="estaAprovado(candidato)"
+          (change)="toggleCandidato(candidato.aluno.id)"
           style="margin-right: 12px; cursor: pointer;"
         />
         <div style="flex: 1;">
-          <strong>{{ candidato.nome }}</strong>
-          <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">{{ candidato.email }}</p>
+          <strong>{{ candidato.aluno.nome }}</strong>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">{{ candidato.aluno.email }}</p>
         </div>
-        <span 
-          *ngIf="estaAprovado(candidato.id)"
-          class="badge-aprovado"
-          style="background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;"
+        <span
+          class="badge-status"
+          [style.background]="candidato.status === 'APROVADO' ? '#4CAF50' : (candidato.status === 'RESERVA' ? '#9e9e9e' : '#1976d2')"
+          style="color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;"
         >
-          Aprovado
+          {{ statusCandidaturaDescricao(candidato.status) }}
         </span>
       </div>
 
-      <div *ngIf="!candidatosCarregando() && candidatosFiltrados().length > 0" style="padding: 12px; border-top: 1px solid #e0e0e0;">
+      <div *ngIf="!candidatosCarregando() && !oportunidadeSelecionadaFinalizada() && candidatosFiltrados().length > 0" style="padding: 12px; border-top: 1px solid #e0e0e0;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
           <span style="font-size: 12px; color: #666;">
             {{ candidatosSelecionados().size }} aluno(s) selecionado(s)
           </span>
         </div>
         <div style="display: flex; gap: 8px;">
-          <button 
+          <button
             class="btn-confirmar"
             (click)="abrirModalConfirmacao()"
             [disabled]="candidatosSelecionados().size === 0 || finalizandoOportunidade()"

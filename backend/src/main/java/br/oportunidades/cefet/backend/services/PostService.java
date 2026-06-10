@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,10 @@ public class PostService {
     }
 
     public Post salvar(Post post) {
+        if (post.getCriado() == null) {
+            post.setCriado(new Date());
+        }
+
         Post salvo = postRepository.save(post);
 
         feedService.criarFeedPost(salvo);
