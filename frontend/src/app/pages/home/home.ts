@@ -139,6 +139,7 @@ export class Home {
       status: this.filtroStatus() || undefined,
       categoria: this.filtroCategoria() || undefined,
       area: this.filtroArea() || undefined,
+      userId: this.usuarioLogado()?.id,
     };
 
     this.feedService.listar(this.page(), this.size, filtros).subscribe({

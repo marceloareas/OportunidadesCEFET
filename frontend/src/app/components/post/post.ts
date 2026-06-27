@@ -394,6 +394,23 @@ export class PostComponent {
     }
   }
 
+  statusCandidaturaDescricao(): string {
+    switch (this.post.statusCandidaturaAluno) {
+      case 'APROVADO':
+        return 'Aprovado';
+      case 'RESERVA':
+        return 'Reserva';
+      case 'CONCORRENDO':
+        return 'Concorrendo';
+      default:
+        return '';
+    }
+  }
+
+  statusCandidaturaClasse(): string {
+    return `candidatura-chip-${(this.post.statusCandidaturaAluno || '').toLowerCase()}`;
+  }
+
   periodoInscricao(): string {
     const inicio = this.post.dataInicioInscricao ? new Date(this.post.dataInicioInscricao) : null;
     const fim = this.post.dataFimInscricao ? new Date(this.post.dataFimInscricao) : null;

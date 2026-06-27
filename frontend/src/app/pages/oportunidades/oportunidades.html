@@ -104,15 +104,6 @@
         </div>
         <div class="feed-cards">
           <div class="candidatura-item" *ngFor="let op of candidaturas()">
-            <div class="candidatura-status" style="display: flex; justify-content: flex-end; margin-bottom: 4px;">
-              <span
-                class="badge-status"
-                [style.background]="corStatusAluno(op)"
-                style="color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;"
-              >
-                {{ statusAluno(op) }}
-              </span>
-            </div>
             <app-post [post]="oportunidadeComoFeedItem(op)"></app-post>
           </div>
         </div>

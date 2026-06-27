@@ -58,7 +58,7 @@ public class FeedService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public FeedPageDTO listarFeed(int page, int size, String status, String categoria, String area) {
+    public FeedPageDTO listarFeed(int page, int size, String status, String categoria, String area, String userId) {
 
         boolean temFiltro =
                 (status != null && !status.isBlank())
@@ -67,15 +67,15 @@ public class FeedService {
 
         // Sem filtro: feed completo (posts + oportunidades), como antes.
         if (!temFiltro) {
-            return listarFeedCompleto(page, size);
+            return listarFeedCompleto(page, size, userId);
         }
 
         // Com filtro: os campos filtráveis (status/categoria/área) só existem em
         // Oportunidade, então consultamos essa coleção diretamente (posts ficam de fora).
-        return listarOportunidadesFiltradas(page, size, status, categoria, area);
+        return listarOportunidadesFiltradas(page, size, status, categoria, area, userId);
     }
 
-    private FeedPageDTO listarFeedCompleto(int page, int size) {
+    private FeedPageDTO listarFeedCompleto(int page, int size, String userId) {
 
         Page<FeedItem> feedPage =
                 feedRepository.findAllByOrderByCreatedAtDesc(
@@ -84,7 +84,7 @@ public class FeedService {
 
         List<FeedResponseDTO> items = feedPage.getContent()
                 .stream()
-                .map(this::montarFeedItem)
+                .map(item -> montarFeedItem(item, userId))
                 .toList();
 
         return new FeedPageDTO(
@@ -97,7 +97,7 @@ public class FeedService {
     }
 
     private FeedPageDTO listarOportunidadesFiltradas(
-            int page, int size, String status, String categoria, String area) {
+            int page, int size, String status, String categoria, String area, String userId) {
 
         List<Criteria> condicoes = new ArrayList<>();
 
@@ -141,7 +141,7 @@ public class FeedService {
         List<FeedResponseDTO> items = oportunidades.stream()
                 .map(op -> {
                     FeedItem feedItem = feedPorReferencia.get(op.getId());
-                    return feedItem != null ? montarFeedItem(feedItem) : null;
+                    return feedItem != null ? montarFeedItem(feedItem, userId) : null;
                 })
                 .filter(Objects::nonNull)
                 .toList();
@@ -246,6 +246,10 @@ public class FeedService {
     }
 
     FeedResponseDTO montarFeedItem(FeedItem item) {
+        return montarFeedItem(item, null);
+    }
+
+    FeedResponseDTO montarFeedItem(FeedItem item, String userId) {
 
         if ("POST".equalsIgnoreCase(item.getTipo())) {
 
@@ -314,6 +318,15 @@ public class FeedService {
                 .map(Candidatura::getAlunoId)
                 .toList();
 
+        StatusCandidatura statusCandidaturaAluno =
+                userId == null || userId.isBlank()
+                        ? null
+                        : candidaturas.stream()
+                                .filter(c -> userId.equals(c.getAlunoId()))
+                                .map(Candidatura::getStatus)
+                                .findFirst()
+                                .orElse(null);
+
         return FeedResponseDTO.builder()
                 .id(item.getId())
                 .referenciaId(item.getReferenciaId())
@@ -362,6 +375,7 @@ public class FeedService {
 
                 .alunosCandidatosId(alunosCandidatosId)
                 .alunosAprovadosId(alunosAprovadosId)
+                .statusCandidaturaAluno(statusCandidaturaAluno)
 
                 .build();
     }

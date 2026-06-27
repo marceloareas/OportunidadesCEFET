@@ -56,7 +56,7 @@ public class SavedItemService {
 
         // Reaproveita o enriquecimento do feed para que o card salvo tenha os mesmos dados.
         List<FeedResponseDTO> itens = feedDocs.stream()
-                .map(feedService::montarFeedItem)
+                .map(item -> feedService.montarFeedItem(item, userId))
                 .filter(Objects::nonNull)
                 .toList();
 

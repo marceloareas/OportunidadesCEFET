@@ -239,6 +239,7 @@ export class OportunidadesPage {
       status: op.status,
       alunosCandidatosId: op.alunosCandidatosId,
       alunosAprovadosId: op.alunosAprovadosId,
+      statusCandidaturaAluno: op.statusCandidaturaAluno,
     };
   }
 }
