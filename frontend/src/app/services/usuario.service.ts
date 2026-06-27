@@ -1,20 +1,24 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/app-env';
 
 export interface Usuario {
   id?: string;
   nome: string;
   email: string;
-  senha: string;
+  senha?: string;
   funcao?: string;     // 'Aluno', 'Professor'
-  matricula?: string;  
+  matricula?: string;
+  imagemPerfil?: string; // base64 ou url
+  linkPortfolio?: string;
+  linkCurriculo?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
   private http = inject(HttpClient);
-  private readonly API = 'http://localhost:8080/users';
+  private readonly API = `${API_BASE_URL}/users`;
 
   listar(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(this.API);

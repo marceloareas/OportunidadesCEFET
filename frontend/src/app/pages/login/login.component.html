@@ -116,6 +116,45 @@
           </select>
         </div>
 
+
+        <div class="input-group" style="align-items:center;">
+          <label style="margin-bottom:0.5em;">Imagem de Perfil</label>
+          <div class="avatar-upload" (click)="triggerFileInput()">
+            <img [src]="imagemPreview || '../pfptemp.ico'" class="avatar-preview" />
+            <span class="avatar-camera"><i class="bi bi-camera"></i></span>
+          </div>
+          <input
+            type="file"
+            id="imagemPerfil"
+            name="imagemPerfil"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            #fileInput
+            style="display:none;"
+          />
+          <span *ngIf="imagemErro" class="imagem-erro">{{ imagemErro }}</span>
+          <div class="crop-controls" *ngIf="imagemSelecionada">
+            <label for="cropX">Posição horizontal</label>
+            <input
+              id="cropX"
+              type="range"
+              min="0"
+              max="100"
+              [value]="imagemCrop.x"
+              (input)="atualizarCorteImagemPerfil('x', $event)"
+            />
+            <label for="cropY">Posição vertical</label>
+            <input
+              id="cropY"
+              type="range"
+              min="0"
+              max="100"
+              [value]="imagemCrop.y"
+              (input)="atualizarCorteImagemPerfil('y', $event)"
+            />
+          </div>
+        </div>
+
         <button type="submit" class="btn-submit">Enviar</button>
         <span>
           Já possui conta?

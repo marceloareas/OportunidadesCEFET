@@ -1,1 +1,60 @@
-node_modules
+# =========================
+# OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDEs
+# =========================
+.idea/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.metadata/
+.vscode/
+*.launch
+
+# =========================
+# ANGULAR / FRONTEND
+# =========================
+node_modules/
+dist/
+out-tsc/
+.angular/
+coverage/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# SPRING BOOT / BACKEND
+# =========================
+target/
+build/
+*.jar
+*.war
+
+# Maven wrapper (opcional manter wrapper script, mas não jar)
+.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# LOGS
+# =========================
+*.log
+logs/
+
+# =========================
+# ENV / SECRETS (se usar futuramente)
+# =========================
+.env
+.env.*
+
+# =========================
+# TEST / CACHE
+# =========================
+/test-results/
+/coverage/

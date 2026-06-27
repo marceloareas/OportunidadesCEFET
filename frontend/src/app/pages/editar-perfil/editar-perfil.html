@@ -61,7 +61,7 @@
 
                   <div class="form-actions">
                     <button type="submit" class="send-btn">Salvar</button>
-                    <a href="/home" class="cancel-link">Cancelar</a>
+                    <a href="/home" class="cancel-link" (click)="$event.preventDefault(); onCancel()">Cancelar</a>
                   </div>
                 </form>
               </div>

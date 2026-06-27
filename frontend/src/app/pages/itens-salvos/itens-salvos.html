@@ -1,0 +1,49 @@
+<app-navbar-top></app-navbar-top>
+
+<div class="page">
+  <app-navbar-left></app-navbar-left>
+
+  <main class="content">
+    <div class="scroll-content">
+
+      <section class="itens-salvos-container">
+        <h2 class="titulo-principal">Itens Salvos</h2>
+        <hr />
+
+        <!-- STATUS -->
+        <div *ngIf="carregando" class="mensagem-status">
+          Carregando itens salvos...
+        </div>
+
+        <div *ngIf="erro" class="mensagem-erro">
+          {{ erro }}
+        </div>
+
+        <!-- EMPTY -->
+        <div *ngIf="!carregando && itens.length === 0" class="mensagem-vazia">
+          Você ainda não salvou nenhuma publicação.
+        </div>
+
+        <!-- LISTA -->
+        <div *ngIf="!carregando && itens.length > 0">
+          <ng-container *ngFor="let p of itens; trackBy: trackById">
+            <app-post [post]="p" (abrirModalCandidatos)="abrirModalCandidatos(p)"></app-post>
+          </ng-container>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <app-navbar-right></app-navbar-right>
+</div>
+
+<app-candidatos-modal
+  *ngIf="mostrandoModalCandidatos()"
+  [oportunidadeId]="oportunidadeSelecionadaId()"
+  [professorId]="professorSelecionadoId()"
+  [finalizada]="oportunidadeSelecionadaFinalizada()"
+  (fechar)="fecharModalCandidatos()"
+  (aprovados)="aoAprovarCandidatos($event)"
+></app-candidatos-modal>

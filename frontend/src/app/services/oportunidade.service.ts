@@ -1,35 +1,71 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/app-env';
 import { Usuario } from './usuario.service';
+import { Page } from './post.services';
 
 export interface Oportunidade {
   id?: string;
   nome: string;
   descricao?: string;
   professorId?: string;
+  nomeCriador?: string;
   quantidadeDeVagas?: number;
   vagasPreenchidas?: number;
   idCategoria?: string;
   grandesAreas?: string[];
   imagemBase64?: string;
+  createdAt?: string | Date;
   criado?: string | Date;
+  dataInicioInscricao?: string | Date;
+  dataFimInscricao?: string | Date;
+  status?: 'INSCRICOES_EM_BREVE' | 'INSCRICOES_ABERTAS' | 'INSCRICOES_ENCERRADAS' | 'FINALIZADA';
   alunosCandidatosId?: string[];
   idLikes?: string[];
   alunosAprovadosId?: string[];
   finalizada?: boolean;
+  imagemPerfil?: string; // url ou base64 da foto do professor/criador
+  statusCandidaturaAluno?: StatusCandidatura; // status da candidatura do aluno logado (listagem por aluno)
+}
+
+export type StatusCandidatura = 'CONCORRENDO' | 'APROVADO' | 'RESERVA';
+
+export interface CandidatoComStatus {
+  aluno: Usuario;
+  status: StatusCandidatura;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class OportunidadeService {
-  private apiUrl = 'http://localhost:8080/oportunidades';
+  private apiUrl = `${API_BASE_URL}/oportunidades`;
 
   constructor(private http: HttpClient) {}
 
-  listar(): Observable<Oportunidade[]> {
-    return this.http.get<Oportunidade[]>(this.apiUrl);
+  listar(page = 0, size = 20): Observable<Page<Oportunidade>> {
+    return this.http.get<Page<Oportunidade>>(
+      `${this.apiUrl}?page=${page}&size=${size}`
+    );
+  }
+
+  listarPorProfessor(professorId: string, page = 0, size = 20): Observable<Page<Oportunidade>> {
+    return this.http.get<Page<Oportunidade>>(
+      `${this.apiUrl}/professor/${professorId}?page=${page}&size=${size}`
+    );
+  }
+
+  listarPorAluno(alunoId: string, page = 0, size = 20): Observable<Page<Oportunidade>> {
+    return this.http.get<Page<Oportunidade>>(
+      `${this.apiUrl}/aluno/${alunoId}?page=${page}&size=${size}`
+    );
+  }
+
+  listarCandidatos(idOportunidade: string, page = 0, size = 10) {
+    return this.http.get<Page<Usuario>>(
+      `${this.apiUrl}/${idOportunidade}/candidatos?page=${page}&size=${size}`
+    );
   }
 
   criar(oportunidade: Oportunidade): Observable<Oportunidade> {
@@ -71,7 +107,7 @@ export class OportunidadeService {
   }
 
   listarCandidatosDoProfessor(idOportunidade: string, idProfessor: string) {
-    return this.http.get<Usuario[]>(`${this.apiUrl}/${idOportunidade}/candidatos/professor/${idProfessor}`);
+    return this.http.get<CandidatoComStatus[]>(`${this.apiUrl}/${idOportunidade}/candidatos/professor/${idProfessor}`);
   }
 
 }

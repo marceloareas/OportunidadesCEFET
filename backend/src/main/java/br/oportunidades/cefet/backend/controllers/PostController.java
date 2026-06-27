@@ -3,21 +3,24 @@ package br.oportunidades.cefet.backend.controllers;
 import br.oportunidades.cefet.backend.models.Post;
 import br.oportunidades.cefet.backend.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
-@CrossOrigin(origins = "http://localhost:4200")
 public class PostController {
 
     @Autowired
     private PostService postService;
 
     @GetMapping
-    public ResponseEntity<List<Post>> listar() {
-        return ResponseEntity.ok(postService.listarTodos());
+    public ResponseEntity<Page<Post>> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(postService.listarTodos(page, size));
     }
 
     @GetMapping("/{id}")
@@ -45,9 +48,12 @@ public class PostController {
     }
 
     @GetMapping("/mine/{userId}")
-    public ResponseEntity<List<Post>> listarPorUsuario(@PathVariable String userId) {
-        List<Post> posts = postService.listarPorUsuario(userId);
-        return ResponseEntity.ok(posts);
+    public ResponseEntity<Page<Post>> listarPorUsuario(
+            @PathVariable String userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(postService.listarPorUsuario(userId, page, size));
     }
 
 
