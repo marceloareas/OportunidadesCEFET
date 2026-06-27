@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, SimpleChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import {
   OportunidadeService,
@@ -11,7 +12,7 @@ import {
 @Component({
   selector: 'app-candidatos-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './candidatos-modal.html',
   styleUrl: './candidatos-modal.css',
 })
