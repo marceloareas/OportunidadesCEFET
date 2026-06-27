@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { StatusCandidatura } from './oportunidade.service';
+import { API_BASE_URL } from '../config/app-env';
 
 export interface FeedItem {
   id?: string;
@@ -54,7 +55,7 @@ export interface FeedPage {
   providedIn: 'root'
 })
 export class FeedService {
-  private api = 'http://localhost:8080/feed';
+  private api = `${API_BASE_URL}/feed`;
 
   constructor(private http: HttpClient) {}
 
