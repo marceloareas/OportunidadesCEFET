@@ -52,6 +52,17 @@
   color: #666;
 }
 
+.candidato-perfil-link {
+  color: #111;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.candidato-perfil-link:hover {
+  color: #0a497e;
+  text-decoration: underline;
+}
+
 .loading {
   display: flex;
   align-items: center;

@@ -32,7 +32,16 @@
           style="margin-right: 12px; cursor: pointer;"
         />
         <div style="flex: 1;">
-          <strong>{{ candidato.aluno.nome }}</strong>
+          <a
+            *ngIf="candidato.aluno.id; else nomeCandidatoSemPerfil"
+            class="candidato-perfil-link"
+            [routerLink]="['/perfil', candidato.aluno.id]"
+          >
+            {{ candidato.aluno.nome }}
+          </a>
+          <ng-template #nomeCandidatoSemPerfil>
+            <strong>{{ candidato.aluno.nome }}</strong>
+          </ng-template>
           <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">{{ candidato.aluno.email }}</p>
         </div>
         <span
