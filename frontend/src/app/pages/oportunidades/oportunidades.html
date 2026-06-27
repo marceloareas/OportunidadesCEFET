@@ -4,51 +4,108 @@
 
   <main class="content">
     <div class="scroll-content">
-      <h2 class="titulo-principal">Oportunidades</h2>
-      <div *ngIf="carregando()" class="mensagem-status">Carregando...</div>
+      <div class="cabecalho-pagina">
+        <h2 class="titulo-principal">Oportunidades</h2>
+        <button *ngIf="usuarioFuncao === 'professor'" class="btn-nova-oportunidade" type="button" (click)="novaOportunidade()">
+          Criar nova oportunidade
+        </button>
+      </div>
       <div *ngIf="erro()" class="mensagem-erro">{{ erro() }}</div>
 
       <section *ngIf="usuarioFuncao === 'professor'">
         <h3>Minhas oportunidades</h3>
+
+        <div *ngIf="carregando() && minhasOportunidades().length === 0" class="cards-skeleton">
+          <div class="card-skeleton" *ngFor="let item of [1,2,3]">
+            <div class="card-skeleton-head">
+              <div class="skeleton skeleton-avatar"></div>
+
+              <div class="card-skeleton-info">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line short"></div>
+              </div>
+
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+
+            <div class="card-skeleton-body">
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line medium"></div>
+            </div>
+
+            <div class="card-skeleton-actions">
+              <div class="skeleton skeleton-btn"></div>
+              <div class="skeleton skeleton-btn"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="mensagem-vazia" *ngIf="!carregando() && minhasOportunidades().length === 0">
           Você ainda não possui oportunidades criadas.
         </div>
-        <div class="cards">
-          <article class="card" *ngFor="let op of minhasOportunidades()">
-            <div class="card-head">
+        <div class="feed-cards">
+          <app-post 
+            *ngFor="let op of minhasOportunidades()" 
+            [post]="oportunidadeComoFeedItem(op)"
+            (abrirModalCandidatos)="abrirListaCandidatos(op)"
+          ></app-post>
+          <div class="feed-footer" *ngIf="minhasOportunidades().length > 0">
+            <div *ngIf="carregando()" class="feed-state loading">
+              <div class="loader"></div>
+              <span>Carregando mais publicações...</span>
+            </div>
+
+            <button
+              *ngIf="!carregando() && hasMoreOportunidades()"
+              class="feed-load-btn"
+              (click)="carregarMaisOportunidades()"
+            >
+              <span>Carregar mais</span>
+              <i class="bi bi-arrow-down"></i>
+            </button>
+
+            <div *ngIf="!carregando() && !hasMoreOportunidades()" class="feed-state end">
               <div>
-                <h4>{{ op.nome }}</h4>
-                <p class="meta">Vagas: {{ op.vagasPreenchidas ?? 0 }}/{{ op.quantidadeDeVagas ?? 0 }}</p>
+                <strong>Fim das publicações</strong>
+                <p>Você viu tudo por enquanto</p>
               </div>
-              <span class="badge" [class.finalizada]="op.finalizada">{{ op.finalizada ? 'Finalizada' : 'Aberta' }}</span>
             </div>
-            <p class="descricao">{{ op.descricao }}</p>
-            <div class="acoes">
-              <button class="btn" (click)="abrirListaCandidatos(op)">Ver candidatos ({{ op.alunosCandidatosId?.length || 0 }})</button>
-              <button class="btn btn-sec" [disabled]="op.finalizada" (click)="finalizar(op)">
-                {{ op.finalizada ? 'Finalizada' : 'Finalizar' }}
-              </button>
-            </div>
-          </article>
+          </div>
         </div>
       </section>
 
       <section *ngIf="usuarioFuncao !== 'professor'">
         <h3>Minhas candidaturas</h3>
+
+        <div *ngIf="carregando() && candidaturas().length === 0" class="cards-skeleton">
+          <div class="card-skeleton" *ngFor="let item of [1,2,3]">
+            <div class="card-skeleton-head">
+              <div class="skeleton skeleton-avatar"></div>
+
+              <div class="card-skeleton-info">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line short"></div>
+              </div>
+
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+
+            <div class="card-skeleton-body">
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line medium"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="mensagem-vazia" *ngIf="!carregando() && candidaturas().length === 0">
           Você ainda não se candidatou a oportunidades.
         </div>
-        <div class="cards">
-          <article class="card" *ngFor="let op of candidaturas()">
-            <div class="card-head">
-              <div>
-                <h4>{{ op.nome }}</h4>
-                <p class="meta">Status: {{ statusAluno(op) }}</p>
-              </div>
-              <span class="badge" [class.finalizada]="op.finalizada">{{ op.finalizada ? 'Finalizada' : 'Aberta' }}</span>
-            </div>
-            <p class="descricao">{{ op.descricao }}</p>
-          </article>
+        <div class="feed-cards">
+          <div class="candidatura-item" *ngFor="let op of candidaturas()">
+            <app-post [post]="oportunidadeComoFeedItem(op)"></app-post>
+          </div>
         </div>
       </section>
     </div>
@@ -57,54 +114,11 @@
   <app-navbar-right></app-navbar-right>
 </div>
 
-<!-- Modal candidatos -->
-<div class="modal-overlay" *ngIf="mostrandoListaCandidatos()" (click)="fecharListaCandidatos()">
-  <div class="modal-conteudo card-modal" (click)="$event.stopPropagation()">
-    <div class="modal-topo-lista">
-      <div class="cabecalho-esq">
-        <h3>Candidatos</h3>
-        <div class="sub">Oportunidade: {{ oportunidadeSelecionadaId() }}</div>
-      </div>
-      <div class="acoes-topo">
-        <label class="filtro-aprovados">
-          <input type="checkbox" [checked]="somenteAprovados()" (change)="somenteAprovados.set($any($event.target).checked)" />
-          Somente aprovados
-        </label>
-        <button class="btn-fechar" type="button" (click)="fecharListaCandidatos()">Fechar</button>
-      </div>
-    </div>
-
-    <div class="lista-candidatos">
-      <div *ngIf="candidatosCarregando()">Carregando...</div>
-      <div *ngIf="candidatosErro()">{{ candidatosErro() }}</div>
-
-      <div class="mensagem-vazia" *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length === 0">
-        Nenhum candidato encontrado.
-      </div>
-
-      <ul *ngIf="!candidatosCarregando() && !candidatosErro() && candidatosFiltrados().length > 0">
-        <li class="candidato-card" *ngFor="let c of candidatosFiltrados()">
-          <div class="cand-dados">
-            <div class="candidato-nome">{{ c.nome || c.id }}</div>
-            <div class="cand-meta">
-              <span *ngIf="c.email">E-mail: {{ c.email }}</span>
-              <span *ngIf="c.matricula"> • Matrícula: {{ c.matricula }}</span>
-              <span *ngIf="c.funcao"> • {{ c.funcao }}</span>
-            </div>
-          </div>
-          <div class="cand-actions">
-            <span class="badge aprovado" *ngIf="estaAprovado(c.id)">Aprovado</span>
-            <button
-              class="btn-aprovar"
-              type="button"
-              [disabled]="aprovando() === c.id || estaAprovado(c.id)"
-              (click)="aprovarCandidato(c)"
-            >
-              {{ aprovando() === c.id ? 'Aprovando...' : 'Aprovar' }}
-            </button>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
+<app-candidatos-modal
+  *ngIf="mostrandoListaCandidatos()"
+  [oportunidadeId]="oportunidadeSelecionadaId()"
+  [professorId]="usuarioId ?? null"
+  [finalizada]="oportunidadeSelecionadaFinalizada()"
+  (fechar)="fecharListaCandidatos()"
+  (aprovados)="aoAprovarCandidatos($event)"
+></app-candidatos-modal>

@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/comments")
-@CrossOrigin(origins = "*")
 public class ComentarioController {
 
     @Autowired
@@ -35,18 +34,12 @@ public class ComentarioController {
         );
     }
 
-    // 🔹 Respostas de um comentário
-    @GetMapping("/respostas/{idComentario}")
-    public ResponseEntity<List<Comentario>> listarRespostas(
-            @PathVariable String idComentario
-    ) {
-        return ResponseEntity.ok(
-                comentarioService.listarRespostas(idComentario)
-        );
-    }
-
     @PostMapping
     public ResponseEntity<Comentario> criar(@RequestBody Comentario comentario) {
-        return ResponseEntity.ok(comentarioService.salvar(comentario));
+        try {
+            return ResponseEntity.ok(comentarioService.salvar(comentario));
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

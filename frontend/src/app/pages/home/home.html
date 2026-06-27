@@ -7,11 +7,11 @@
       <div class="posts" *ngSwitchCase="'home'">
         <div class="new-post">
           <div class="img">
-            <img src="pfptemp.ico" />
+            <img [src]="usuarioLogado()?.imagemPerfil || 'favicon.png'" />
           </div>
 
           <div (click)="openNewPost()" class="new-post-btn">
-            <span>Crie uma nova discussão</span>
+            <span>Crie uma nova discussão ou oportunidade</span>
           </div>
         </div>
 
@@ -20,26 +20,133 @@
 
           <hr />
 
-          <!-- Status da requisição -->
-          <div *ngIf="carregando()" class="mensagem-status">
-            Carregando publicações...
+          <!-- FILTROS DE OPORTUNIDADES -->
+          <div class="filtros">
+            <div class="filtro-campo">
+              <label for="filtroStatus">Status</label>
+              <select
+                id="filtroStatus"
+                [ngModel]="filtroStatus()"
+                (ngModelChange)="filtroStatus.set($event); aplicarFiltros()"
+              >
+                <option value="">Todos</option>
+                <option value="INSCRICOES_EM_BREVE">Em breve</option>
+                <option value="INSCRICOES_ABERTAS">Aberto</option>
+                <option value="FINALIZADA">Finalizada</option>
+              </select>
+            </div>
+
+            <div class="filtro-campo">
+              <label for="filtroCategoria">Categoria</label>
+              <select
+                id="filtroCategoria"
+                [ngModel]="filtroCategoria()"
+                (ngModelChange)="filtroCategoria.set($event); aplicarFiltros()"
+              >
+                <option value="">Todas</option>
+                <option value="PESQUISA">Pesquisa</option>
+                <option value="EXTENSAO">Extensão</option>
+                <option value="MONITORIA">Monitoria</option>
+                <option value="ESTAGIO">Estágio</option>
+                <option value="ORIENTACAO_TCC">Orientação TCC</option>
+              </select>
+            </div>
+
+            <div class="filtro-campo">
+              <label for="filtroArea">Grande área</label>
+              <select
+                id="filtroArea"
+                [ngModel]="filtroArea()"
+                (ngModelChange)="filtroArea.set($event); aplicarFiltros()"
+              >
+                <option value="">Todas</option>
+                <option value="CIENCIAS_EXATAS_E_DA_TERRA">Ciências Exatas e da Terra</option>
+                <option value="CIENCIAS_BIOLOGICAS">Ciências Biológicas</option>
+                <option value="ENGENHARIAS">Engenharias</option>
+                <option value="CIENCIAS_DA_SAUDE">Ciências da Saúde</option>
+                <option value="CIENCIAS_AGRARIAS">Ciências Agrárias</option>
+                <option value="CIENCIAS_SOCIAIS_APLICADAS">Ciências Sociais Aplicadas</option>
+                <option value="CIENCIAS_HUMANAS">Ciências Humanas</option>
+                <option value="LINGUISTICA_LETRAS_E_ARTES">Linguística, Letras e Artes</option>
+                <option value="MULTIDISCIPLINAR">Multidisciplinar</option>
+              </select>
+            </div>
+
+            <button
+              *ngIf="filtrosAtivos()"
+              type="button"
+              class="filtro-limpar"
+              (click)="limparFiltros()"
+            >
+              Limpar filtros
+            </button>
           </div>
+
           <div *ngIf="erro()" class="mensagem-erro">
             {{ erro() }}
           </div>
 
-          <!-- Lista de oportunidades -->
-          <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
-            <ng-container *ngFor="let p of feedItens(); let last = last">
-              <app-post [post]="p"></app-post>
-              <!--<hr *ngIf="!last" /> -->
-            </ng-container>
+          <!-- SKELETON -->
+          <div *ngIf="carregando()" class="feed-skeleton">
+            <div class="post-skeleton" *ngFor="let item of [1,2,3,4]">
+              <div class="post-skeleton-header">
+                <div class="skeleton skeleton-avatar"></div>
+                <div class="post-skeleton-user">
+                  <div class="skeleton skeleton-line short"></div>
+                  <div class="skeleton skeleton-line tiny"></div>
+                </div>
+              </div>
+
+              <div class="post-skeleton-body">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line long"></div>
+                <div class="skeleton skeleton-line long"></div>
+                <div class="skeleton skeleton-line short"></div>
+              </div>
+
+              <div class="skeleton skeleton-image"></div>
+            </div>
           </div>
 
+          <!-- FEED -->
+          <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
+            <ng-container *ngFor="let p of feedItens(); trackBy: trackByFeedId">
+              <app-post [post]="p" (abrirModalCandidatos)="abrirModalCandidatos(p)"></app-post>
+            </ng-container>
+
+            <div class="feed-footer">
+              <div *ngIf="carregando()" class="feed-state loading">
+                <div class="loader"></div>
+                <span>Carregando novas publicações...</span>
+              </div>
+
+              <button
+                *ngIf="!carregando() && hasMore()"
+                class="feed-load-btn"
+                (click)="carregarMais()"
+              >
+                <span>Carregar mais</span>
+                <i class="bi bi-arrow-down"></i>
+              </button>
+
+              <div *ngIf="!carregando() && !hasMore()" class="feed-state end">
+                <div>
+                  <strong>Fim do feed</strong>
+                  <p>Você viu tudo por enquanto</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- EMPTY STATE FORA DO NGIF -->
           <ng-template #semItens>
-            <p class="mensagem-vazia">
-              Nenhum post ou oportunidade encontrado.
-            </p>
+            <div *ngIf="!carregando()" class="mensagem-vazia">
+              <ng-container *ngIf="filtrosAtivos(); else semItensSemFiltro">
+                Nenhuma oportunidade encontrada para os filtros selecionados.
+              </ng-container>
+              <ng-template #semItensSemFiltro>
+                Nenhum post ou oportunidade encontrado.
+              </ng-template>
+            </div>
           </ng-template>
         </section>
       </div>
@@ -105,12 +212,36 @@
               />
             </div>
             <div class="campo">
+              <label for="inicioInscricao">Data inicial das inscrições</label>
+              <input
+                id="inicioInscricao"
+                type="date"
+                [ngModel]="dataInicioInscricao()"
+                (ngModelChange)="dataInicioInscricao.set($event)"
+              />
+            </div>
+            <div class="campo">
+              <label for="fimInscricao">Data final das inscrições</label>
+              <input
+                id="fimInscricao"
+                type="date"
+                [ngModel]="dataFimInscricao()"
+                (ngModelChange)="dataFimInscricao.set($event)"
+              />
+            </div>
+            <div class="campo">
               <label>Grandes áreas *</label>
 
               <label>
                 <input type="checkbox" value="CIENCIAS_EXATAS_E_DA_TERRA"
                        (change)="onAreaChange($event)" />
                 Ciências Exatas e da Terra
+              </label>
+
+              <label>
+                <input type="checkbox" value="CIENCIAS_BIOLOGICAS"
+                       (change)="onAreaChange($event)" />
+                Ciências Biológicas
               </label>
 
               <label>
@@ -123,6 +254,36 @@
                 <input type="checkbox" value="CIENCIAS_DA_SAUDE"
                        (change)="onAreaChange($event)" />
                 Ciências da Saúde
+              </label>
+
+              <label>
+                <input type="checkbox" value="CIENCIAS_AGRARIAS"
+                       (change)="onAreaChange($event)" />
+                Ciências Agrárias
+              </label>
+
+              <label>
+                <input type="checkbox" value="CIENCIAS_SOCIAIS_APLICADAS"
+                       (change)="onAreaChange($event)" />
+                Ciências Sociais Aplicadas
+              </label>
+
+              <label>
+                <input type="checkbox" value="CIENCIAS_HUMANAS"
+                       (change)="onAreaChange($event)" />
+                Ciências Humanas
+              </label>
+
+              <label>
+                <input type="checkbox" value="LINGUISTICA_LETRAS_E_ARTES"
+                       (change)="onAreaChange($event)" />
+                Linguística, Letras e Artes
+              </label>
+
+              <label>
+                <input type="checkbox" value="MULTIDISCIPLINAR"
+                       (change)="onAreaChange($event)" />
+                Multidisciplinar
               </label>
             </div>
             <div class="campo">
@@ -155,7 +316,6 @@
             <div class="image-preview" *ngIf="imagemBase64()">
               <img
                 [src]="imagemBase64()!"
-                alt="Pré-visualização da imagem"
               />
               <button
                 class="remove-image"
@@ -184,7 +344,6 @@
             <div class="image-preview" *ngIf="imagemBase64()">
               <img
                 [src]="imagemBase64()!"
-                alt="Pré-visualização da imagem"
               />
               <button
                 class="remove-image"
@@ -196,7 +355,7 @@
             </div>
           </ng-container>
 
-          <button class="send-btn" (click)="enviarPost()">ENVIAR</button>
+          <button class="send-btn" (click)="enviarPost()">CRIAR</button>
         </div>
       </div>
     </div>
@@ -204,3 +363,12 @@
 
   <app-navbar-right></app-navbar-right>
 </div>
+
+<app-candidatos-modal
+  *ngIf="mostrandoModalCandidatos()"
+  [oportunidadeId]="oportunidadeSelecionadaId()"
+  [professorId]="professorSelecionadoId()"
+  [finalizada]="oportunidadeSelecionadaFinalizada()"
+  (fechar)="fecharModalCandidatos()"
+  (aprovados)="aoAprovarCandidatos($event)"
+></app-candidatos-modal>

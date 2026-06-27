@@ -1,25 +1,48 @@
-version: "3.9"
-
 services:
-  mongo:
-    image: mongo
-    container_name: mongo-oportunidades-cefet
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    profiles:
+      - tools
+    restart: always
     ports:
-      - "27017:27017"
+      - "8081:8081"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: secret
-      MONGO_INITDB_DATABASE: oportunidades_cefet
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7
+    container_name: mongo-oportunidades-cefet
+    expose:
+      - "27017"
+    env_file:
+      - ./.env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     volumes:
       - mongo-data:/data/db
 
   backend:
     build: ./backend
     container_name: oportunidadescefet-backend
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
+    env_file:
+      - ./.env
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://root:secret@mongo:27017/oportunidades_cefet?authSource=admin
+      SPRING_DATA_MONGODB_URI: ${MONGO_URI}
+      SPRING_DATA_MONGODB_DATABASE: ${SPRING_DATA_MONGODB_DATABASE}
+      APP_CORS_ALLOWED_ORIGIN: "*"
+      SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET}
+      SECURITY_JWT_EXPIRATION_MS: ${SECURITY_JWT_EXPIRATION_MS}
     depends_on:
       - mongo
 
@@ -28,7 +51,13 @@ services:
       context: ./frontend
     container_name: oportunidadescefet-frontend
     ports:
-      - "4200:4200"
+      - "${FRONTEND_PORT}:4200"
+    env_file:
+      - ./.env
+    environment:
+      FRONTEND_API_BASE_URL: "/api"
+      FRONTEND_PROXY_TARGET: "http://backend:8080"
+      NG_ALLOWED_HOSTS: "${FRONTEND_ALLOWED_HOSTS:-localhost,127.0.0.1}"
     volumes:
       - ./frontend:/app
       - /app/node_modules

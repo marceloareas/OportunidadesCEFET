@@ -1,7 +1,9 @@
 package br.oportunidades.cefet.backend.models;
 
+import br.oportunidades.cefet.backend.enums.TipoFeed;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -23,26 +25,18 @@ public class Comentario {
     @Builder.Default
     private String id = UUID.randomUUID().toString();
 
-    // Cometário 1:1 Usuário
-    private String usuarioId; // referencia Usuario(id)
+    private String usuarioId;
 
-    // Comentário 0:N Comentário
-    private String idComentarioPai; // referencia Comentario(id)
+    private TipoFeed tipoEntidadePai;
 
-    private String tipoEntidadePai; // "Oportunidade" ou "Post"
-                                    // Identificar se foi um Comentário feito em um Post ou em uma Oportunidade,
-                                    // pois a entidade Comentario é única(tanto para Post quanto para Oportunidade)
-                                    // facilitar busca no Banco
-
-    // Comentário 1:1 Post
-    private String idPost; // referencia Post(id)
+    @Indexed
+    private String idPost;
 
     @Builder.Default
-    private Date dataComentario = new Date();
+    private Date createdAt = new Date();
 
     private String texto;
 
     @Builder.Default
-    private Set<String> idLikes = new HashSet<>(); // referencia Usuario(id)
-
+    private Set<String> idLikes = new HashSet<>();
 }

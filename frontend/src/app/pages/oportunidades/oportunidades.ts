@@ -1,27 +1,32 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
+import { PostComponent } from '../../components/post/post';
+import { CandidatosModal } from '../../components/candidatos-modal/candidatos-modal';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
-import { UsuarioService, Usuario } from '../../services/usuario.service';
-import { forkJoin } from 'rxjs';
+import { FeedItem } from '../../services/feed.service';
 
 @Component({
   selector: 'app-oportunidades',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarTop, NavbarLeft, NavbarRight],
+  imports: [CommonModule, FormsModule, RouterLink, NavbarTop, NavbarLeft, NavbarRight, PostComponent, CandidatosModal],
   templateUrl: './oportunidades.html',
   styleUrl: './oportunidades.css'
 })
 export class OportunidadesPage {
+
+  paginaAtual = signal(0);
+  tamanhoPagina = signal(10);
+  totalPaginas = signal(0);
+
   usuarioId?: string;
   usuarioFuncao?: string;
 
   minhasOportunidades = signal<Oportunidade[]>([]);
-  candidaturas = signal<Oportunidade[]>([]);
-  candidatosPorOportunidade = signal<Record<string, Usuario[]>>({});
 
   carregando = signal<boolean>(false);
   erro = signal<string>('');
@@ -29,130 +34,140 @@ export class OportunidadesPage {
   // modal candidatos
   mostrandoListaCandidatos = signal<boolean>(false);
   oportunidadeSelecionadaId = signal<string | null>(null);
-  somenteAprovados = signal<boolean>(false);
-  aprovando = signal<string | null>(null);
-  candidatosErro = signal<string>('');
-  candidatosCarregando = signal<boolean>(false);
+  candidaturas = signal<Oportunidade[]>([]);
 
   constructor(
     private oportunidadeService: OportunidadeService,
-    private usuarioService: UsuarioService
+    private router: Router
   ) {}
 
-  ngOnInit() {
-    const usuarioStr = localStorage.getItem('usuario');
-    if (!usuarioStr) return;
-    let parsed: any = null;
-    try { parsed = JSON.parse(usuarioStr); } catch { return; }
-    this.usuarioId = parsed?.id;
-    this.usuarioFuncao = parsed?.funcao?.toLowerCase();
-    if (!this.usuarioId) return;
+    ngOnInit() {
+      if (typeof window === 'undefined') return;
 
-    this.carregarDados();
-  }
+      const usuarioStr = localStorage.getItem('usuario');
+      if (!usuarioStr) return;
 
-  private carregarDados() {
-    this.carregando.set(true);
-    this.erro.set('');
-
-    this.oportunidadeService.listar().subscribe({
-      next: (ops) => {
-        const lista = ops || [];
-        if (this.usuarioFuncao === 'professor') {
-          this.minhasOportunidades.set(lista.filter(o => o.professorId === this.usuarioId));
-        } else {
-          // aluno: candidaturas
-          this.candidaturas.set(
-            lista.filter(o => (o.alunosCandidatosId || []).includes(this.usuarioId!))
-          );
-        }
-        this.carregando.set(false);
-      },
-      error: (err) => {
-        console.error('Erro ao carregar oportunidades:', err);
-        this.erro.set('Erro ao carregar oportunidades.');
-        this.carregando.set(false);
+      let parsed: any = null;
+      try {
+        parsed = JSON.parse(usuarioStr);
+      } catch {
+        return;
       }
-    });
-  }
 
-  abrirListaCandidatos(op: Oportunidade) {
-    if (!op.id) return;
-    this.oportunidadeSelecionadaId.set(op.id);
-    this.mostrandoListaCandidatos.set(true);
-    this.carregarCandidatos(op.id);
-  }
+      this.usuarioId = parsed?.id;
+      this.usuarioFuncao = parsed?.funcao?.toLowerCase();
+
+      if (!this.usuarioId) return;
+
+      this.carregarDados(0, false);
+    }
+
+    carregarMaisOportunidades() {
+      if (this.carregando() || !this.hasMoreOportunidades()) return;
+      this.carregarDados(this.paginaAtual() + 1, true);
+    }
+
+    hasMoreOportunidades = computed(
+      () => this.paginaAtual() < this.totalPaginas() - 1
+    );
+
+    private carregarDados(page = 0, append = false) {
+      this.carregando.set(true);
+      this.erro.set('');
+
+      const request =
+        this.usuarioFuncao === 'professor'
+          ? this.oportunidadeService.listarPorProfessor(
+              this.usuarioId!,
+              page,
+              this.tamanhoPagina()
+            )
+          : this.oportunidadeService.listarPorAluno(
+              this.usuarioId!,
+              page,
+              this.tamanhoPagina()
+            );
+
+      request.subscribe({
+          next: (res) => {
+            const novas = res.content || [];
+            console.log('candidaturas:', novas);
+
+          if (this.usuarioFuncao === 'professor') {
+            this.minhasOportunidades.set(
+              append
+                ? [...this.minhasOportunidades(), ...novas]
+                : novas
+            );
+          } else {
+            this.candidaturas.set(
+              append
+                ? [...this.candidaturas(), ...novas]
+                : novas
+            );
+          }
+
+          this.paginaAtual.set(res.number);
+          this.totalPaginas.set(res.totalPages || 0);
+          this.carregando.set(false);
+        },
+        error: (err) => {
+          console.error('Erro ao carregar oportunidades:', err);
+          this.erro.set('Erro ao carregar oportunidades.');
+          this.carregando.set(false);
+        }
+      });
+    }
+
+    abrirListaCandidatos(op: Oportunidade) {
+      if (!op.id) return;
+
+      this.oportunidadeSelecionadaId.set(op.id);
+      this.mostrandoListaCandidatos.set(true);
+    }
 
   fecharListaCandidatos() {
     this.mostrandoListaCandidatos.set(false);
     this.oportunidadeSelecionadaId.set(null);
-    this.somenteAprovados.set(false);
   }
 
-  private carregarCandidatos(opId: string) {
-    const ids = this.minhasOportunidades().find(o => o.id === opId)?.alunosCandidatosId || [];
-    if (!ids.length) {
-      this.candidatosPorOportunidade.update(m => ({ ...m, [opId]: [] }));
-      return;
-    }
-    this.candidatosCarregando.set(true);
-    this.candidatosErro.set('');
-    const requests = ids.map(id => this.usuarioService.buscarPorId(id));
-    forkJoin(requests).subscribe({
-      next: (users) => {
-        this.candidatosPorOportunidade.update(m => ({ ...m, [opId]: users.filter(Boolean) as Usuario[] }));
-        this.candidatosCarregando.set(false);
-      },
-      error: (err) => {
-        console.error('Erro ao carregar candidatos:', err);
-        this.candidatosErro.set('Não foi possível carregar candidatos.');
-        this.candidatosCarregando.set(false);
-      }
-    });
-  }
-
-  candidatosFiltrados(): Usuario[] {
+  oportunidadeSelecionadaFinalizada(): boolean {
     const opId = this.oportunidadeSelecionadaId();
-    if (!opId) return [];
-    const lista = this.candidatosPorOportunidade()[opId] || [];
-    if (!this.somenteAprovados()) return lista;
-    const aprovados = new Set(
-      this.minhasOportunidades().find(o => o.id === opId)?.alunosAprovadosId || []
+    if (!opId) return false;
+    const op = this.minhasOportunidades().find(o => o.id === opId);
+    return Boolean(op?.finalizada) || op?.status === 'FINALIZADA';
+  }
+
+  aoAprovarCandidatos(op: Oportunidade) {
+    this.minhasOportunidades.update(list =>
+      list.map(o => o.id === op.id ? op : o)
     );
-    return lista.filter(c => c.id && aprovados.has(c.id));
-  }
-
-  estaAprovado(candId: string | undefined): boolean {
-    const opId = this.oportunidadeSelecionadaId();
-    if (!opId || !candId) return false;
-    const aprovados = this.minhasOportunidades().find(o => o.id === opId)?.alunosAprovadosId || [];
-    return aprovados.includes(candId);
-  }
-
-  aprovarCandidato(c: Usuario) {
-    const opId = this.oportunidadeSelecionadaId();
-    if (!opId || !c.id || !this.usuarioId) return;
-    this.aprovando.set(c.id);
-    this.oportunidadeService.aprovarCandidatoDoProfessor(opId, c.id, this.usuarioId).subscribe({
-      next: (op) => {
-        // atualiza listas
-        this.minhasOportunidades.update(list =>
-          list.map(o => o.id === op.id ? op : o)
-        );
-        this.aprovando.set(null);
-      },
-      error: (err) => {
-        console.error('Erro ao aprovar candidato:', err);
-        alert('Não foi possível aprovar o candidato.');
-        this.aprovando.set(null);
-      }
-    });
   }
 
   statusAluno(op: Oportunidade): string {
-    if (!this.usuarioId) return 'Pendente';
-    if ((op.alunosAprovadosId || []).includes(this.usuarioId)) return 'Aprovado';
-    return 'Pendente';
+    switch (op.statusCandidaturaAluno) {
+      case 'APROVADO':
+        return 'Aprovado';
+      case 'RESERVA':
+        return 'Reserva';
+      case 'CONCORRENDO':
+        return 'Concorrendo';
+      default:
+        return 'Pendente';
+    }
+  }
+
+  corStatusAluno(op: Oportunidade): string {
+    switch (op.statusCandidaturaAluno) {
+      case 'APROVADO':
+        return '#4CAF50';
+      case 'RESERVA':
+        return '#9e9e9e';
+      case 'CONCORRENDO':
+        return '#1976d2';
+      default:
+        return '#9e9e9e';
+    }
   }
 
   finalizar(op: Oportunidade) {
@@ -169,5 +184,62 @@ export class OportunidadesPage {
         alert('Não foi possível finalizar.');
       }
     });
+  }
+
+  novaOportunidade() {
+    this.router.navigate(['/home'], { queryParams: { modo: 'oportunidade' } });
+  }
+
+  statusDescricao(status?: Oportunidade['status']): string {
+    switch (status) {
+      case 'INSCRICOES_EM_BREVE':
+        return 'Inscrições em breve';
+      case 'INSCRICOES_ABERTAS':
+        return 'Inscrições abertas';
+      case 'INSCRICOES_ENCERRADAS':
+        return 'Inscrições encerradas';
+      case 'FINALIZADA':
+        return 'Finalizada';
+      default:
+        return 'Status indefinido';
+    }
+  }
+
+  periodoInscricao(op: Oportunidade): string {
+    const inicio = op.dataInicioInscricao ? new Date(op.dataInicioInscricao) : null;
+    const fim = op.dataFimInscricao ? new Date(op.dataFimInscricao) : null;
+
+    if (!inicio || !fim || Number.isNaN(inicio.getTime()) || Number.isNaN(fim.getTime())) {
+      return 'Período não informado';
+    }
+
+    return `${inicio.toLocaleDateString('pt-BR')} até ${fim.toLocaleDateString('pt-BR')}`;
+  }
+
+  oportunidadeComoFeedItem(op: Oportunidade): FeedItem {
+    return {
+      id: op.id,
+      referenciaId: op.id,
+      tipo: 'OPORTUNIDADE',
+      titulo: op.nome,
+      corpo: op.descricao,
+      criadorId: op.professorId,
+      nomeCriador: op.nomeCriador,
+      createdAt: (op as any).criado ?? op.createdAt,
+      imagemBase64: op.imagemBase64,
+      imagemPerfil: op.imagemPerfil,
+      idLikes: op.idLikes || [],
+      dataInicioInscricao: op.dataInicioInscricao,
+      dataFimInscricao: op.dataFimInscricao,
+      idCategoria: op.idCategoria,
+      grandesAreas: op.grandesAreas,
+      quantidadeDeVagas: op.quantidadeDeVagas,
+      vagasPreenchidas: op.vagasPreenchidas,
+      finalizada: op.finalizada,
+      status: op.status,
+      alunosCandidatosId: op.alunosCandidatosId,
+      alunosAprovadosId: op.alunosAprovadosId,
+      statusCandidaturaAluno: op.statusCandidaturaAluno,
+    };
   }
 }

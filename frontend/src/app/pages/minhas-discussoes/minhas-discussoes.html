@@ -8,21 +8,64 @@
         <h2 class="titulo-principal">Minhas discussões</h2>
         <hr />
 
-        <div *ngIf="carregando()" class="mensagem-status">Carregando publicações...</div>
         <div *ngIf="erro()" class="mensagem-erro">{{ erro() }}</div>
 
+        <!-- SKELETON -->
+        <div *ngIf="carregando() && minhasPublicacoes().length === 0" class="feed-skeleton">
+          <div class="post-skeleton" *ngFor="let item of [1,2,3,4]">
+            <div class="post-skeleton-header">
+              <div class="skeleton skeleton-avatar"></div>
+
+              <div class="post-skeleton-user">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line tiny"></div>
+              </div>
+            </div>
+
+            <div class="post-skeleton-body">
+              <div class="skeleton skeleton-line short"></div>
+              <div class="skeleton skeleton-line long"></div>
+              <div class="skeleton skeleton-line long"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMPTY -->
         <div *ngIf="!carregando() && minhasPublicacoes().length === 0" class="mensagem-vazia">
           Você ainda não tem publicações.
         </div>
 
-        <div *ngIf="!carregando() && minhasPublicacoes().length > 0">
+        <!-- LISTA -->
+        <div *ngIf="minhasPublicacoes().length > 0">
           <ng-container *ngFor="let p of minhasPublicacoes()">
-            <article class="post-item">
-              <h3>{{ p.titulo }}</h3>
-              <div class="meta">{{ p.criado ? (p.criado | date:'short') : '' }}</div>
-              <p>{{ p.corpo }}</p>
-            </article>
+            <app-post [post]="p"></app-post>
           </ng-container>
+
+          <div class="feed-footer">
+            <!-- loading paginação -->
+            <div *ngIf="carregando() && minhasPublicacoes().length > 0" class="feed-state loading">
+              <div class="loader"></div>
+              <span>Carregando mais publicações...</span>
+            </div>
+
+            <!-- carregar mais -->
+            <button
+              *ngIf="!carregando() && hasMore()"
+              class="feed-load-btn"
+              (click)="carregarMaisPublicacoes()"
+            >
+              <span>Carregar mais</span>
+              <i class="bi bi-arrow-down"></i>
+            </button>
+
+            <!-- fim -->
+            <div *ngIf="!carregando() && !hasMore()" class="feed-state end">
+              <div>
+                <strong>Fim das publicações</strong>
+                <p>Você viu tudo por enquanto</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>

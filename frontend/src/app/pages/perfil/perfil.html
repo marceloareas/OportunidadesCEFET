@@ -1,0 +1,192 @@
+<app-navbar-top></app-navbar-top>
+<div class="page">
+  <app-navbar-left></app-navbar-left>
+
+  <main class="content">
+    <div class="scroll-content">
+      <h2 class="titulo-pagina">Perfil</h2>
+
+      <div class="estado erro" *ngIf="erro()">{{ erro() }}</div>
+
+      <section class="card-perfil perfil-skeleton" *ngIf="carregando()">
+        <div class="info-principal">
+          <div class="foto-wrapper">
+            <div class="skeleton skeleton-avatar"></div>
+          </div>
+
+          <div class="dados-principais">
+            <div class="skeleton skeleton-line name"></div>
+
+            <div class="linha-secundaria">
+              <div class="skeleton skeleton-line small"></div>
+              <div class="skeleton skeleton-line small"></div>
+            </div>
+
+            <div class="skeleton skeleton-line medium"></div>
+          </div>
+        </div>
+
+        <div class="links-publicos">
+          <div class="skeleton skeleton-title"></div>
+
+          <div class="links-grid">
+            <div class="skeleton skeleton-link"></div>
+            <div class="skeleton skeleton-link"></div>
+          </div>
+        </div>
+
+        <div class="edit-links">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-line long"></div>
+
+          <div class="campos">
+            <div class="skeleton skeleton-label"></div>
+            <div class="skeleton skeleton-input"></div>
+
+            <div class="skeleton skeleton-label"></div>
+            <div class="skeleton skeleton-input"></div>
+          </div>
+
+          <div class="acoes">
+            <div class="skeleton skeleton-btn"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-perfil" *ngIf="!carregando() && !erro() && usuarioPerfil() as perfil">
+        <div class="info-principal">
+          <div class="foto-wrapper" *ngIf="isProprioPerfil(); else fotoSomenteVisualizacao">
+            <img [src]="perfil.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" />
+
+            <div class="foto-overlay" (click)="abrirModalImagem()">
+              <span class="material-icons">edit</span>
+            </div>
+          </div>
+
+          <div class="modal-backdrop" *ngIf="modalImagemAberto()" (click)="fecharModalImagem()">
+            <div class="modal-imagem" (click)="$event.stopPropagation()">
+              <h3>Editar foto de perfil</h3>
+
+              <div class="input-group">
+                <label class="input-label">Selecionar imagem</label>
+
+                <label for="imagemPerfil" class="upload-btn">
+                  <span class="material-icons">upload</span>
+                  <span>Procurar imagem</span>
+                </label>
+
+                <input
+                  type="file"
+                  id="imagemPerfil"
+                  accept="image/*"
+                  (change)="onImageSelected($event)"
+                  hidden
+                />
+
+                <span class="file-hint">PNG, JPG ou WEBP</span>
+                <span *ngIf="imagemErro" class="imagem-erro">{{ imagemErro }}</span>
+              </div>
+
+              <div *ngIf="imagemPreview" class="preview-container">
+                <img [src]="imagemPreview" class="profile-image-preview" alt="Prévia da foto de perfil" />
+              </div>
+
+              <div class="crop-controls" *ngIf="imagemSelecionada">
+                <label for="cropX">Posição horizontal</label>
+                <input
+                  id="cropX"
+                  type="range"
+                  min="0"
+                  max="100"
+                  [value]="imagemCrop.x"
+                  (input)="atualizarCorteImagemPerfil('x', $event)"
+                />
+
+                <label for="cropY">Posição vertical</label>
+                <input
+                  id="cropY"
+                  type="range"
+                  min="0"
+                  max="100"
+                  [value]="imagemCrop.y"
+                  (input)="atualizarCorteImagemPerfil('y', $event)"
+                />
+              </div>
+
+              <div class="modal-acoes">
+                <button type="button" class="btn-secundario" (click)="fecharModalImagem()">Cancelar</button>
+                <button type="button" class="btn-primario" (click)="salvarImagemPerfil()">Salvar</button>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #fotoSomenteVisualizacao>
+            <div class="foto-wrapper">
+              <img [src]="perfil.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" />
+            </div>
+          </ng-template>
+
+          <div class="dados-principais">
+            <h3>{{ perfil.nome }}</h3>
+
+            <div class="linha-secundaria">
+              <span>{{ getTipoUsuarioLabel(perfil.funcao) }}</span>
+              <span class="matricula" *ngIf="perfil.matricula">Matrícula: {{ perfil.matricula }}</span>
+            </div>
+
+            <p class="email">{{ perfil.email }}</p>
+          </div>
+        </div>
+
+        <div class="links-publicos" *ngIf="perfil.linkPortfolio || perfil.linkCurriculo">
+          <h4>Links do perfil</h4>
+          <div class="links-grid">
+            <a *ngIf="perfil.linkPortfolio" [href]="perfil.linkPortfolio" target="_blank" rel="noopener noreferrer">
+              Portfólio
+            </a>
+            <a *ngIf="perfil.linkCurriculo" [href]="perfil.linkCurriculo" target="_blank" rel="noopener noreferrer">
+              Currículo
+            </a>
+          </div>
+        </div>
+
+        <div class="edit-links" *ngIf="isProprioPerfil()">
+          <h4>Editar links do seu perfil</h4>
+          <p class="hint">Você pode adicionar até dois links: um para portfólio e outro para currículo.</p>
+
+          <div class="campos">
+            <label for="portfolio">Link do portfólio</label>
+            <input
+              id="portfolio"
+              type="url"
+              placeholder="https://seu-portfolio.com"
+              [ngModel]="linkPortfolio()"
+              (ngModelChange)="linkPortfolio.set($event)"
+            />
+
+            <label for="curriculo">Link do currículo</label>
+            <input
+              id="curriculo"
+              type="url"
+              placeholder="https://seu-curriculo.com"
+              [ngModel]="linkCurriculo()"
+              (ngModelChange)="linkCurriculo.set($event)"
+            />
+          </div>
+
+          <div class="acoes">
+            <button type="button" (click)="salvarLinks()" [disabled]="salvando()">
+              {{ salvando() ? 'Salvando...' : 'Salvar links' }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="acoes-finais">
+        <button type="button" class="btn-voltar" (click)="voltarInicio()">Voltar</button>
+      </div>
+    </div>
+  </main>
+
+  <app-navbar-right></app-navbar-right>
+</div>

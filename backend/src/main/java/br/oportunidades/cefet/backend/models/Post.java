@@ -2,7 +2,10 @@ package br.oportunidades.cefet.backend.models;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import org.springframework.data.annotation.Transient;
 
 import java.util.*;
 
@@ -22,14 +25,10 @@ public class Post {
     private String titulo;
     private String corpo;
 
-    // Post 1:1 Usuário
-    private String criadorId; // referencia Usuario(id)
+    @Indexed
+    private String criadorId;
 
     private Date criado;
-
-    @Builder.Default
-    // Post 0:N Comentários
-    private List<Comentario> idComentarios = new ArrayList<>(); // referencia Comentario(id)
 
     @Builder.Default
     // Post 1:N Categorias
@@ -41,5 +40,11 @@ public class Post {
     
     @Builder.Default
     private List<String> idLikes = new ArrayList<>();
+
+    @Transient
+    private String nomeCriador;
+
+    @Transient
+    private String imagemPerfil;
 
 }

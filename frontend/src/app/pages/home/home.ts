@@ -1,21 +1,22 @@
 import { Component, ElementRef, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { PostComponent } from '../../components/post/post';
+import { CandidatosModal } from '../../components/candidatos-modal/candidatos-modal';
 import { PostService, Post } from '../../services/post.services';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
-import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { FeedItem, FeedService } from '../../services/feed.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarTop, NavbarLeft, NavbarRight, PostComponent],
+  imports: [CommonModule, FormsModule, NavbarTop, NavbarLeft, NavbarRight, PostComponent, CandidatosModal],
   templateUrl: './home.html',
   styleUrls: ['./home.css']
 })
@@ -26,129 +27,181 @@ export class Home {
   newPostModal = signal<boolean>(false);
   modoOportunidade = signal<boolean>(false);
 
-  tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
-  usuarioLogado = signal<{ id: string; nome: string; funcao: string } | null>(null);
+  tipoUsuario = signal<string>('aluno');
+  usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
 
-  posts = signal<Post[]>([]);
-  oportunidades = signal<Oportunidade[]>([]);
-  nomesUsuarios = new Map<string, string>();
+  feedItens = signal<FeedItem[]>([]);
+  page = signal<number>(0);
+  size = 10;
+  hasMore = signal<boolean>(true);
+
+  // filtros de oportunidades (enviados ao backend; ver carregarFeed)
+  filtroStatus = signal<string>('');
+  filtroCategoria = signal<string>('');
+  filtroArea = signal<string>('');
+
+  filtrosAtivos = computed(() =>
+    Boolean(this.filtroStatus() || this.filtroCategoria() || this.filtroArea())
+  );
 
   carregando = signal<boolean>(false);
   erro = signal<string>('');
 
-  feedItens = computed<Post[]>(() => {
-    const posts = this.posts();
-    const oportunidadesMapeadas = this.oportunidades().map((op) => this.mapOportunidadeParaPost(op));
-    return [...posts, ...oportunidadesMapeadas].sort(
-      (a, b) => this.obterTimestamp(b.criado) - this.obterTimestamp(a.criado)
-    );
-  });
+  // modal de candidatos (professor vendo candidatos de uma oportunidade do feed)
+  mostrandoModalCandidatos = signal<boolean>(false);
+  oportunidadeSelecionadaId = signal<string | null>(null);
+  professorSelecionadoId = signal<string | null>(null);
+  oportunidadeSelecionadaFinalizada = signal<boolean>(false);
 
   titulo = signal<string>('');
   corpo = signal<string>('');
   imagemBase64 = signal<string | null>(null);
   imagemErro = signal<string>('');
   vagasTotais = signal<number>(1);
+  dataInicioInscricao = signal<string>('');
+  dataFimInscricao = signal<string>('');
   categoria = signal<string>('');
   grandesAreas = signal<string[]>([]);
 
   constructor(
     private postService: PostService,
     private oportunidadeService: OportunidadeService,
-    private usuarioService: UsuarioService,
+    private feedService: FeedService,
+    private route: ActivatedRoute,
     private router: Router
   ) {}
 
+  trackByFeedId(index: number, item: FeedItem): string {
+    return item.id!;
+  }
+
+  // Chamado quando qualquer filtro muda: recarrega o feed do backend já filtrado.
+  aplicarFiltros() {
+    this.carregarFeed(true);
+  }
+
+  limparFiltros() {
+    this.filtroStatus.set('');
+    this.filtroCategoria.set('');
+    this.filtroArea.set('');
+    this.carregarFeed(true);
+  }
+
   ngOnInit() {
-    const isLogged = localStorage.getItem('isLogged') === 'true';
-    if (!isLogged) {
+    // Verificar se está no browser (não no SSR)
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    const usuario = localStorage.getItem('usuario');
+
+    if (!token || !usuario) {
       this.router.navigate(['/login']);
       return;
     }
 
-    const usuario = localStorage.getItem('usuario');
-    if (usuario) {
-      try {
-        const parsed = JSON.parse(usuario);
-        this.usuarioLogado.set({
-          id: parsed.id,
-          nome: parsed.nome,
-          funcao: parsed.funcao?.toUpperCase() || 'NADA'
-        });
-      } catch {
-        this.usuarioLogado.set(null);
+    try {
+      const parsed = JSON.parse(usuario);
+      this.usuarioLogado.set({
+        id: parsed.id,
+        nome: parsed.nome,
+        funcao: parsed.funcao?.toUpperCase() || 'NADA',
+        imagemPerfil: parsed.imagemPerfil
+      });
+
+      const tipoUsuario = localStorage.getItem('tipoUsuario') || 'aluno';
+      this.tipoUsuario.set(tipoUsuario);
+
+      if (this.route.snapshot.queryParamMap.get('modo') === 'oportunidade') {
+        this.modoOportunidade.set(true);
+        this.newPostModal.set(true);
       }
+    } catch {
+      this.router.navigate(['/login']);
+      return;
     }
 
     this.carregarFeed();
   }
 
-  private mapOportunidadeParaPost(op: Oportunidade): Post {
-  const descricao = op.descricao?.trim();
-  const corpoFormatado = descricao || '';
+  private carregarFeed(reset = true) {
+    if (reset) {
+      this.page.set(0);
+      this.feedItens.set([]);
+      this.hasMore.set(true);
+    }
 
-  return {
-    id: op.id,
-    titulo: op.nome,
-    corpo: corpoFormatado,
-    criadorId: op.professorId,
-    criado: op.criado ? new Date(op.criado) : undefined,
-    idComentarios: [],
-    imagemBase64: op.imagemBase64,
-    nomeCriador: this.nomesUsuarios.get(op.professorId || '') || 'Professor',
-    ehOportunidade: true,
-      finalizada: op.finalizada ?? false,
-    vagasPreenchidas: op.vagasPreenchidas ?? 0,
-    quantidadeDeVagas: op.quantidadeDeVagas ?? 0,
-    alunosCandidatosId: op.alunosCandidatosId ?? [],
-    alunosAprovadosId: op.alunosAprovadosId ?? [],
-    idLikes: op.idLikes ? [...op.idLikes] : []
-  };
-}
-
-
-  private obterTimestamp(criado?: string | Date): number {
-    if (!criado) return 0;
-    if (criado instanceof Date) return criado.getTime();
-    const data = new Date(criado);
-    return Number.isNaN(data.getTime()) ? 0 : data.getTime();
-  }
-
-  private carregarFeed() {
     this.carregando.set(true);
     this.erro.set('');
-    forkJoin({
-      posts: this.postService.getPosts(),
-      oportunidades: this.oportunidadeService.listar(),
-      usuarios: this.usuarioService.listar()
-    }).subscribe({
-      next: ({ posts, oportunidades, usuarios }) => {
-        this.popularCacheUsuarios(usuarios);
 
-        const postsComNome = (posts ?? []).map((p) => ({
-          ...p,
-          nomeCriador: this.nomesUsuarios.get(p.criadorId || '') || 'Usuário Anônimo',
-          ehOportunidade: false as any,
-          idLikes: p.idLikes ?? []
-        }));
+    const filtros = {
+      status: this.filtroStatus() || undefined,
+      categoria: this.filtroCategoria() || undefined,
+      area: this.filtroArea() || undefined,
+      userId: this.usuarioLogado()?.id,
+    };
 
-        this.posts.set(postsComNome);
-        this.oportunidades.set(oportunidades ?? []);
+    this.feedService.listar(this.page(), this.size, filtros).subscribe({
+      next: (res) => {
+        this.feedItens.update(lista => [...lista, ...res.content]);
+
+        this.hasMore.set(this.page() + 1 < res.totalPages);
+        this.page.set(this.page() + 1);
+
         this.carregando.set(false);
       },
       error: (err) => {
-        console.error('Erro ao carregar conteúdo:', err);
+        console.error('Erro ao carregar feed:', err);
         this.erro.set('Erro ao carregar publicações.');
         this.carregando.set(false);
       }
     });
   }
 
-  private popularCacheUsuarios(usuarios: Usuario[]) {
-    this.nomesUsuarios.clear();
-    for (const u of usuarios) {
-      if ((u as any).id) this.nomesUsuarios.set((u as any).id, u.nome);
-    }
+  carregarMais() {
+    if (this.carregando() || !this.hasMore()) return;
+    this.carregarFeed(false);
+  }
+
+  abrirModalCandidatos(item: FeedItem) {
+    const refId = item.referenciaId || item.id;
+    if (!refId) return;
+
+    this.oportunidadeSelecionadaId.set(refId);
+    this.professorSelecionadoId.set(item.criadorId ?? null);
+    this.oportunidadeSelecionadaFinalizada.set(
+      Boolean(item.finalizada) || item.status === 'FINALIZADA'
+    );
+    this.mostrandoModalCandidatos.set(true);
+  }
+
+  fecharModalCandidatos() {
+    this.mostrandoModalCandidatos.set(false);
+    this.oportunidadeSelecionadaId.set(null);
+    this.professorSelecionadoId.set(null);
+    this.oportunidadeSelecionadaFinalizada.set(false);
+  }
+
+  aoAprovarCandidatos(oportunidade: Oportunidade) {
+    this.feedItens.update(lista =>
+      lista.map(item => {
+        const refId = item.referenciaId || item.id;
+        return refId === oportunidade.id
+          ? { ...item, ...this.oportunidadeComoAtualizacaoFeed(oportunidade) }
+          : item;
+      })
+    );
+  }
+
+  private oportunidadeComoAtualizacaoFeed(op: Oportunidade): Partial<FeedItem> {
+    return {
+      vagasPreenchidas: op.vagasPreenchidas,
+      finalizada: op.finalizada,
+      status: op.status,
+      alunosAprovadosId: op.alunosAprovadosId,
+      alunosCandidatosId: op.alunosCandidatosId,
+    };
   }
 
   openNewPost() {
@@ -200,7 +253,7 @@ export class Home {
 
     this.grandesAreas.update(lista =>
       checkbox.checked
-        ? [...lista, valor]
+        ? Array.from(new Set([...lista, valor]))
         : lista.filter(v => v !== valor)
     );
   }
@@ -239,6 +292,8 @@ export class Home {
     this.titulo.set('');
     this.corpo.set('');
     this.vagasTotais.set(1);
+    this.dataInicioInscricao.set('');
+    this.dataFimInscricao.set('');
     this.categoria.set('');
     this.removerImagem();
   }
@@ -259,15 +314,14 @@ export class Home {
       titulo: this.titulo(),
       corpo: this.corpo(),
       criadorId: usuario?.id || 'usuarioAnonimo',
-      criado: new Date(),
+      createdAt: new Date(),
       imagemBase64: this.imagemBase64() ?? undefined,
       nomeCriador: usuario?.nome || 'Usuário',
-      ehOportunidade: false as any
     } as any;
 
     this.postService.createPost(novoPost).subscribe({
       next: (p) => {
-        this.posts.update(lista => [p, ...lista]);
+        this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
       },
@@ -293,6 +347,27 @@ export class Home {
 
     const categoriaSelecionada = this.categoria()?.trim();
 
+    const dataInicio = this.dataInicioInscricao().trim();
+    const dataFim = this.dataFimInscricao().trim();
+
+    if (!dataInicio || !dataFim) {
+      alert('Informe a data inicial e final das inscrições.');
+      return;
+    }
+
+    const inicio = new Date(`${dataInicio}T00:00:00`);
+    const fim = new Date(`${dataFim}T23:59:59`);
+
+    if (Number.isNaN(inicio.getTime()) || Number.isNaN(fim.getTime())) {
+      alert('Informe um período de inscrição válido.');
+      return;
+    }
+
+    if (fim < inicio) {
+      alert('A data final das inscrições deve ser igual ou posterior à data inicial.');
+      return;
+    }
+
     if (!categoriaSelecionada) {
       alert('Selecione uma categoria.');
       return;
@@ -305,7 +380,9 @@ export class Home {
       quantidadeDeVagas: quantidade,
       idCategoria: categoriaSelecionada.toUpperCase(),
       grandesAreas: this.grandesAreas(),
-      imagemBase64: this.imagemBase64() ?? undefined
+      imagemBase64: this.imagemBase64() ?? undefined,
+      dataInicioInscricao: inicio.toISOString(),
+      dataFimInscricao: fim.toISOString()
     };
 
     this.oportunidadeService.criar(novaOportunidade).subscribe({
@@ -318,7 +395,7 @@ export class Home {
             Number((oportunidade as any).vagasPreenchidas) || 0
         } as Oportunidade;
 
-        this.oportunidades.update(lista => [opComVagas, ...lista]);
+        this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
       },

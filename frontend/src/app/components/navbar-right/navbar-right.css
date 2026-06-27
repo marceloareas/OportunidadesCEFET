@@ -27,6 +27,14 @@
     }
 }
 
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    color: #0A497E;
+}
+
 .edit-profile{
     height: auto;
     text-align: end;
@@ -67,6 +75,7 @@
             text-decoration: none;
             color: black;
             font-size: 17px;
+            cursor: pointer;
         }
 
         a:hover{

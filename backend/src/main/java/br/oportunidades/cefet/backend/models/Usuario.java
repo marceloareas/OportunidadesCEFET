@@ -2,8 +2,10 @@ package br.oportunidades.cefet.backend.models;
 
 import br.oportunidades.cefet.backend.enums.FuncaoDeUsuario;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.util.*;
 
@@ -22,18 +24,15 @@ public class Usuario {
     private String id = UUID.randomUUID().toString();
     private String matricula;
     private String nome;
+    @Indexed(unique = true)
     private String email;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String senha; // senha criptografada
     private FuncaoDeUsuario funcao;
     private Date criado;
-
-    @Builder.Default
-    // Usuário 0:N Posts
-    private List<Post> posts = new ArrayList<>(); // referencia Post(id)
-
-    @Builder.Default
-    // Usuário 0:N Comentários
-    private List<Comentario> comentarios = new ArrayList<>(); // rerefencia Comentario(id)
+    private String imagemPerfil;
+    private String linkPortfolio;
+    private String linkCurriculo;
 
     @Builder.Default
     private List<String> idCandidaturas = new ArrayList<>(); // referencia Oportunidade(id)

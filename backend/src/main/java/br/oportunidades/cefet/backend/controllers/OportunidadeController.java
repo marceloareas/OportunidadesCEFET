@@ -1,23 +1,27 @@
 package br.oportunidades.cefet.backend.controllers;
 
 import br.oportunidades.cefet.backend.models.Oportunidade;
+import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.services.OportunidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
 @RequestMapping("/oportunidades")
-@CrossOrigin(origins = "*")
 public class OportunidadeController {
 
     @Autowired
     private OportunidadeService oportunidadeService;
 
     @GetMapping
-    public List<Oportunidade> listar() {
-        return oportunidadeService.listarTodos();
+    public ResponseEntity<Page<Oportunidade>> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(oportunidadeService.listarTodos(page, size));
     }
 
     @GetMapping("/{id}")
@@ -71,24 +75,26 @@ public class OportunidadeController {
 
     @PostMapping("/{id}/finalizar")
     public ResponseEntity<?> finalizar(@PathVariable String id) {
-        Optional<Oportunidade> opt = oportunidadeService.buscarPorId(id);
 
-        if (opt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+        try {
+            return oportunidadeService.finalizar(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        Oportunidade oportunidade = opt.get();
-        oportunidade.setFinalizada(true);
-        oportunidadeService.salvar(oportunidade);
-
-        return ResponseEntity.ok(oportunidade);
     }
 
     @GetMapping("/{id}/candidatos")
-    public ResponseEntity<?> listarCandidatos(@PathVariable String id) {
-        return oportunidadeService.listarCandidatos(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Page<Usuario>> listarCandidatos(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                oportunidadeService.listarCandidatos(id, page, size)
+        );
     }
 
     // Lista candidatos apenas se o professor for o dono da oportunidade
@@ -103,6 +109,28 @@ public class OportunidadeController {
         } catch (SecurityException se) {
             return ResponseEntity.status(403).body(se.getMessage());
         }
+    }
+
+    @GetMapping("/professor/{idProfessor}")
+    public ResponseEntity<Page<Oportunidade>> listarPorProfessor(
+            @PathVariable String idProfessor,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                oportunidadeService.listarPorProfessor(idProfessor, page, size)
+        );
+    }
+
+    @GetMapping("/aluno/{idAluno}")
+    public ResponseEntity<Page<Oportunidade>> listarPorAluno(
+            @PathVariable String idAluno,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                oportunidadeService.listarPorAluno(idAluno, page, size)
+        );
     }
 
     @PostMapping("/{id}/aprovar/{idAluno}")

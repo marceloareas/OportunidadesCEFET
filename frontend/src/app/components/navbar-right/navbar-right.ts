@@ -10,28 +10,40 @@ import { Router } from '@angular/router';
   styleUrl: './navbar-right.css'
 })
 export class NavbarRight implements OnInit {
+  usuarioId: string | null = null;
   usuarioNome: string = 'Usuário';
   usuarioFuncao: string = 'Função não definida';
   usuarioMatricula: string = 'Matrícula';
+  usuarioImagem: string | null = null;
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const usuarioSalvo = localStorage.getItem('usuario');
     if (usuarioSalvo) {
       try {
         const usuario = JSON.parse(usuarioSalvo);
+        this.usuarioId = usuario.id?.toString() || null;
         this.usuarioNome = usuario.nome || 'Usuário';
         this.usuarioFuncao = usuario.funcao || 'Função não definida';
         this.usuarioMatricula = usuario.matricula || '';
+        this.usuarioImagem = usuario.imagemPerfil || null;
       } catch (error) {
         console.error('Erro ao ler dados do usuário:', error);
       }
     }
   }
 
-  editarPf(): void {
-    this.router.navigate(['/editar_perfil']);
+  goHome(): void {
+    this.router.navigate(['/home']);
+  }
+
+  goConfig(): void {
+    this.router.navigate(['/config']);
   }
 
   // 🔹 Função de logout

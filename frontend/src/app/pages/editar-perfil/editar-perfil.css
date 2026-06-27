@@ -102,3 +102,36 @@ input::placeholder{
   text-decoration: none;
   align-self: center;
 }
+
+.profile-image-preview{
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  object-fit: cover;
+  background: #eaeaea;
+}
+
+.imagem-erro{
+  color: #d32f2f;
+  font-size: 0.9rem;
+  margin-top: 6px;
+}
+
+.crop-controls{
+  display: grid;
+  gap: 8px;
+  max-width: 320px;
+  margin-bottom: 18px;
+}
+
+.crop-controls label{
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.crop-controls input[type="range"]{
+  width: 100%;
+  cursor: pointer;
+  accent-color: #0A497E;
+}

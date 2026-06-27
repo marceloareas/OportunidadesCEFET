@@ -1,9 +1,14 @@
 package br.oportunidades.cefet.backend.models;
 
+import br.oportunidades.cefet.backend.enums.GrandeAreaConhecimento;
+import br.oportunidades.cefet.backend.enums.StatusCandidatura;
+import br.oportunidades.cefet.backend.enums.StatusOportunidade;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import br.oportunidades.cefet.backend.enums.GrandeAreaConhecimento;
+
 import java.util.*;
 
 @Document(collection = "Oportunidade")
@@ -22,13 +27,13 @@ public class Oportunidade {
 
     private String nome;
     private String descricao;
+
+    @Indexed
     private String professorId;
 
-    // 🔹 Número total de vagas (informado pelo professor)
     @Builder.Default
     private Integer quantidadeDeVagas = 0;
 
-    // 🔹 Quantas vagas já foram preenchidas
     @Builder.Default
     private Integer vagasPreenchidas = 0;
 
@@ -38,19 +43,36 @@ public class Oportunidade {
     @Builder.Default
     private Date criado = new Date();
 
-    @Builder.Default
-    private List<String> alunosCandidatosId = new ArrayList<>();
-
-    @Builder.Default
-    private List<String> alunosAprovadosId = new ArrayList<>();
-
+    private Date dataInicioInscricao;
+    private Date dataFimInscricao;
+    
     @Builder.Default
     private List<String> idLikes = new ArrayList<>();
 
     @Builder.Default
     private Boolean finalizada = false;
 
+    @Transient
+    private StatusOportunidade status;
+
     @Builder.Default
     private List<GrandeAreaConhecimento> grandesAreas = new ArrayList<>();
+
+    @Transient
+    private String nomeCriador;
+
+    @Transient
+    private String imagemPerfil;
+
+    // Derivados da coleção Candidatura (não persistidos).
+    @Transient
+    private List<String> alunosCandidatosId;
+
+    @Transient
+    private List<String> alunosAprovadosId;
+
+    // Status da candidatura do aluno solicitante (preenchido em listagens por aluno).
+    @Transient
+    private StatusCandidatura statusCandidaturaAluno;
 
 }

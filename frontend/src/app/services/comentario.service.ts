@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/app-env';
 
 export interface Comentario {
   id?: string;
@@ -8,7 +9,7 @@ export interface Comentario {
   idComentarioPai?: string | null;
   tipoEntidadePai?: string;
   idPost?: string;
-  dataComentario?: string | Date;
+  createdAt?: string | Date;
   texto?: string;
   idLikes?: string[];
 }
@@ -16,7 +17,7 @@ export interface Comentario {
 @Injectable({ providedIn: 'root' })
 export class ComentarioService {
   private http = inject(HttpClient);
-  private readonly API = 'http://localhost:8080/comments';
+  private readonly API = `${API_BASE_URL}/comments`;
 
   listarComentariosPost(idPost: string): Observable<Comentario[]> {
     return this.http.get<Comentario[]>(`${this.API}/post/${idPost}`);

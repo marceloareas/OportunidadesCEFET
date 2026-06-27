@@ -1,0 +1,109 @@
+<!-- Modal de Candidatos com Seleção em Lote -->
+<div class="modal-overlay" (click)="fecharModal()">
+  <div class="modal-conteudo card-modal" (click)="$event.stopPropagation()" style="max-width: 600px;">
+    <div class="modal-topo-lista">
+      <h3>Candidatos</h3>
+      <button class="btn-fechar" (click)="fecharModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-conteudo-lista" style="max-height: 400px; overflow-y: auto;">
+      <div *ngIf="candidatosCarregando()" class="loading">
+        <div class="loader"></div>
+        <span>Carregando candidatos...</span>
+      </div>
+
+      <div *ngIf="!candidatosCarregando() && candidatosFiltrados().length === 0" class="mensagem-vazia">
+        Nenhum candidato encontrado.
+      </div>
+
+      <div *ngIf="!candidatosCarregando() && finalizada" style="padding: 12px; background: #fff8e1; border-bottom: 1px solid #e0e0e0; color: #8a6d3b; font-size: 13px;">
+        Oportunidade finalizada. A seleção de candidatos está encerrada.
+      </div>
+
+      <div *ngFor="let candidato of candidatosFiltrados()" class="candidato-item" style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #e0e0e0;">
+        <input
+          *ngIf="!finalizada"
+          type="checkbox"
+          [checked]="isCandidatoSelecionado(candidato.aluno.id)"
+          [disabled]="estaAprovado(candidato)"
+          (change)="toggleCandidato(candidato.aluno.id)"
+          style="margin-right: 12px; cursor: pointer;"
+        />
+        <div style="flex: 1;">
+          <a
+            *ngIf="candidato.aluno.id; else nomeCandidatoSemPerfil"
+            class="candidato-perfil-link"
+            [routerLink]="['/perfil', candidato.aluno.id]"
+          >
+            {{ candidato.aluno.nome }}
+          </a>
+          <ng-template #nomeCandidatoSemPerfil>
+            <strong>{{ candidato.aluno.nome }}</strong>
+          </ng-template>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">{{ candidato.aluno.email }}</p>
+        </div>
+        <span
+          class="badge-status"
+          [style.background]="candidato.status === 'APROVADO' ? '#4CAF50' : (candidato.status === 'RESERVA' ? '#9e9e9e' : '#1976d2')"
+          style="color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;"
+        >
+          {{ statusCandidaturaDescricao(candidato.status) }}
+        </span>
+      </div>
+
+      <div *ngIf="!candidatosCarregando() && !finalizada && candidatosFiltrados().length > 0" style="padding: 12px; border-top: 1px solid #e0e0e0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-size: 12px; color: #666;">
+            {{ candidatosSelecionados().size }} aluno(s) selecionado(s)
+          </span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button
+            class="btn-confirmar"
+            (click)="abrirModalConfirmacao()"
+            [disabled]="candidatosSelecionados().size === 0 || finalizandoOportunidade()"
+            style="flex: 1; padding: 10px 16px; background: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;"
+          >
+            {{ finalizandoOportunidade() ? 'Processando...' : 'Finalizar Seleção' }}
+          </button>
+        </div>
+      </div>
+
+      <div
+        *ngIf="mostrandoModalConfirmacao()"
+        class="confirmacao-inline"
+      >
+        <p>
+          Deseja aprovar <strong>{{ candidatosSelecionados().size }}</strong> aluno(s) na oportunidade?
+        </p>
+        <span>
+          Essa ação alterará o status de candidatura destes alunos para aprovado.
+        </span>
+
+        <div class="confirmacao-acoes">
+          <button
+            type="button"
+            class="btn-cancelar-confirmacao"
+            (click)="fecharModalConfirmacao()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn-confirmar-aprovacao"
+            (click)="confirmarFinalizacao()"
+            [disabled]="finalizandoOportunidade()"
+          >
+            {{ finalizandoOportunidade() ? 'Processando...' : 'Confirmar' }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!candidatosCarregando() && candidatosErro()" style="padding: 12px; background: #ffebee; border-top: 1px solid #e0e0e0; color: #c62828;">
+        {{ candidatosErro() }}
+      </div>
+    </div>
+  </div>
+</div>
