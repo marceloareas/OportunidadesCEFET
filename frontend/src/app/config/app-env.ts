@@ -9,7 +9,7 @@ declare global {
 }
 
 const defaultEnv: AppEnv = {
-  apiBaseUrl: 'http://localhost:8080',
+  apiBaseUrl: '/api',
 };
 
 function resolveAppEnv(): AppEnv {
