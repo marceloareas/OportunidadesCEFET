@@ -20,8 +20,9 @@ public class FeedController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) String area
+            @RequestParam(required = false) String area,
+            @RequestParam(required = false) String userId
     ) {
-        return feedService.listarFeed(page, size, status, categoria, area);
+        return feedService.listarFeed(page, size, status, categoria, area, userId);
     }
 }

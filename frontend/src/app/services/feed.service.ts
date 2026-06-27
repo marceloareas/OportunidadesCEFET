@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { StatusCandidatura } from './oportunidade.service';
 
 export interface FeedItem {
   id?: string;
@@ -31,12 +32,14 @@ export interface FeedItem {
   status?: 'INSCRICOES_EM_BREVE' | 'INSCRICOES_ABERTAS' | 'INSCRICOES_ENCERRADAS' | 'FINALIZADA';
   alunosCandidatosId?: string[];
   alunosAprovadosId?: string[];
+  statusCandidaturaAluno?: StatusCandidatura;
 }
 
 export interface FeedFiltros {
   status?: string;
   categoria?: string;
   area?: string;
+  userId?: string;
 }
 
 export interface FeedPage {
@@ -63,6 +66,7 @@ export class FeedService {
     if (filtros?.status) params = params.set('status', filtros.status);
     if (filtros?.categoria) params = params.set('categoria', filtros.categoria);
     if (filtros?.area) params = params.set('area', filtros.area);
+    if (filtros?.userId) params = params.set('userId', filtros.userId);
 
     return this.http.get<FeedPage>(this.api, { params });
   }

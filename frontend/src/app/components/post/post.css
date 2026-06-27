@@ -93,6 +93,34 @@
   font-weight: 600;
 }
 
+.candidatura-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eef3f8;
+  color: #345;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.candidatura-chip-aprovado {
+  background: #e8f7ed;
+  color: #1f7a3d;
+}
+
+.candidatura-chip-reserva {
+  background: #f1f1f1;
+  color: #555;
+}
+
+.candidatura-chip-concorrendo {
+  background: #eaf2ff;
+  color: #0a497e;
+}
+
 .btn-candidatos {
   background: #0a497e;
   color: #fff;
@@ -138,6 +166,13 @@
   border-top: 1px solid #ddd;
   padding-top: 8px;
   margin-top: 10px;
+}
+
+.candidatura-footer-status {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .icon-btn {

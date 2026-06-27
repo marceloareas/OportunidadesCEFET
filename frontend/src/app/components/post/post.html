@@ -82,14 +82,26 @@
       <i class="bi" [ngClass]="salvo() ? 'bi-bookmark-fill' : 'bi-bookmark'"></i>
     </button> 
 
-    <button
+    <div
       *ngIf="post.tipo === 'OPORTUNIDADE' && tipoUsuario() === 'aluno'"
-      class="btn-candidatar"
-      [disabled]="jaCandidatado() || !podeCandidatar()"
-      (click)="candidatar()"
+      class="candidatura-footer-status"
     >
-      {{ !podeCandidatar() ? statusDescricao() : (jaCandidatado() ? 'CANDIDATADO ✔' : 'CANDIDATAR-SE') }}
-    </button>
+      <button
+        class="btn-candidatar"
+        [disabled]="jaCandidatado() || !podeCandidatar()"
+        (click)="candidatar()"
+      >
+        {{ !podeCandidatar() ? statusDescricao() : (jaCandidatado() ? 'CANDIDATADO ✔' : 'CANDIDATAR-SE') }}
+      </button>
+
+      <span
+        *ngIf="statusCandidaturaDescricao()"
+        class="candidatura-chip"
+        [ngClass]="statusCandidaturaClasse()"
+      >
+        {{ statusCandidaturaDescricao() }}
+      </span>
+    </div>
   </div>
 </div>
 
