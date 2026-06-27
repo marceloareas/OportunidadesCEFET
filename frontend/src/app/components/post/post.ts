@@ -64,6 +64,8 @@ export class PostComponent {
   newCommentModal = signal<boolean>(false);
 
   salvo = signal<boolean>(false);
+  confirmacaoCandidaturaAberta = signal<boolean>(false);
+  candidaturaEnviando = signal<boolean>(false);
 
   private comentarioService = inject(ComentarioService);
   private usuarioService = inject(UsuarioService);
@@ -348,7 +350,7 @@ export class PostComponent {
     });
   }
 
-  candidatar() {
+  abrirConfirmacaoCandidatura() {
     const usuario = this.usuarioLogado();
     if (!usuario || !this.post.id) {
       alert('Usuário não identificado.');
@@ -360,20 +362,44 @@ export class PostComponent {
       return;
     }
 
+    this.confirmacaoCandidaturaAberta.set(true);
+  }
+
+  fecharConfirmacaoCandidatura() {
+    if (this.candidaturaEnviando()) return;
+    this.confirmacaoCandidaturaAberta.set(false);
+  }
+
+  candidatar() {
+    const usuario = this.usuarioLogado();
+    if (!usuario || !this.post.id || this.candidaturaEnviando()) return;
+
+    if (!this.podeCandidatar()) {
+      alert('As inscrições não estão abertas para esta oportunidade.');
+      this.confirmacaoCandidaturaAberta.set(false);
+      return;
+    }
+
     const referenciaId = this.post.referenciaId || this.post.id;
     if (!referenciaId) return;
 
+    this.candidaturaEnviando.set(true);
+
     this.oportunidadeService.candidatarAluno(referenciaId, usuario.id).subscribe({
       next: () => {
-        alert('Candidatura realizada com sucesso!');
         this.jaCandidatado.set(true);
+        this.post.statusCandidaturaAluno = 'CONCORRENDO';
         this.contadorCandidatos.update((n) => n + 1);
 
         if (!this.post.alunosCandidatosId) this.post.alunosCandidatosId = [];
         this.post.alunosCandidatosId.push(usuario.id);
+        this.candidaturaEnviando.set(false);
+        this.confirmacaoCandidaturaAberta.set(false);
       },
       error: (err) => {
         console.error('Erro ao se candidatar:', err);
+        this.candidaturaEnviando.set(false);
+        this.confirmacaoCandidaturaAberta.set(false);
         alert('Erro ao se candidatar à vaga.');
       },
     });

@@ -89,7 +89,7 @@
       <button
         class="btn-candidatar"
         [disabled]="jaCandidatado() || !podeCandidatar()"
-        (click)="candidatar()"
+        (click)="abrirConfirmacaoCandidatura()"
       >
         {{ !podeCandidatar() ? statusDescricao() : (jaCandidatado() ? 'CANDIDATADO ✔' : 'CANDIDATAR-SE') }}
       </button>
@@ -101,6 +101,53 @@
       >
         {{ statusCandidaturaDescricao() }}
       </span>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal-overlay modal-confirmacao-candidatura"
+  *ngIf="confirmacaoCandidaturaAberta()"
+  (click)="fecharConfirmacaoCandidatura()"
+>
+  <div class="modal-conteudo card-modal confirmacao-candidatura" (click)="$event.stopPropagation()">
+    <div class="modal-topo-lista">
+      <h3>Confirmar candidatura</h3>
+      <button
+        class="btn-comentario"
+        type="button"
+        (click)="fecharConfirmacaoCandidatura()"
+        [disabled]="candidaturaEnviando()"
+      >
+        Fechar
+      </button>
+    </div>
+
+    <div class="confirmacao-candidatura-corpo">
+      <strong>{{ post.titulo }}</strong>
+      <p>
+        Sua candidatura será enviada para análise do professor responsável.
+      </p>
+      <span *ngIf="periodoInscricao()">Inscrições: {{ periodoInscricao() }}</span>
+    </div>
+
+    <div class="confirmacao-candidatura-acoes">
+      <button
+        type="button"
+        class="btn-confirmacao-secundario"
+        (click)="fecharConfirmacaoCandidatura()"
+        [disabled]="candidaturaEnviando()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn-confirmacao-primario"
+        (click)="candidatar()"
+        [disabled]="candidaturaEnviando()"
+      >
+        {{ candidaturaEnviando() ? 'Enviando...' : 'Confirmar candidatura' }}
+      </button>
     </div>
   </div>
 </div>
