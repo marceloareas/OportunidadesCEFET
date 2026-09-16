@@ -1,6 +1,7 @@
 package br.oportunidades.cefet.backend.services;
 
-import br.oportunidades.cefet.backend.models.Usuario; 
+import br.oportunidades.cefet.backend.exceptions.ConflictException;
+import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.repositories.UsuarioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,7 +34,7 @@ public class UsuarioService {
 
     public Usuario createUsuario(Usuario usuario) {
         if (usuario.getEmail() != null && usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Já existe um usuário cadastrado com esse e-mail.");
+            throw new ConflictException("Já existe um usuário cadastrado com esse e-mail.");
         }
         if (usuario.getSenha() != null && !usuario.getSenha().isBlank()) {
             usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
@@ -50,7 +51,7 @@ public class UsuarioService {
                 usuarioRepository.findByEmail(usuario.getEmail())
                         .filter(outro -> !outro.getId().equals(id))
                         .ifPresent(outro -> {
-                            throw new IllegalArgumentException("Já existe outro usuário cadastrado com esse e-mail.");
+                            throw new ConflictException("Já existe outro usuário cadastrado com esse e-mail.");
                         });
             }
             // Atualiza apenas campos fornecidos; mantém senha e função se não vierem na requisição

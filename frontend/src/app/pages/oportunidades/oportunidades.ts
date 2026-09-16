@@ -1,7 +1,7 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
@@ -9,11 +9,13 @@ import { PostComponent } from '../../components/post/post';
 import { CandidatosModal } from '../../components/candidatos-modal/candidatos-modal';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { FeedItem } from '../../services/feed.service';
+import { NotificationService } from '../../services/notification.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Component({
   selector: 'app-oportunidades',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavbarTop, NavbarLeft, NavbarRight, PostComponent, CandidatosModal],
+  imports: [CommonModule, FormsModule, NavbarTop, NavbarLeft, NavbarRight, PostComponent, CandidatosModal],
   templateUrl: './oportunidades.html',
   styleUrl: './oportunidades.css'
 })
@@ -35,6 +37,9 @@ export class OportunidadesPage {
   mostrandoListaCandidatos = signal<boolean>(false);
   oportunidadeSelecionadaId = signal<string | null>(null);
   candidaturas = signal<Oportunidade[]>([]);
+
+  private notification = inject(NotificationService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   constructor(
     private oportunidadeService: OportunidadeService,
@@ -172,18 +177,26 @@ export class OportunidadesPage {
 
   finalizar(op: Oportunidade) {
     if (!op.id || op.finalizada) return;
-    if (!confirm('Deseja finalizar esta oportunidade? Isso impede novas candidaturas.')) return;
-    this.oportunidadeService.finalizarOportunidade(op.id).subscribe({
-      next: (atualizada) => {
-        this.minhasOportunidades.update(list =>
-          list.map(o => o.id === atualizada.id ? atualizada : o)
-        );
-      },
-      error: (err) => {
-        console.error('Erro ao finalizar oportunidade:', err);
-        alert('Não foi possível finalizar.');
-      }
-    });
+    this.confirmDialog
+      .confirm({
+        title: 'Finalizar oportunidade',
+        message: 'Deseja finalizar esta oportunidade? Isso impede novas candidaturas.',
+        confirmLabel: 'Finalizar',
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) return;
+        this.oportunidadeService.finalizarOportunidade(op.id!).subscribe({
+          next: (atualizada) => {
+            this.minhasOportunidades.update(list =>
+              list.map(o => o.id === atualizada.id ? atualizada : o)
+            );
+          },
+          error: (err) => {
+            console.error('Erro ao finalizar oportunidade:', err);
+            this.notification.error('Não foi possível finalizar.');
+          }
+        });
+      });
   }
 
   novaOportunidade() {

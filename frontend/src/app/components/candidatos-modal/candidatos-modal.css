@@ -63,27 +63,6 @@
   text-decoration: underline;
 }
 
-.confirmacao-inline {
-  margin: 12px;
-  padding: 14px;
-  background: #f8fbff;
-  border: 1px solid #cfe1f6;
-  border-radius: 6px;
-}
-
-.confirmacao-inline p {
-  margin: 0 0 6px;
-  color: #222;
-  font-size: 14px;
-}
-
-.confirmacao-inline span {
-  display: block;
-  color: #666;
-  font-size: 12px;
-  margin-bottom: 12px;
-}
-
 .confirmacao-acoes {
   display: flex;
   justify-content: flex-end;

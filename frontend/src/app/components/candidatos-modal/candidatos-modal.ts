@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -8,6 +8,8 @@ import {
   Oportunidade,
   CandidatoComStatus,
 } from '../../services/oportunidade.service';
+import { NotificationService } from '../../services/notification.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Component({
   selector: 'app-candidatos-modal',
@@ -29,15 +31,16 @@ export class CandidatosModal {
   candidatosErro = signal<string>('');
 
   candidatosSelecionados = signal<Set<string>>(new Set());
-  mostrandoModalConfirmacao = signal<boolean>(false);
   finalizandoOportunidade = signal<boolean>(false);
+
+  private notification = inject(NotificationService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   constructor(private oportunidadeService: OportunidadeService) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['oportunidadeId'] && this.oportunidadeId) {
       this.candidatosSelecionados.set(new Set());
-      this.mostrandoModalConfirmacao.set(false);
       this.carregarCandidatos(this.oportunidadeId);
     }
   }
@@ -104,26 +107,32 @@ export class CandidatosModal {
 
   abrirModalConfirmacao() {
     if (this.finalizada) {
-      alert('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
+      this.notification.error('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
       return;
     }
     if (this.candidatosSelecionados().size === 0) {
-      alert('Selecione pelo menos um aluno para finalizar.');
+      this.notification.error('Selecione pelo menos um aluno para finalizar.');
       return;
     }
-    this.mostrandoModalConfirmacao.set(true);
-  }
 
-  fecharModalConfirmacao() {
-    this.mostrandoModalConfirmacao.set(false);
+    const quantidade = this.candidatosSelecionados().size;
+
+    this.confirmDialog
+      .confirm({
+        title: 'Aprovar candidatos',
+        message: `Deseja aprovar ${quantidade} aluno(s) na oportunidade? Essa ação alterará o status de candidatura destes alunos para aprovado.`,
+        confirmLabel: 'Confirmar',
+      })
+      .subscribe((confirmado) => {
+        if (confirmado) this.confirmarFinalizacao();
+      });
   }
 
   confirmarFinalizacao() {
     const opId = this.oportunidadeId;
     if (!opId || !this.professorId) return;
     if (this.finalizada) {
-      this.mostrandoModalConfirmacao.set(false);
-      alert('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
+      this.notification.error('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
       return;
     }
 
@@ -131,7 +140,6 @@ export class CandidatosModal {
     if (selecionados.length === 0) return;
 
     this.finalizandoOportunidade.set(true);
-    this.mostrandoModalConfirmacao.set(false);
 
     const aprovacoes = selecionados.map((idAluno) =>
       this.oportunidadeService.aprovarCandidatoDoProfessor(opId, idAluno, this.professorId!)
@@ -146,12 +154,12 @@ export class CandidatosModal {
 
         this.candidatosSelecionados.set(new Set());
         this.finalizandoOportunidade.set(false);
-        alert('Alunos aprovados com sucesso!');
+        this.notification.success('Alunos aprovados com sucesso!');
         this.fecharModal();
       },
       (err) => {
         console.error('Erro ao aprovar candidatos:', err);
-        alert('Erro ao aprovar alguns candidatos.');
+        this.notification.error('Erro ao aprovar alguns candidatos.');
         this.finalizandoOportunidade.set(false);
       }
     );

@@ -52,9 +52,12 @@ logs/
 # =========================
 .env
 .env.*
+!.env.example
 
 # =========================
 # TEST / CACHE
 # =========================
 /test-results/
 /coverage/
+# SDD control workspace (subagent-driven-development scratch)
+.superpowers/

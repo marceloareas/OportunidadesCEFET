@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { NotificationService } from '../../services/notification.service';
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
   ProfileImageCropPosition,
@@ -31,6 +32,8 @@ export class EditarPerfil {
   imagemErro: string = '';
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
+
+  private notification = inject(NotificationService);
 
   constructor(private usuarioService: UsuarioService, private router: Router) {}
 
@@ -62,12 +65,12 @@ export class EditarPerfil {
     event.preventDefault();
 
     if (this.senha() && this.senha() !== this.confirmaSenha()) {
-      alert('As senhas não coincidem.');
+      this.notification.error('As senhas não coincidem.');
       return;
     }
 
     if (!this.userId) {
-      alert('Usuário não encontrado. Faça login novamente.');
+      this.notification.error('Usuário não encontrado. Faça login novamente.');
       return;
     }
 
@@ -90,7 +93,7 @@ export class EditarPerfil {
 
     this.usuarioService.atualizar(this.userId, payload).subscribe({
       next: (updated) => {
-        alert('Perfil atualizado com sucesso.');
+        this.notification.success('Perfil atualizado com sucesso.');
         // Atualiza localStorage com novos dados (mantém id)
         const funcaoAtualizada = updated.funcao || this.funcao;
         const usuarioNormalizado = {
@@ -110,7 +113,7 @@ export class EditarPerfil {
       },
       error: (err) => {
         console.error('Erro ao atualizar usuário:', err);
-        alert('Erro ao atualizar perfil. Tente novamente.');
+        this.notification.error('Erro ao atualizar perfil. Tente novamente.');
       },
     });
   }
