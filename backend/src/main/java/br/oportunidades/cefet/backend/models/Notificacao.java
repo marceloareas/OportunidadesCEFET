@@ -5,28 +5,27 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-@Document("feed")
+@Document("notificacoes")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
-public class FeedItem {
+public class Notificacao {
 
     @Id
     private String id;
 
-    private String referenciaId; // id do Post ou Oportunidade
-    private String tipo; // POST ou OPORTUNIDADE
-
-    private int likesCount;
-    private int comentariosCount;
-
     @Indexed
+    private String usuarioId;
+
+    private TipoNotificacao tipo;
+    private String mensagem;
+    private String referenciaId;
+
+    private boolean lida;
+
     @Builder.Default
-    private Date createdAt = new Date();
+    private Date criadoEm = new Date();
 }

@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { NotificationService } from '../../services/notification.service';
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
   ProfileImageCropPosition,
@@ -33,6 +34,8 @@ export class Login {
   imagemErro: string = '';
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
+
+  private notification = inject(NotificationService);
 
   constructor(
     private router: Router,
@@ -105,7 +108,7 @@ export class Login {
     event.preventDefault();
 
     if (!this.email() || !this.senha()) {
-      alert('Preencha e-mail e senha.');
+      this.notification.error('Preencha e-mail e senha.');
       return;
     }
 
@@ -128,12 +131,12 @@ export class Login {
           authResponse.usuario.funcao?.toLowerCase() === 'professor' ? 'professor' : 'aluno';
         localStorage.setItem('tipoUsuario', tipo);
 
-        alert(`Bem-vindo, ${authResponse.usuario.nome}!`);
+        this.notification.success(`Bem-vindo, ${authResponse.usuario.nome}!`);
         this.router.navigate(['/home']);
       },
       error: (err) => {
         console.error('Erro ao autenticar usuário:', err);
-        alert('Usuário não encontrado ou senha incorreta.');
+        this.notification.error('Usuário não encontrado ou senha incorreta.');
       },
     });
   }
@@ -142,7 +145,7 @@ export class Login {
     event.preventDefault();
 
     if (this.senha() !== this.confirmaSenha()) {
-      alert('As senhas não coincidem.');
+      this.notification.error('As senhas não coincidem.');
       return;
     }
 
@@ -157,12 +160,12 @@ export class Login {
 
     this.usuarioService.cadastrar(novoUsuario).subscribe({
       next: (usuario) => {
-        alert('Cadastro realizado! Faça login.');
+        this.notification.success('Cadastro realizado! Faça login.');
         this.toggleForm();
       },
       error: (err) => {
         console.error('Erro ao cadastrar:', err);
-        alert('Erro ao cadastrar usuário.');
+        this.notification.error('Erro ao cadastrar usuário.');
       },
     });
   }

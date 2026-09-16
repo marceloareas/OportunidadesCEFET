@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, computed, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,7 @@ import { CandidatosModal } from '../../components/candidatos-modal/candidatos-mo
 import { PostService, Post } from '../../services/post.services';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { FeedItem, FeedService } from '../../services/feed.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-home',
@@ -62,6 +63,8 @@ export class Home {
   dataFimInscricao = signal<string>('');
   categoria = signal<string>('');
   grandesAreas = signal<string[]>([]);
+
+  private notification = inject(NotificationService);
 
   constructor(
     private postService: PostService,
@@ -300,7 +303,7 @@ export class Home {
 
   enviarPost() {
     if (!this.titulo().trim()) {
-      alert('Informe um título antes de enviar.');
+      this.notification.error('Informe um título antes de enviar.');
       return;
     }
 
@@ -327,14 +330,14 @@ export class Home {
       },
       error: (err) => {
         console.error('Erro ao criar post:', err);
-        alert('Erro ao criar post.');
+        this.notification.error('Erro ao criar post.');
       }
     });
   }
 
   private enviarOportunidade() {
     if (!this.titulo().trim()) {
-      alert('Informe um título para a oportunidade.');
+      this.notification.error('Informe um título para a oportunidade.');
       return;
     }
 
@@ -351,7 +354,7 @@ export class Home {
     const dataFim = this.dataFimInscricao().trim();
 
     if (!dataInicio || !dataFim) {
-      alert('Informe a data inicial e final das inscrições.');
+      this.notification.error('Informe a data inicial e final das inscrições.');
       return;
     }
 
@@ -359,17 +362,17 @@ export class Home {
     const fim = new Date(`${dataFim}T23:59:59`);
 
     if (Number.isNaN(inicio.getTime()) || Number.isNaN(fim.getTime())) {
-      alert('Informe um período de inscrição válido.');
+      this.notification.error('Informe um período de inscrição válido.');
       return;
     }
 
     if (fim < inicio) {
-      alert('A data final das inscrições deve ser igual ou posterior à data inicial.');
+      this.notification.error('A data final das inscrições deve ser igual ou posterior à data inicial.');
       return;
     }
 
     if (!categoriaSelecionada) {
-      alert('Selecione uma categoria.');
+      this.notification.error('Selecione uma categoria.');
       return;
     }
 
@@ -401,7 +404,7 @@ export class Home {
       },
       error: (err) => {
         console.error('Erro ao criar oportunidade:', err);
-        alert('Erro ao criar oportunidade.');
+        this.notification.error('Erro ao criar oportunidade.');
       }
     });
   }

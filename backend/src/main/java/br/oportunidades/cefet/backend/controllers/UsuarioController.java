@@ -39,23 +39,15 @@ public class UsuarioController {
     // Criar novo
     @PostMapping
     public ResponseEntity<Usuario> createUsuario(@RequestBody Usuario usuario) {
-        try {
-            return ResponseEntity.ok(usuarioService.createUsuario(usuario));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(409).build();
-        }
+        return ResponseEntity.ok(usuarioService.createUsuario(usuario));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> updateUsuario(@PathVariable String id, @RequestBody Usuario usuario){
         Usuario existingUsuario = usuarioService.getUsuarioById(id);
         if (existingUsuario != null) {
-            try {
-                Usuario updatedUsuario = usuarioService.updateUsuario(id, usuario);
-                return ResponseEntity.ok(updatedUsuario);
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.status(409).build();
-            }
+            Usuario updatedUsuario = usuarioService.updateUsuario(id, usuario);
+            return ResponseEntity.ok(updatedUsuario);
         } else {
             return ResponseEntity.notFound().build();
         }

@@ -226,43 +226,6 @@
   width: 60vw;
 }
 
-.modal-confirmacao-candidatura {
-  align-items: flex-start;
-}
-
-.confirmacao-candidatura {
-  min-height: auto;
-  max-width: 420px;
-}
-
-.confirmacao-candidatura-corpo {
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 4px 0 16px;
-}
-
-.confirmacao-candidatura-corpo strong {
-  color: #111;
-  font-size: 1rem;
-}
-
-.confirmacao-candidatura-corpo p,
-.confirmacao-candidatura-corpo span {
-  color: #555;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.confirmacao-candidatura-acoes {
-  border-top: 1px solid #e5e5e5;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  padding-top: 12px;
-}
-
 .btn-confirmacao-secundario,
 .btn-confirmacao-primario {
   border-radius: 6px;
