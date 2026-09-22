@@ -33,12 +33,8 @@ public class OportunidadeController {
 
     @PostMapping
     public ResponseEntity<Oportunidade> criar(@RequestBody Oportunidade oportunidade) {
-        try {
-            Oportunidade salva = oportunidadeService.salvar(oportunidade);
-            return ResponseEntity.ok(salva);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        Oportunidade salva = oportunidadeService.salvar(oportunidade);
+        return ResponseEntity.ok(salva);
     }
 
     @PutMapping("/{id}")
@@ -50,12 +46,8 @@ public class OportunidadeController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable String id) {
-        try {
-            oportunidadeService.deletar(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        oportunidadeService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/candidatar/{idAluno}")
@@ -75,15 +67,9 @@ public class OportunidadeController {
 
     @PostMapping("/{id}/finalizar")
     public ResponseEntity<?> finalizar(@PathVariable String id) {
-
-        try {
-            return oportunidadeService.finalizar(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return oportunidadeService.finalizar(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}/candidatos")
@@ -102,13 +88,9 @@ public class OportunidadeController {
     public ResponseEntity<?> listarCandidatosDoProfessor(
             @PathVariable String id,
             @PathVariable String idProfessor) {
-        try {
-            return oportunidadeService.listarCandidatosDoProfessor(id, idProfessor)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (SecurityException se) {
-            return ResponseEntity.status(403).body(se.getMessage());
-        }
+        return oportunidadeService.listarCandidatosDoProfessor(id, idProfessor)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/professor/{idProfessor}")
@@ -137,14 +119,9 @@ public class OportunidadeController {
     public ResponseEntity<?> aprovarCandidato(
             @PathVariable String id,
             @PathVariable String idAluno) {
-
-        try {
-            return oportunidadeService.aprovarCandidato(id, idAluno)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return oportunidadeService.aprovarCandidato(id, idAluno)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // Aprovar candidato informando o professor dono
@@ -153,16 +130,9 @@ public class OportunidadeController {
             @PathVariable String id,
             @PathVariable String idAluno,
             @PathVariable String idProfessor) {
-
-        try {
-            return oportunidadeService.aprovarCandidatoDoProfessor(id, idAluno, idProfessor)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (SecurityException se) {
-            return ResponseEntity.status(403).body(se.getMessage());
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return oportunidadeService.aprovarCandidatoDoProfessor(id, idAluno, idProfessor)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
 

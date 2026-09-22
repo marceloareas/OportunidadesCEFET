@@ -36,10 +36,6 @@ public class ComentarioController {
 
     @PostMapping
     public ResponseEntity<Comentario> criar(@RequestBody Comentario comentario) {
-        try {
-            return ResponseEntity.ok(comentarioService.salvar(comentario));
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.ok(comentarioService.salvar(comentario));
     }
 }
