@@ -10,6 +10,8 @@ import { ComentarioService } from '../../services/comentario.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { FeedItem } from '../../services/feed.service';
 import { SavedItemsService } from '../../services/itens-salvos.service';
+import { NotificationService } from '../../services/notification.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Component({
   selector: 'app-post',
@@ -64,12 +66,13 @@ export class PostComponent {
   newCommentModal = signal<boolean>(false);
 
   salvo = signal<boolean>(false);
-  confirmacaoCandidaturaAberta = signal<boolean>(false);
   candidaturaEnviando = signal<boolean>(false);
 
   private comentarioService = inject(ComentarioService);
   private usuarioService = inject(UsuarioService);
   private savedService = inject(SavedItemsService);
+  private notification = inject(NotificationService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   constructor(
       private oportunidadeService: OportunidadeService,
@@ -193,18 +196,18 @@ export class PostComponent {
   enviarComentario() {
     const usuario = this.usuarioLogado();
     if (!usuario || !this.post.id) {
-      alert('Usuário ou post não identificado.');
+      this.notification.error('Usuário ou post não identificado.');
       return;
     }
 
     if (this.post.tipo === 'OPORTUNIDADE' && this.post.status === 'FINALIZADA') {
-      alert('Esta oportunidade está finalizada e não aceita mensagens.');
+      this.notification.error('Esta oportunidade está finalizada e não aceita mensagens.');
       return;
     }
 
     const textoComentario = this.novoComentario.trim();
     if (!textoComentario) {
-      alert('Comentário não pode ser vazio.');
+      this.notification.error('Comentário não pode ser vazio.');
       return;
     }
 
@@ -236,7 +239,7 @@ export class PostComponent {
       },
       error: (err) => {
         console.error('Erro ao enviar comentario:', err);
-        alert('Erro ao enviar comentario. Veja o console para mais detalhes.');
+        this.notification.error('Erro ao enviar comentario. Veja o console para mais detalhes.');
       },
     });
   }
@@ -353,21 +356,24 @@ export class PostComponent {
   abrirConfirmacaoCandidatura() {
     const usuario = this.usuarioLogado();
     if (!usuario || !this.post.id) {
-      alert('Usuário não identificado.');
+      this.notification.error('Usuário não identificado.');
       return;
     }
 
     if (!this.podeCandidatar()) {
-      alert('As inscrições não estão abertas para esta oportunidade.');
+      this.notification.error('As inscrições não estão abertas para esta oportunidade.');
       return;
     }
 
-    this.confirmacaoCandidaturaAberta.set(true);
-  }
-
-  fecharConfirmacaoCandidatura() {
-    if (this.candidaturaEnviando()) return;
-    this.confirmacaoCandidaturaAberta.set(false);
+    this.confirmDialog
+      .confirm({
+        title: 'Candidatar-se',
+        message: 'Deseja se candidatar a esta oportunidade?',
+        confirmLabel: 'Candidatar-se',
+      })
+      .subscribe((confirmado) => {
+        if (confirmado) this.candidatar();
+      });
   }
 
   candidatar() {
@@ -375,8 +381,7 @@ export class PostComponent {
     if (!usuario || !this.post.id || this.candidaturaEnviando()) return;
 
     if (!this.podeCandidatar()) {
-      alert('As inscrições não estão abertas para esta oportunidade.');
-      this.confirmacaoCandidaturaAberta.set(false);
+      this.notification.error('As inscrições não estão abertas para esta oportunidade.');
       return;
     }
 
@@ -394,13 +399,11 @@ export class PostComponent {
         if (!this.post.alunosCandidatosId) this.post.alunosCandidatosId = [];
         this.post.alunosCandidatosId.push(usuario.id);
         this.candidaturaEnviando.set(false);
-        this.confirmacaoCandidaturaAberta.set(false);
       },
       error: (err) => {
         console.error('Erro ao se candidatar:', err);
         this.candidaturaEnviando.set(false);
-        this.confirmacaoCandidaturaAberta.set(false);
-        alert('Erro ao se candidatar à vaga.');
+        this.notification.error('Erro ao se candidatar à vaga.');
       },
     });
   }

@@ -71,36 +71,6 @@
         </div>
       </div>
 
-      <div
-        *ngIf="mostrandoModalConfirmacao()"
-        class="confirmacao-inline"
-      >
-        <p>
-          Deseja aprovar <strong>{{ candidatosSelecionados().size }}</strong> aluno(s) na oportunidade?
-        </p>
-        <span>
-          Essa ação alterará o status de candidatura destes alunos para aprovado.
-        </span>
-
-        <div class="confirmacao-acoes">
-          <button
-            type="button"
-            class="btn-cancelar-confirmacao"
-            (click)="fecharModalConfirmacao()"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            class="btn-confirmar-aprovacao"
-            (click)="confirmarFinalizacao()"
-            [disabled]="finalizandoOportunidade()"
-          >
-            {{ finalizandoOportunidade() ? 'Processando...' : 'Confirmar' }}
-          </button>
-        </div>
-      </div>
-
       <div *ngIf="!candidatosCarregando() && candidatosErro()" style="padding: 12px; background: #ffebee; border-top: 1px solid #e0e0e0; color: #c62828;">
         {{ candidatosErro() }}
       </div>
