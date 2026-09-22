@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { Usuario, UsuarioService } from '../../services/usuario.service';
+import { NotificationService } from '../../services/notification.service';
 
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
@@ -36,6 +37,8 @@ export class Perfil {
 
   linkPortfolio = signal<string>('');
   linkCurriculo = signal<string>('');
+
+  private notification = inject(NotificationService);
 
   constructor(
     private route: ActivatedRoute,
@@ -228,12 +231,12 @@ export class Perfil {
     }
 
     if (!this.validarLinkOpcional(this.linkPortfolio())) {
-      alert('O link do portfólio deve começar com http:// ou https://');
+      this.notification.error('O link do portfólio deve começar com http:// ou https://');
       return;
     }
 
     if (!this.validarLinkOpcional(this.linkCurriculo())) {
-      alert('O link do currículo deve começar com http:// ou https://');
+      this.notification.error('O link do currículo deve começar com http:// ou https://');
       return;
     }
 
@@ -278,12 +281,12 @@ export class Perfil {
         }
 
         this.salvando.set(false);
-        alert('Links do perfil atualizados com sucesso.');
+        this.notification.success('Links do perfil atualizados com sucesso.');
       },
       error: (err) => {
         console.error('Erro ao salvar links do perfil:', err);
         this.salvando.set(false);
-        alert('Não foi possível salvar os links do perfil.');
+        this.notification.error('Não foi possível salvar os links do perfil.');
       }
     });
   }
