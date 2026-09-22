@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
-import { NotificationService } from '../../services/notification.service';
+import { FeedbackService } from '../../services/feedback.service';
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
   ProfileImageCropPosition,
@@ -33,7 +33,7 @@ export class EditarPerfil {
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
 
-  private notification = inject(NotificationService);
+  private feedback = inject(FeedbackService);
 
   constructor(private usuarioService: UsuarioService, private router: Router) {}
 
@@ -65,12 +65,12 @@ export class EditarPerfil {
     event.preventDefault();
 
     if (this.senha() && this.senha() !== this.confirmaSenha()) {
-      this.notification.error('As senhas não coincidem.');
+      this.feedback.error('As senhas não coincidem.');
       return;
     }
 
     if (!this.userId) {
-      this.notification.error('Usuário não encontrado. Faça login novamente.');
+      this.feedback.error('Usuário não encontrado. Faça login novamente.');
       return;
     }
 
@@ -93,7 +93,7 @@ export class EditarPerfil {
 
     this.usuarioService.atualizar(this.userId, payload).subscribe({
       next: (updated) => {
-        this.notification.success('Perfil atualizado com sucesso.');
+        this.feedback.success('Perfil atualizado com sucesso.');
         // Atualiza localStorage com novos dados (mantém id)
         const funcaoAtualizada = updated.funcao || this.funcao;
         const usuarioNormalizado = {
@@ -113,7 +113,7 @@ export class EditarPerfil {
       },
       error: (err) => {
         console.error('Erro ao atualizar usuário:', err);
-        this.notification.error('Erro ao atualizar perfil. Tente novamente.');
+        this.feedback.error('Erro ao atualizar perfil. Tente novamente.');
       },
     });
   }

@@ -10,7 +10,7 @@ import { ComentarioService } from '../../services/comentario.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { FeedItem } from '../../services/feed.service';
 import { SavedItemsService } from '../../services/itens-salvos.service';
-import { NotificationService } from '../../services/notification.service';
+import { FeedbackService } from '../../services/feedback.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Component({
@@ -71,7 +71,7 @@ export class PostComponent {
   private comentarioService = inject(ComentarioService);
   private usuarioService = inject(UsuarioService);
   private savedService = inject(SavedItemsService);
-  private notification = inject(NotificationService);
+  private feedback = inject(FeedbackService);
   private confirmDialog = inject(ConfirmDialogService);
 
   constructor(
@@ -196,18 +196,18 @@ export class PostComponent {
   enviarComentario() {
     const usuario = this.usuarioLogado();
     if (!usuario || !this.post.id) {
-      this.notification.error('Usuário ou post não identificado.');
+      this.feedback.error('Usuário ou post não identificado.');
       return;
     }
 
     if (this.post.tipo === 'OPORTUNIDADE' && this.post.status === 'FINALIZADA') {
-      this.notification.error('Esta oportunidade está finalizada e não aceita mensagens.');
+      this.feedback.error('Esta oportunidade está finalizada e não aceita mensagens.');
       return;
     }
 
     const textoComentario = this.novoComentario.trim();
     if (!textoComentario) {
-      this.notification.error('Comentário não pode ser vazio.');
+      this.feedback.error('Comentário não pode ser vazio.');
       return;
     }
 
@@ -239,7 +239,7 @@ export class PostComponent {
       },
       error: (err) => {
         console.error('Erro ao enviar comentario:', err);
-        this.notification.error('Erro ao enviar comentario. Veja o console para mais detalhes.');
+        this.feedback.error('Erro ao enviar comentario. Veja o console para mais detalhes.');
       },
     });
   }
@@ -356,12 +356,12 @@ export class PostComponent {
   abrirConfirmacaoCandidatura() {
     const usuario = this.usuarioLogado();
     if (!usuario || !this.post.id) {
-      this.notification.error('Usuário não identificado.');
+      this.feedback.error('Usuário não identificado.');
       return;
     }
 
     if (!this.podeCandidatar()) {
-      this.notification.error('As inscrições não estão abertas para esta oportunidade.');
+      this.feedback.error('As inscrições não estão abertas para esta oportunidade.');
       return;
     }
 
@@ -381,7 +381,7 @@ export class PostComponent {
     if (!usuario || !this.post.id || this.candidaturaEnviando()) return;
 
     if (!this.podeCandidatar()) {
-      this.notification.error('As inscrições não estão abertas para esta oportunidade.');
+      this.feedback.error('As inscrições não estão abertas para esta oportunidade.');
       return;
     }
 
@@ -403,7 +403,7 @@ export class PostComponent {
       error: (err) => {
         console.error('Erro ao se candidatar:', err);
         this.candidaturaEnviando.set(false);
-        this.notification.error('Erro ao se candidatar à vaga.');
+        this.feedback.error('Erro ao se candidatar à vaga.');
       },
     });
   }

@@ -1,17 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { NotificationService } from './notification.service';
+import { FeedbackService } from './feedback.service';
 
-describe('NotificationService', () => {
-  let service: NotificationService;
+describe('FeedbackService', () => {
+  let service: FeedbackService;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
 
   beforeEach(() => {
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     TestBed.configureTestingModule({
-      providers: [NotificationService, { provide: MatSnackBar, useValue: snackBarSpy }],
+      providers: [FeedbackService, { provide: MatSnackBar, useValue: snackBarSpy }],
     });
-    service = TestBed.inject(NotificationService);
+    service = TestBed.inject(FeedbackService);
   });
 
   it('success() abre o snackbar com o painel de sucesso', () => {

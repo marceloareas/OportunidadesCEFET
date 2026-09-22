@@ -7,7 +7,7 @@ import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { Usuario, UsuarioService } from '../../services/usuario.service';
-import { NotificationService } from '../../services/notification.service';
+import { FeedbackService } from '../../services/feedback.service';
 
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
@@ -38,7 +38,7 @@ export class Perfil {
   linkPortfolio = signal<string>('');
   linkCurriculo = signal<string>('');
 
-  private notification = inject(NotificationService);
+  private feedback = inject(FeedbackService);
 
   constructor(
     private route: ActivatedRoute,
@@ -231,12 +231,12 @@ export class Perfil {
     }
 
     if (!this.validarLinkOpcional(this.linkPortfolio())) {
-      this.notification.error('O link do portfólio deve começar com http:// ou https://');
+      this.feedback.error('O link do portfólio deve começar com http:// ou https://');
       return;
     }
 
     if (!this.validarLinkOpcional(this.linkCurriculo())) {
-      this.notification.error('O link do currículo deve começar com http:// ou https://');
+      this.feedback.error('O link do currículo deve começar com http:// ou https://');
       return;
     }
 
@@ -281,12 +281,12 @@ export class Perfil {
         }
 
         this.salvando.set(false);
-        this.notification.success('Links do perfil atualizados com sucesso.');
+        this.feedback.success('Links do perfil atualizados com sucesso.');
       },
       error: (err) => {
         console.error('Erro ao salvar links do perfil:', err);
         this.salvando.set(false);
-        this.notification.error('Não foi possível salvar os links do perfil.');
+        this.feedback.error('Não foi possível salvar os links do perfil.');
       }
     });
   }

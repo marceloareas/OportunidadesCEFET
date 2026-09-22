@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
-import { NotificationService } from '../../services/notification.service';
+import { FeedbackService } from '../../services/feedback.service';
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
   ProfileImageCropPosition,
@@ -35,7 +35,7 @@ export class Login {
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
 
-  private notification = inject(NotificationService);
+  private feedback = inject(FeedbackService);
 
   constructor(
     private router: Router,
@@ -108,7 +108,7 @@ export class Login {
     event.preventDefault();
 
     if (!this.email() || !this.senha()) {
-      this.notification.error('Preencha e-mail e senha.');
+      this.feedback.error('Preencha e-mail e senha.');
       return;
     }
 
@@ -131,12 +131,12 @@ export class Login {
           authResponse.usuario.funcao?.toLowerCase() === 'professor' ? 'professor' : 'aluno';
         localStorage.setItem('tipoUsuario', tipo);
 
-        this.notification.success(`Bem-vindo, ${authResponse.usuario.nome}!`);
+        this.feedback.success(`Bem-vindo, ${authResponse.usuario.nome}!`);
         this.router.navigate(['/home']);
       },
       error: (err) => {
         console.error('Erro ao autenticar usuário:', err);
-        this.notification.error('Usuário não encontrado ou senha incorreta.');
+        this.feedback.error('Usuário não encontrado ou senha incorreta.');
       },
     });
   }
@@ -145,7 +145,7 @@ export class Login {
     event.preventDefault();
 
     if (this.senha() !== this.confirmaSenha()) {
-      this.notification.error('As senhas não coincidem.');
+      this.feedback.error('As senhas não coincidem.');
       return;
     }
 
@@ -160,12 +160,12 @@ export class Login {
 
     this.usuarioService.cadastrar(novoUsuario).subscribe({
       next: (usuario) => {
-        this.notification.success('Cadastro realizado! Faça login.');
+        this.feedback.success('Cadastro realizado! Faça login.');
         this.toggleForm();
       },
       error: (err) => {
         console.error('Erro ao cadastrar:', err);
-        this.notification.error('Erro ao cadastrar usuário.');
+        this.feedback.error('Erro ao cadastrar usuário.');
       },
     });
   }

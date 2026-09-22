@@ -9,7 +9,7 @@ import { PostComponent } from '../../components/post/post';
 import { CandidatosModal } from '../../components/candidatos-modal/candidatos-modal';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { FeedItem } from '../../services/feed.service';
-import { NotificationService } from '../../services/notification.service';
+import { FeedbackService } from '../../services/feedback.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Component({
@@ -38,7 +38,7 @@ export class OportunidadesPage {
   oportunidadeSelecionadaId = signal<string | null>(null);
   candidaturas = signal<Oportunidade[]>([]);
 
-  private notification = inject(NotificationService);
+  private feedback = inject(FeedbackService);
   private confirmDialog = inject(ConfirmDialogService);
 
   constructor(
@@ -193,7 +193,7 @@ export class OportunidadesPage {
           },
           error: (err) => {
             console.error('Erro ao finalizar oportunidade:', err);
-            this.notification.error('Não foi possível finalizar.');
+            this.feedback.error('Não foi possível finalizar.');
           }
         });
       });
