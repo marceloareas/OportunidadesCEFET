@@ -120,7 +120,7 @@
         <div class="input-group" style="align-items:center;">
           <label style="margin-bottom:0.5em;">Imagem de Perfil</label>
           <div class="avatar-upload" (click)="triggerFileInput()">
-            <img [src]="imagemPreview || '../pfptemp.ico'" class="avatar-preview" />
+            <img [src]="imagemPreview || avatarPadrao(selecionada())" class="avatar-preview" />
             <span class="avatar-camera"><i class="bi bi-camera"></i></span>
           </div>
           <input

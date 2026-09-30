@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { avatarOuPadrao } from '../../utils/avatar';
 
 @Component({
   selector: 'app-navbar-right',
@@ -15,6 +16,7 @@ export class NavbarRight implements OnInit {
   usuarioFuncao: string = 'Função não definida';
   usuarioMatricula: string = 'Matrícula';
   usuarioImagem: string | null = null;
+  readonly avatarOuPadrao = avatarOuPadrao;
 
   constructor(private router: Router) {}
 

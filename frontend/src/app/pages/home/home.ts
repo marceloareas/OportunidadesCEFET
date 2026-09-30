@@ -13,6 +13,7 @@ import { PostService, Post } from '../../services/post.services';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { FeedItem, FeedService } from '../../services/feed.service';
 import { FeedbackService } from '../../services/feedback.service';
+import { avatarOuPadrao } from '../../utils/avatar';
 
 @Component({
   selector: 'app-home',
@@ -29,6 +30,7 @@ export class Home {
   modoOportunidade = signal<boolean>(false);
 
   tipoUsuario = signal<string>('aluno');
+  readonly avatarOuPadrao = avatarOuPadrao;
   usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
 
   feedItens = signal<FeedItem[]>([]);

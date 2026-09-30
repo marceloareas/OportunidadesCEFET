@@ -101,7 +101,8 @@ export class EditarPerfil {
           nome: updated.nome,
           email: updated.email,
           funcao: funcaoAtualizada,
-          matricula: updated.matricula || this.matricula
+          matricula: updated.matricula || this.matricula,
+          imagemPerfil: updated.imagemPerfil
         };
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
         if (funcaoAtualizada) {

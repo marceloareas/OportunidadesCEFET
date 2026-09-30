@@ -1,6 +1,8 @@
 package br.oportunidades.cefet.backend.services;
 
+import br.oportunidades.cefet.backend.enums.FuncaoDeUsuario;
 import br.oportunidades.cefet.backend.exceptions.ConflictException;
+import br.oportunidades.cefet.backend.exceptions.ResourceNotFoundException;
 import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.repositories.UsuarioRepository;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,14 @@ import java.util.Date;
 
 @Service
 public class UsuarioService {
+
+    public static final String AVATAR_ALUNO = "avatar-aluno.svg";
+    public static final String AVATAR_PROFESSOR = "avatar-professor.svg";
+
+    // Caminho relativo à raiz do frontend (frontend/public), exibido direto no <img [src]>.
+    public static String imagemPadrao(FuncaoDeUsuario funcao) {
+        return funcao == FuncaoDeUsuario.PROFESSOR ? AVATAR_PROFESSOR : AVATAR_ALUNO;
+    }
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
@@ -41,6 +51,9 @@ public class UsuarioService {
         }
         if (usuario.getCriado() == null) {
             usuario.setCriado(new Date());
+        }
+        if (usuario.getImagemPerfil() == null || usuario.getImagemPerfil().isBlank()) {
+            usuario.setImagemPerfil(imagemPadrao(usuario.getFuncao()));
         }
         return usuarioRepository.save(usuario);
     }
@@ -71,7 +84,9 @@ public class UsuarioService {
                 existing.setSenha(passwordEncoder.encode(usuario.getSenha()));
             }
             if (usuario.getImagemPerfil() != null) {
-                existing.setImagemPerfil(usuario.getImagemPerfil());
+                existing.setImagemPerfil(usuario.getImagemPerfil().isBlank()
+                        ? imagemPadrao(existing.getFuncao())
+                        : usuario.getImagemPerfil());
             }
             if (usuario.getLinkPortfolio() != null) {
                 existing.setLinkPortfolio(usuario.getLinkPortfolio());
@@ -86,6 +101,20 @@ public class UsuarioService {
 	public java.util.Optional<Usuario> findByEmail(String email) {
 		return usuarioRepository.findByEmail(email);
 	}
+
+    public Usuario removerImagemPerfil(String id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        usuario.setImagemPerfil(imagemPadrao(usuario.getFuncao()));
+        return usuarioRepository.save(usuario);
+    }
+
+    public int preencherImagensPadrao() {
+        List<Usuario> semImagem = usuarioRepository.findByImagemPerfilIsNullOrImagemPerfil("");
+        semImagem.forEach(u -> u.setImagemPerfil(imagemPadrao(u.getFuncao())));
+        usuarioRepository.saveAll(semImagem);
+        return semImagem.size();
+    }
 
     public boolean deleteUsuario(String id) {
         if (usuarioRepository.existsById(id)) {

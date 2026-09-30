@@ -14,4 +14,6 @@ public interface UsuarioRepository extends MongoRepository<Usuario, String> {
 	java.util.Optional<Usuario> findByEmail(String email);
 
 	Page<Usuario> findByIdIn(List<String> ids, Pageable pageable);
+
+	List<Usuario> findByImagemPerfilIsNullOrImagemPerfil(String imagemPerfil);
 }

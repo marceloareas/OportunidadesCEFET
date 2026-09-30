@@ -12,6 +12,7 @@ import { FeedItem } from '../../services/feed.service';
 import { SavedItemsService } from '../../services/itens-salvos.service';
 import { FeedbackService } from '../../services/feedback.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { avatarOuPadrao } from '../../utils/avatar';
 
 @Component({
   selector: 'app-post',
@@ -46,6 +47,7 @@ export class PostComponent {
   };
 
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
+  readonly avatarOuPadrao = avatarOuPadrao;
   usuarioLogado = signal<{
     id: string;
     nome: string;

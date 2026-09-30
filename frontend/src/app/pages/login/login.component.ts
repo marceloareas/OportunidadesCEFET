@@ -11,6 +11,8 @@ import {
   cropProfileImageToSquare
 } from '../../utils/profile-image';
 
+import { avatarPadrao } from '../../utils/avatar';
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -31,6 +33,7 @@ export class Login {
 
   imagemPerfilBase64: string | null = null;
   imagemPreview: string | null = null;
+  readonly avatarPadrao = avatarPadrao;
   imagemErro: string = '';
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };

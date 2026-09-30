@@ -8,6 +8,8 @@ import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { NavbarRight } from '../../components/navbar-right/navbar-right';
 import { Usuario, UsuarioService } from '../../services/usuario.service';
 import { FeedbackService } from '../../services/feedback.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { avatarOuPadrao, isAvatarPadrao } from '../../utils/avatar';
 
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
@@ -39,6 +41,10 @@ export class Perfil {
   linkCurriculo = signal<string>('');
 
   private feedback = inject(FeedbackService);
+  private confirmDialog = inject(ConfirmDialogService);
+
+  readonly avatarOuPadrao = avatarOuPadrao;
+  readonly isAvatarPadrao = isAvatarPadrao;
 
   constructor(
     private route: ActivatedRoute,
@@ -171,6 +177,49 @@ export class Perfil {
         this.imagemErro = 'Erro ao salvar imagem. Tente novamente.';
       }
     });
+  }
+
+  removerImagemPerfil(): void {
+    const perfil = this.usuarioPerfil();
+    if (!perfil?.id || !this.isProprioPerfil()) {
+      return;
+    }
+    const id = perfil.id.toString();
+
+    // Fecha o modal antes de abrir a confirmação: o MatDialog não pode ficar atrás do overlay do modal.
+    this.fecharModalImagem();
+
+    this.confirmDialog
+      .confirm({
+        title: 'Remover foto',
+        message: 'Sua foto será substituída pela imagem padrão. Deseja continuar?',
+        confirmLabel: 'Remover',
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) {
+          return;
+        }
+        this.usuarioService.removerImagem(id).subscribe({
+          next: (usuarioAtualizado) => {
+            this.usuarioPerfil.update((atual) =>
+              atual ? { ...atual, imagemPerfil: usuarioAtualizado.imagemPerfil } : atual
+            );
+
+            const usuarioSalvo = localStorage.getItem('usuario');
+            if (usuarioSalvo) {
+              const usuarioParseado = JSON.parse(usuarioSalvo);
+              usuarioParseado.imagemPerfil = usuarioAtualizado.imagemPerfil;
+              localStorage.setItem('usuario', JSON.stringify(usuarioParseado));
+            }
+
+            this.feedback.success('Foto removida.');
+          },
+          error: (err) => {
+            console.error('Erro ao remover imagem de perfil:', err);
+            this.feedback.error('Não foi possível remover a foto.');
+          },
+        });
+      });
   }
 
   private buscarPerfil(id: string) {

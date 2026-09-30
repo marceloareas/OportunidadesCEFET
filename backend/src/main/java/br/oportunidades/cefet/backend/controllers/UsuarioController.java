@@ -1,10 +1,12 @@
 package br.oportunidades.cefet.backend.controllers;
 
+import br.oportunidades.cefet.backend.exceptions.ResourceNotFoundException;
 import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,6 +64,18 @@ public class UsuarioController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @DeleteMapping("/{id}/imagem")
+    public ResponseEntity<Usuario> removerImagemPerfil(@PathVariable String id, Authentication authentication) {
+        Usuario usuario = usuarioService.getUsuarioById(id);
+        if (usuario == null) {
+            throw new ResourceNotFoundException("Usuário não encontrado.");
+        }
+        if (authentication == null || !authentication.getName().equals(usuario.getEmail())) {
+            throw new SecurityException("Você só pode remover a sua própria foto.");
+        }
+        return ResponseEntity.ok(usuarioService.removerImagemPerfil(id));
     }
 
 }
