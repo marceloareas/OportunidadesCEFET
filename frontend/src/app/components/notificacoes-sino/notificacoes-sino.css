@@ -1,0 +1,108 @@
+.sino {
+  position: relative;
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 1.4rem;
+  line-height: 1;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.sino:hover {
+  opacity: 0.85;
+}
+
+.badge {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #d32f2f;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* O painel do MatMenu é renderizado no overlay, fora do componente. */
+::ng-deep .menu-notificacoes.mat-mdc-menu-panel {
+  width: 360px;
+  max-width: 90vw;
+  max-height: 70vh;
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.marcar-todas {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #0a497e;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.marcar-todas:hover {
+  text-decoration: underline;
+}
+
+.estado {
+  padding: 16px;
+  color: #777777;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.item {
+  height: auto;
+  min-height: 56px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  white-space: normal;
+}
+
+.item.nao-lida {
+  background: #e8f0fa;
+}
+
+.linha {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.icone {
+  color: #0a497e;
+  font-size: 1.1rem;
+}
+
+.texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.mensagem {
+  font-size: 0.88rem;
+  color: #222222;
+}
+
+.tempo {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: #888888;
+}

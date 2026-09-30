@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { NotificacoesSino } from '../notificacoes-sino/notificacoes-sino';
 
 @Component({
   selector: 'app-navbar-top',
-  imports: [],
+  imports: [NotificacoesSino],
   templateUrl: './navbar-top.html',
   styleUrl: './navbar-top.css'
 })

@@ -1,0 +1,49 @@
+<ng-container *ngIf="ativo()">
+  <button
+    type="button"
+    class="sino"
+    aria-label="Notificações"
+    [matMenuTriggerFor]="menuNotificacoes"
+    (menuOpened)="carregarLista()"
+  >
+    <i class="bi bi-bell"></i>
+    <span class="badge" *ngIf="rotuloContagem(naoLidas()) as rotulo">{{ rotulo }}</span>
+  </button>
+
+  <mat-menu #menuNotificacoes="matMenu" xPosition="before" class="menu-notificacoes">
+    <div class="cabecalho" (click)="$event.stopPropagation()">
+      <span>Notificações</span>
+      <button type="button" class="marcar-todas" *ngIf="temNaoLidas()" (click)="marcarTodas()">
+        Marcar todas como lidas
+      </button>
+    </div>
+
+    <div class="estado" *ngIf="carregando()" (click)="$event.stopPropagation()">Carregando...</div>
+
+    <div
+      class="estado"
+      *ngIf="!carregando() && notificacoes().length === 0"
+      (click)="$event.stopPropagation()"
+    >
+      Nenhuma notificação
+    </div>
+
+    <ng-container *ngIf="!carregando()">
+      <button
+        mat-menu-item
+        *ngFor="let n of notificacoes()"
+        class="item"
+        [class.nao-lida]="!n.lida"
+        (click)="abrir(n)"
+      >
+        <span class="linha">
+          <i class="bi {{ iconePorTipo(n.tipo) }} icone"></i>
+          <span class="texto">
+            <span class="mensagem">{{ n.mensagem }}</span>
+            <span class="tempo">{{ tempoRelativo(n.criadoEm) }}</span>
+          </span>
+        </span>
+      </button>
+    </ng-container>
+  </mat-menu>
+</ng-container>
