@@ -1,6 +1,9 @@
+:host {
+  margin-left: auto;
+}
+
 .sino {
   position: relative;
-  margin-left: auto;
   background: transparent;
   border: none;
   color: #ffffff;
