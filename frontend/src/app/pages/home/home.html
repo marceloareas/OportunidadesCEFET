@@ -158,6 +158,10 @@
         (click)="closeNewPost()"
       >
         <div class="modal-conteudo" (click)="$event.stopPropagation()">
+          <button type="button" class="close-modal-btn" (click)="closeNewPost()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+
           <div
             class="toggle-row"
             *ngIf="tipoUsuario() === 'professor'"
