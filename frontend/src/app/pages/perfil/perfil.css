@@ -377,3 +377,18 @@
   color: #dc2626;
   font-weight: 500;
 }
+
+.modal-acoes .btn-remover {
+  margin-right: auto;
+  background: transparent;
+  color: #c62828;
+  border: 1px solid #c62828;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.modal-acoes .btn-remover:hover {
+  background: #fdecea;
+}

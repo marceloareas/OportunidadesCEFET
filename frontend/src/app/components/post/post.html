@@ -8,14 +8,14 @@
     >
       <img
         class="avatar perfil-click"
-        [src]="(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil) || 'pfptemp.ico'"
+        [src]="avatarOuPadrao(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil, post.tipo === 'OPORTUNIDADE' ? 'professor' : null)"
         alt="Foto de perfil"
       />
     </a>
     <ng-template #avatarSemPerfil>
       <img
         class="avatar"
-        [src]="(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil) || 'pfptemp.ico'"
+        [src]="avatarOuPadrao(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil, post.tipo === 'OPORTUNIDADE' ? 'professor' : null)"
         alt="Foto de perfil"
       />
     </ng-template>
@@ -137,10 +137,10 @@
             class="comentario-perfil-link"
             [routerLink]="['/perfil', c.usuarioId]"
           >
-            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            <img [src]="avatarOuPadrao(c.imagemPerfil)" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
           </a>
           <ng-template #comentarioFotoSemPerfil>
-            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            <img [src]="avatarOuPadrao(c.imagemPerfil)" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
           </ng-template>
           <a
             *ngIf="c.usuarioId; else comentarioNomeSemPerfil"

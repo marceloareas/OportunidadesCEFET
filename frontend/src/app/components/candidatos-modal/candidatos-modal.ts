@@ -8,7 +8,7 @@ import {
   Oportunidade,
   CandidatoComStatus,
 } from '../../services/oportunidade.service';
-import { NotificationService } from '../../services/notification.service';
+import { FeedbackService } from '../../services/feedback.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Component({
@@ -33,7 +33,7 @@ export class CandidatosModal {
   candidatosSelecionados = signal<Set<string>>(new Set());
   finalizandoOportunidade = signal<boolean>(false);
 
-  private notification = inject(NotificationService);
+  private feedback = inject(FeedbackService);
   private confirmDialog = inject(ConfirmDialogService);
 
   constructor(private oportunidadeService: OportunidadeService) {}
@@ -107,11 +107,11 @@ export class CandidatosModal {
 
   abrirModalConfirmacao() {
     if (this.finalizada) {
-      this.notification.error('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
+      this.feedback.error('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
       return;
     }
     if (this.candidatosSelecionados().size === 0) {
-      this.notification.error('Selecione pelo menos um aluno para finalizar.');
+      this.feedback.error('Selecione pelo menos um aluno para finalizar.');
       return;
     }
 
@@ -132,7 +132,7 @@ export class CandidatosModal {
     const opId = this.oportunidadeId;
     if (!opId || !this.professorId) return;
     if (this.finalizada) {
-      this.notification.error('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
+      this.feedback.error('Esta oportunidade já está finalizada. Não é possível aprovar candidatos.');
       return;
     }
 
@@ -154,12 +154,12 @@ export class CandidatosModal {
 
         this.candidatosSelecionados.set(new Set());
         this.finalizandoOportunidade.set(false);
-        this.notification.success('Alunos aprovados com sucesso!');
+        this.feedback.success('Alunos aprovados com sucesso!');
         this.fecharModal();
       },
       (err) => {
         console.error('Erro ao aprovar candidatos:', err);
-        this.notification.error('Erro ao aprovar alguns candidatos.');
+        this.feedback.error('Erro ao aprovar alguns candidatos.');
         this.finalizandoOportunidade.set(false);
       }
     );

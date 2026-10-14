@@ -7,7 +7,7 @@
       <div class="posts" *ngSwitchCase="'home'">
         <div class="new-post">
           <div class="img">
-            <img [src]="usuarioLogado()?.imagemPerfil || 'favicon.png'" />
+            <img [src]="avatarOuPadrao(usuarioLogado()?.imagemPerfil, usuarioLogado()?.funcao)" />
           </div>
 
           <div (click)="openNewPost()" class="new-post-btn">
@@ -158,6 +158,10 @@
         (click)="closeNewPost()"
       >
         <div class="modal-conteudo" (click)="$event.stopPropagation()">
+          <button type="button" class="close-modal-btn" (click)="closeNewPost()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+
           <div
             class="toggle-row"
             *ngIf="tipoUsuario() === 'professor'"

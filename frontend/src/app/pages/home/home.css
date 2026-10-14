@@ -1,10 +1,10 @@
 .page {
   display: grid;
   padding-top: 6.5vh;
-  grid-template-columns: 22.5vw 55vw 22.5vw;
+  grid-template-columns: 22.5% 55% 22.5%;
   height: 100vh;
   background-color: #FAF9F6;
-  overflow-y: hidden;
+  overflow: hidden;
 }
 
 .content {
@@ -29,10 +29,17 @@
         width: 50px;
         height: 50px;
         border-radius: 100%;
-        border: 1px solid black;;
+        border: 1px solid black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
         
         img{
-            border-radius: 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
     }
 
@@ -144,6 +151,7 @@ hr {
 }
 
 .modal-conteudo {
+  position: relative;
   min-height: 45vh;
   height: fit-content;
     max-height: 86vh;
@@ -155,6 +163,22 @@ hr {
   width: 60vw;
     overflow-y: auto;
     box-sizing: border-box;
+
+  .close-modal-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #444;
+    transition: color 0.2s;
+  }
+  
+  .close-modal-btn:hover {
+    color: #d32f2f;
+  }
 
   .title-input{
     width: 100%;

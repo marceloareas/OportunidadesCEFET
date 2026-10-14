@@ -12,7 +12,8 @@ import { CandidatosModal } from '../../components/candidatos-modal/candidatos-mo
 import { PostService, Post } from '../../services/post.services';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { FeedItem, FeedService } from '../../services/feed.service';
-import { NotificationService } from '../../services/notification.service';
+import { FeedbackService } from '../../services/feedback.service';
+import { avatarOuPadrao } from '../../utils/avatar';
 
 @Component({
   selector: 'app-home',
@@ -29,6 +30,7 @@ export class Home {
   modoOportunidade = signal<boolean>(false);
 
   tipoUsuario = signal<string>('aluno');
+  readonly avatarOuPadrao = avatarOuPadrao;
   usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
 
   feedItens = signal<FeedItem[]>([]);
@@ -64,7 +66,7 @@ export class Home {
   categoria = signal<string>('');
   grandesAreas = signal<string[]>([]);
 
-  private notification = inject(NotificationService);
+  private feedback = inject(FeedbackService);
 
   constructor(
     private postService: PostService,
@@ -303,7 +305,7 @@ export class Home {
 
   enviarPost() {
     if (!this.titulo().trim()) {
-      this.notification.error('Informe um título antes de enviar.');
+      this.feedback.error('Informe um título antes de enviar.');
       return;
     }
 
@@ -327,17 +329,18 @@ export class Home {
         this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
+        this.feedback.success('Publicação criada com sucesso!');
       },
       error: (err) => {
         console.error('Erro ao criar post:', err);
-        this.notification.error('Erro ao criar post.');
+        this.feedback.error('Erro ao criar post.');
       }
     });
   }
 
   private enviarOportunidade() {
     if (!this.titulo().trim()) {
-      this.notification.error('Informe um título para a oportunidade.');
+      this.feedback.error('Informe um título para a oportunidade.');
       return;
     }
 
@@ -354,7 +357,7 @@ export class Home {
     const dataFim = this.dataFimInscricao().trim();
 
     if (!dataInicio || !dataFim) {
-      this.notification.error('Informe a data inicial e final das inscrições.');
+      this.feedback.error('Informe a data inicial e final das inscrições.');
       return;
     }
 
@@ -362,17 +365,17 @@ export class Home {
     const fim = new Date(`${dataFim}T23:59:59`);
 
     if (Number.isNaN(inicio.getTime()) || Number.isNaN(fim.getTime())) {
-      this.notification.error('Informe um período de inscrição válido.');
+      this.feedback.error('Informe um período de inscrição válido.');
       return;
     }
 
     if (fim < inicio) {
-      this.notification.error('A data final das inscrições deve ser igual ou posterior à data inicial.');
+      this.feedback.error('A data final das inscrições deve ser igual ou posterior à data inicial.');
       return;
     }
 
     if (!categoriaSelecionada) {
-      this.notification.error('Selecione uma categoria.');
+      this.feedback.error('Selecione uma categoria.');
       return;
     }
 
@@ -401,10 +404,11 @@ export class Home {
         this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
+        this.feedback.success('Oportunidade criada com sucesso!');
       },
       error: (err) => {
         console.error('Erro ao criar oportunidade:', err);
-        this.notification.error('Erro ao criar oportunidade.');
+        this.feedback.error('Erro ao criar oportunidade.');
       }
     });
   }

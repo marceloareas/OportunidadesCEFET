@@ -2,6 +2,7 @@ package br.oportunidades.cefet.backend.services;
 
 import br.oportunidades.cefet.backend.enums.CategoriaOportunidade;
 import br.oportunidades.cefet.backend.models.Oportunidade;
+import br.oportunidades.cefet.backend.models.TipoNotificacao;
 import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.repositories.CandidaturaRepository;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
@@ -40,6 +41,9 @@ public class OportunidadeService {
 
     @Autowired
     private CandidaturaRepository candidaturaRepository;
+
+    @Autowired
+    private NotificacaoService notificacaoService;
 
     public Page<Oportunidade> listarTodos(int page, int size) {
             Page<Oportunidade> ops = oportunidadeRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
@@ -218,6 +222,17 @@ public class OportunidadeService {
 
         candidaturaRepository.save(candidatura);
 
+        String nomeAluno = usuarioRepository.findById(idAluno)
+                .map(Usuario::getNome)
+                .filter(nome -> !nome.isBlank())
+                .orElse("Um aluno");
+        notificacaoService.notificar(
+                oportunidade.getProfessorId(),
+                TipoNotificacao.CANDIDATURA_RECEBIDA,
+                nomeAluno + " se candidatou à oportunidade \"" + oportunidade.getNome() + "\".",
+                idOportunidade
+        );
+
         return Optional.of(oportunidade);
     }
 
@@ -348,29 +363,26 @@ public class OportunidadeService {
 
         candidatura.setStatus(StatusCandidatura.APROVADO);
         candidaturaRepository.save(candidatura);
+        notificacaoService.notificar(
+                idAluno,
+                TipoNotificacao.CANDIDATURA_APROVADA,
+                "Você foi aprovado na oportunidade \"" + oportunidade.getNome() + "\".",
+                idOportunidade
+        );
+
         oportunidade.setVagasPreenchidas(
                 oportunidade.getVagasPreenchidas() + 1
         );
 
+        List<Candidatura> reservas = List.of();
         if (oportunidade.getVagasPreenchidas() >= oportunidade.getQuantidadeDeVagas()) {
-
             oportunidade.setFinalizada(true);
-
-            List<Candidatura> candidaturas =
-                    candidaturaRepository.findByOportunidadeId(idOportunidade);
-
-            for (Candidatura c : candidaturas) {
-
-                if (c.getStatus() == StatusCandidatura.CONCORRENDO) {
-
-                    c.setStatus(StatusCandidatura.RESERVA);
-
-                    candidaturaRepository.save(c);
-                }
-            }
+            reservas = moverConcorrentesParaReserva(idOportunidade);
         }
 
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
+
+        notificarReservas(salva, reservas);
 
         aplicarStatus(salva);
 
@@ -393,27 +405,41 @@ public class OportunidadeService {
             throw new IllegalStateException("Todas as vagas já foram preenchidas.");
         }
 
-        List<Candidatura> candidaturas =
-        candidaturaRepository.findByOportunidadeId(idOportunidade);
-
-        for (Candidatura candidatura : candidaturas) {
-
-            if (candidatura.getStatus() == StatusCandidatura.CONCORRENDO) {
-
-                candidatura.setStatus(StatusCandidatura.RESERVA);
-
-                candidaturaRepository.save(candidatura);
-            }
-        }
+        List<Candidatura> reservas = moverConcorrentesParaReserva(idOportunidade);
 
         oportunidade.setFinalizada(true);
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
+
+        notificarReservas(salva, reservas);
 
         aplicarStatus(salva);
 
         feedService.atualizarFeedOportunidade(salva);
 
         return Optional.of(salva);
+    }
+
+    private List<Candidatura> moverConcorrentesParaReserva(String idOportunidade) {
+        List<Candidatura> reservas = new ArrayList<>();
+        for (Candidatura candidatura : candidaturaRepository.findByOportunidadeId(idOportunidade)) {
+            if (candidatura.getStatus() == StatusCandidatura.CONCORRENDO) {
+                candidatura.setStatus(StatusCandidatura.RESERVA);
+                candidaturaRepository.save(candidatura);
+                reservas.add(candidatura);
+            }
+        }
+        return reservas;
+    }
+
+    private void notificarReservas(Oportunidade oportunidade, List<Candidatura> reservas) {
+        for (Candidatura candidatura : reservas) {
+            notificacaoService.notificar(
+                    candidatura.getAlunoId(),
+                    TipoNotificacao.OPORTUNIDADE_FINALIZADA,
+                    "A oportunidade \"" + oportunidade.getNome() + "\" foi finalizada. Você ficou na lista de reserva.",
+                    oportunidade.getId()
+            );
+        }
     }
 
     private void preencherDadosCriador(Oportunidade op) {
