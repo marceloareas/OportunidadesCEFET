@@ -329,6 +329,7 @@ export class Home {
         this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
+        this.feedback.success('Publicação criada com sucesso!');
       },
       error: (err) => {
         console.error('Erro ao criar post:', err);
@@ -403,6 +404,7 @@ export class Home {
         this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
+        this.feedback.success('Oportunidade criada com sucesso!');
       },
       error: (err) => {
         console.error('Erro ao criar oportunidade:', err);

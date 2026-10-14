@@ -401,6 +401,7 @@ export class PostComponent {
         if (!this.post.alunosCandidatosId) this.post.alunosCandidatosId = [];
         this.post.alunosCandidatosId.push(usuario.id);
         this.candidaturaEnviando.set(false);
+        this.feedback.success('Candidatura enviada com sucesso!');
       },
       error: (err) => {
         console.error('Erro ao se candidatar:', err);

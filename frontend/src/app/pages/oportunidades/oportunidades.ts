@@ -190,6 +190,7 @@ export class OportunidadesPage {
             this.minhasOportunidades.update(list =>
               list.map(o => o.id === atualizada.id ? atualizada : o)
             );
+            this.feedback.success('Oportunidade finalizada com sucesso!');
           },
           error: (err) => {
             console.error('Erro ao finalizar oportunidade:', err);
