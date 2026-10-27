@@ -32,6 +32,7 @@ export class OportunidadesPage {
 
   carregando = signal<boolean>(false);
   erro = signal<string>('');
+  finalizandoId = signal<string | null>(null);
 
   // modal candidatos
   mostrandoListaCandidatos = signal<boolean>(false);
@@ -96,7 +97,6 @@ export class OportunidadesPage {
       request.subscribe({
           next: (res) => {
             const novas = res.content || [];
-            console.log('candidaturas:', novas);
 
           if (this.usuarioFuncao === 'professor') {
             this.minhasOportunidades.set(
@@ -176,7 +176,7 @@ export class OportunidadesPage {
   }
 
   finalizar(op: Oportunidade) {
-    if (!op.id || op.finalizada) return;
+    if (!op.id || op.finalizada || this.finalizandoId()) return;
     this.confirmDialog
       .confirm({
         title: 'Finalizar oportunidade',
@@ -185,16 +185,19 @@ export class OportunidadesPage {
       })
       .subscribe((confirmado) => {
         if (!confirmado) return;
+        this.finalizandoId.set(op.id!);
         this.oportunidadeService.finalizarOportunidade(op.id!).subscribe({
           next: (atualizada) => {
+            this.finalizandoId.set(null);
             this.minhasOportunidades.update(list =>
               list.map(o => o.id === atualizada.id ? atualizada : o)
             );
             this.feedback.success('Oportunidade finalizada com sucesso!');
           },
           error: (err) => {
+            this.finalizandoId.set(null);
             console.error('Erro ao finalizar oportunidade:', err);
-            this.feedback.error('Não foi possível finalizar.');
+            this.feedback.error(err?.error?.message || 'Não foi possível finalizar.');
           }
         });
       });

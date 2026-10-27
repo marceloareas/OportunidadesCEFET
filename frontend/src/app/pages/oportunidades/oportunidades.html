@@ -45,11 +45,23 @@
           Você ainda não possui oportunidades criadas.
         </div>
         <div class="feed-cards">
-          <app-post 
-            *ngFor="let op of minhasOportunidades()" 
-            [post]="oportunidadeComoFeedItem(op)"
-            (abrirModalCandidatos)="abrirListaCandidatos(op)"
-          ></app-post>
+          <div class="oportunidade-item" *ngFor="let op of minhasOportunidades()">
+            <app-post
+              [post]="oportunidadeComoFeedItem(op)"
+              (abrirModalCandidatos)="abrirListaCandidatos(op)"
+            ></app-post>
+            <div class="oportunidade-acoes" *ngIf="!op.finalizada && op.status !== 'FINALIZADA'">
+              <button
+                type="button"
+                class="btn-finalizar"
+                (click)="finalizar(op)"
+                [disabled]="finalizandoId() === op.id"
+                [class.btn-carregando]="finalizandoId() === op.id"
+              >
+                {{ finalizandoId() === op.id ? 'Finalizando...' : 'Finalizar oportunidade' }}
+              </button>
+            </div>
+          </div>
           <div class="feed-footer" *ngIf="minhasOportunidades().length > 0">
             <div *ngIf="carregando()" class="feed-state loading">
               <div class="loader"></div>
