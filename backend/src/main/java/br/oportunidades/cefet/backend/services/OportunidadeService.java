@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,11 @@ public class OportunidadeService {
 
         validarPeriodoInscricao(oportunidade);
 
+        // Com 0 vagas a primeira aprovação já finalizaria a oportunidade (M1).
+        if (oportunidade.getQuantidadeDeVagas() == null || oportunidade.getQuantidadeDeVagas() < 1) {
+            throw new IllegalArgumentException("A oportunidade precisa ter ao menos 1 vaga.");
+        }
+
         try {
             CategoriaOportunidade.valueOf(oportunidade.getIdCategoria().toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -84,17 +90,9 @@ public class OportunidadeService {
             oportunidade.setCriado(new Date());
         }
 
-        if (oportunidade.getVagasPreenchidas() == null) {
-            oportunidade.setVagasPreenchidas(0);
-        }
-
-        if (oportunidade.getQuantidadeDeVagas() == null) {
-            oportunidade.setQuantidadeDeVagas(0);
-        }
-
-        if (oportunidade.getFinalizada() == null) {
-            oportunidade.setFinalizada(false);
-        }
+        // Estado inicial é sempre aberto e sem aprovados, independente do que o cliente enviar.
+        oportunidade.setVagasPreenchidas(0);
+        oportunidade.setFinalizada(false);
 
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
@@ -136,22 +134,42 @@ public class OportunidadeService {
             op.setStatusCandidaturaAluno(statusPorOportunidade.get(op.getId()));
         });
 
+        // Mais recentes primeiro e paginado em memória: findAllById não pagina (M1).
+        List<Oportunidade> ordenadas = oportunidades.stream()
+                .sorted(Comparator.comparing(Oportunidade::getCriado,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+        int inicio = Math.min(page * size, ordenadas.size());
+        int fim = Math.min(inicio + size, ordenadas.size());
+
         return new PageImpl<>(
-                oportunidades,
+                ordenadas.subList(inicio, fim),
                 PageRequest.of(page, size),
-                oportunidades.size()
+                ordenadas.size()
         );
     }
 
     public Optional<Oportunidade> atualizar(String id, Oportunidade atualizada) {
         return oportunidadeRepository.findById(id).map(existente -> {
+            // Dono, vagas preenchidas e finalização não vêm do cliente: só mudam pelos fluxos
+            // de aprovação e finalização (M1).
             existente.setNome(atualizada.getNome());
             existente.setDescricao(atualizada.getDescricao());
-            existente.setProfessorId(atualizada.getProfessorId());
-            existente.setQuantidadeDeVagas(atualizada.getQuantidadeDeVagas());
-            existente.setVagasPreenchidas(atualizada.getVagasPreenchidas());
             existente.setIdCategoria(atualizada.getIdCategoria());
             existente.setImagemBase64(atualizada.getImagemBase64());
+
+            if (atualizada.getQuantidadeDeVagas() != null) {
+                int preenchidas = Objects.requireNonNullElse(existente.getVagasPreenchidas(), 0);
+                if (atualizada.getQuantidadeDeVagas() < Math.max(1, preenchidas)) {
+                    throw new IllegalArgumentException(
+                            "A quantidade de vagas não pode ser menor que 1 nem que as vagas já preenchidas.");
+                }
+                existente.setQuantidadeDeVagas(atualizada.getQuantidadeDeVagas());
+            }
+
+            if (atualizada.getGrandesAreas() != null && !atualizada.getGrandesAreas().isEmpty()) {
+                existente.setGrandesAreas(atualizada.getGrandesAreas());
+            }
 
             if (atualizada.getDataInicioInscricao() != null) {
                 existente.setDataInicioInscricao(atualizada.getDataInicioInscricao());
