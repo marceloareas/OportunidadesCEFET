@@ -27,7 +27,9 @@
           />
         </div>
 
-        <button type="submit" class="btn-submit">Enviar</button>
+        <button type="submit" class="btn-submit" [disabled]="enviando()" [class.btn-carregando]="enviando()">
+          {{ enviando() ? 'Entrando...' : 'Enviar' }}
+        </button>
         <span>
           Não possui conta?
           <a (click)="toggleForm()">Cadastrar</a>
@@ -155,7 +157,9 @@
           </div>
         </div>
 
-        <button type="submit" class="btn-submit">Enviar</button>
+        <button type="submit" class="btn-submit" [disabled]="enviando()" [class.btn-carregando]="enviando()">
+          {{ enviando() ? 'Cadastrando...' : 'Enviar' }}
+        </button>
         <span>
           Já possui conta?
           <a (click)="toggleForm()">Login</a>

@@ -49,6 +49,7 @@ export class Home {
 
   carregando = signal<boolean>(false);
   erro = signal<string>('');
+  publicando = signal<boolean>(false);
 
   // modal de candidatos (professor vendo candidatos de uma oportunidade do feed)
   mostrandoModalCandidatos = signal<boolean>(false);
@@ -304,6 +305,8 @@ export class Home {
   }
 
   enviarPost() {
+    if (this.publicando()) return;
+
     if (!this.titulo().trim()) {
       this.feedback.error('Informe um título antes de enviar.');
       return;
@@ -324,14 +327,17 @@ export class Home {
       nomeCriador: usuario?.nome || 'Usuário',
     } as any;
 
+    this.publicando.set(true);
     this.postService.createPost(novoPost).subscribe({
       next: (p) => {
+        this.publicando.set(false);
         this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
         this.feedback.success('Publicação criada com sucesso!');
       },
       error: (err) => {
+        this.publicando.set(false);
         console.error('Erro ao criar post:', err);
         this.feedback.error('Erro ao criar post.');
       }
@@ -391,8 +397,10 @@ export class Home {
       dataFimInscricao: fim.toISOString()
     };
 
+    this.publicando.set(true);
     this.oportunidadeService.criar(novaOportunidade).subscribe({
       next: (oportunidade) => {
+        this.publicando.set(false);
         const opComVagas = {
           ...oportunidade,
           quantidadeDeVagas:
@@ -407,6 +415,7 @@ export class Home {
         this.feedback.success('Oportunidade criada com sucesso!');
       },
       error: (err) => {
+        this.publicando.set(false);
         console.error('Erro ao criar oportunidade:', err);
         this.feedback.error('Erro ao criar oportunidade.');
       }

@@ -7,7 +7,7 @@
       <div class="posts" *ngSwitchCase="'home'">
         <div class="new-post">
           <div class="img">
-            <img [src]="avatarOuPadrao(usuarioLogado()?.imagemPerfil, usuarioLogado()?.funcao)" />
+            <img [src]="avatarOuPadrao(usuarioLogado()?.imagemPerfil, usuarioLogado()?.funcao)" alt="Sua foto de perfil" />
           </div>
 
           <div (click)="openNewPost()" class="new-post-btn">
@@ -359,7 +359,13 @@
             </div>
           </ng-container>
 
-          <button class="send-btn" (click)="enviarPost()">CRIAR</button>
+          <button
+            class="send-btn"
+            (click)="enviarPost()"
+            [disabled]="publicando()"
+            [class.btn-carregando]="publicando()">
+            {{ publicando() ? 'CRIANDO...' : 'CRIAR' }}
+          </button>
         </div>
       </div>
     </div>

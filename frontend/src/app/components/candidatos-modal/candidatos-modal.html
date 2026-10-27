@@ -64,6 +64,7 @@
             class="btn-confirmar"
             (click)="abrirModalConfirmacao()"
             [disabled]="candidatosSelecionados().size === 0 || finalizandoOportunidade()"
+            [class.btn-carregando]="finalizandoOportunidade()"
             style="flex: 1; padding: 10px 16px; background: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;"
           >
             {{ finalizandoOportunidade() ? 'Processando...' : 'Finalizar Seleção' }}
