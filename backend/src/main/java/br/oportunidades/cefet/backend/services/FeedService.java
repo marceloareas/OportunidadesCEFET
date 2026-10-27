@@ -82,9 +82,11 @@ public class FeedService {
                         PageRequest.of(page, size)
                 );
 
+        // Item cujo post/oportunidade foi apagado vira null em montarFeedItem: não vai para o feed.
         List<FeedResponseDTO> items = feedPage.getContent()
                 .stream()
                 .map(item -> montarFeedItem(item, userId))
+                .filter(Objects::nonNull)
                 .toList();
 
         return new FeedPageDTO(
