@@ -45,6 +45,28 @@
   box-shadow: 0 14px 24px rgba(10, 73, 126, 0.24);
 }
 
+/* Ação do professor abaixo de cada oportunidade aberta */
+.oportunidade-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin: -0.25rem 0 1rem;
+}
+
+.btn-finalizar {
+  background: #fff;
+  color: #0a497e;
+  border: 1px solid #0a497e;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-finalizar:hover:not(:disabled) {
+  background: #0a497e;
+  color: #fff;
+}
+
 hr {
   border: none;
   height: 1px;

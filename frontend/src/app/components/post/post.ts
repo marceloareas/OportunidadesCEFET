@@ -69,6 +69,7 @@ export class PostComponent {
 
   salvo = signal<boolean>(false);
   candidaturaEnviando = signal<boolean>(false);
+  comentarioEnviando = signal<boolean>(false);
 
   private comentarioService = inject(ComentarioService);
   private usuarioService = inject(UsuarioService);
@@ -220,8 +221,12 @@ export class PostComponent {
       texto: textoComentario
     } as any;
 
+    if (this.comentarioEnviando()) return;
+    this.comentarioEnviando.set(true);
+
     this.comentarioService.criar(payload).subscribe({
       next: (saved) => {
+        this.comentarioEnviando.set(false);
         this.comentarios.push({
           autor: usuario.nome || usuario.id,
           imagemPerfil: usuario.imagemPerfil,
@@ -240,6 +245,7 @@ export class PostComponent {
         this.novoComentario = '';
       },
       error: (err) => {
+        this.comentarioEnviando.set(false);
         console.error('Erro ao enviar comentario:', err);
         this.feedback.error('Erro ao enviar comentario. Veja o console para mais detalhes.');
       },

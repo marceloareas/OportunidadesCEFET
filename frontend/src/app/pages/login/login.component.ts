@@ -38,6 +38,9 @@ export class Login {
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
 
+  // Trava o botão Enviar enquanto a requisição está em andamento (M4).
+  enviando = signal<boolean>(false);
+
   private feedback = inject(FeedbackService);
 
   constructor(
@@ -110,13 +113,17 @@ export class Login {
   onLoginSubmit(event: Event): void {
     event.preventDefault();
 
+    if (this.enviando()) return;
+
     if (!this.email() || !this.senha()) {
       this.feedback.error('Preencha e-mail e senha.');
       return;
     }
 
+    this.enviando.set(true);
     this.authService.login({ email: this.email(), senha: this.senha() }).subscribe({
       next: (authResponse) => {
+        this.enviando.set(false);
         const usuarioNormalizado = {
           id: authResponse.usuario.id?.toString(),
           nome: authResponse.usuario.nome,
@@ -138,6 +145,7 @@ export class Login {
         this.router.navigate(['/home']);
       },
       error: (err) => {
+        this.enviando.set(false);
         console.error('Erro ao autenticar usuário:', err);
         this.feedback.error('Usuário não encontrado ou senha incorreta.');
       },
@@ -146,6 +154,8 @@ export class Login {
 
   onRegisterSubmit(event: Event): void {
     event.preventDefault();
+
+    if (this.enviando()) return;
 
     if (this.senha() !== this.confirmaSenha()) {
       this.feedback.error('As senhas não coincidem.');
@@ -161,12 +171,15 @@ export class Login {
       imagemPerfil: this.imagemPerfilBase64 || undefined
     };
 
+    this.enviando.set(true);
     this.usuarioService.cadastrar(novoUsuario).subscribe({
       next: (usuario) => {
+        this.enviando.set(false);
         this.feedback.success('Cadastro realizado! Faça login.');
         this.toggleForm();
       },
       error: (err) => {
+        this.enviando.set(false);
         console.error('Erro ao cadastrar:', err);
         this.feedback.error('Erro ao cadastrar usuário.');
       },

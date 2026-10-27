@@ -31,17 +31,9 @@ public class AuthController {
 	public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
 		return usuarioRepository.findByEmail(request.email())
 				.filter(usuario -> usuario.getSenha() != null)
-				.filter(usuario -> {
-					boolean senhaHashValida = passwordEncoder.matches(request.senha(), usuario.getSenha());
-					boolean senhaLegadaValida = request.senha().equals(usuario.getSenha());
-
-					if (senhaLegadaValida && !senhaHashValida) {
-						usuario.setSenha(passwordEncoder.encode(request.senha()));
-						usuarioRepository.save(usuario);
-					}
-
-					return senhaHashValida || senhaLegadaValida;
-				})
+				// Só BCrypt: as senhas em texto puro são migradas na subida (SenhaLegadoBackfill).
+				.filter(usuario -> request.senha() != null
+						&& passwordEncoder.matches(request.senha(), usuario.getSenha()))
 				.map(usuario -> ResponseEntity.ok(new AuthResponse(jwtService.gerarToken(usuario), usuario)))
 				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
 	}

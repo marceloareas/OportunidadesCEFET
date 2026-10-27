@@ -88,10 +88,11 @@
     >
       <button
         class="btn-candidatar"
-        [disabled]="jaCandidatado() || !podeCandidatar()"
+        [disabled]="jaCandidatado() || !podeCandidatar() || candidaturaEnviando()"
+        [class.btn-carregando]="candidaturaEnviando()"
         (click)="abrirConfirmacaoCandidatura()"
       >
-        {{ !podeCandidatar() ? statusDescricao() : (jaCandidatado() ? 'CANDIDATADO ✔' : 'CANDIDATAR-SE') }}
+        {{ !podeCandidatar() ? statusDescricao() : (jaCandidatado() ? 'CANDIDATADO ✔' : (candidaturaEnviando() ? 'ENVIANDO...' : 'CANDIDATAR-SE')) }}
       </button>
 
       <span
@@ -118,8 +119,12 @@
           placeholder="Escreva seu comentário..."
           [(ngModel)]="novoComentario"></textarea>
 
-        <button class="btn-comentario" (click)="enviarComentario()" [disabled]="!novoComentario.trim()">
-          Enviar
+        <button
+          class="btn-comentario"
+          (click)="enviarComentario()"
+          [disabled]="!novoComentario.trim() || comentarioEnviando()"
+          [class.btn-carregando]="comentarioEnviando()">
+          {{ comentarioEnviando() ? 'Enviando...' : 'Enviar' }}
         </button>
       </ng-container>
       <ng-template #comentariosBloqueados>

@@ -116,6 +116,22 @@ public class UsuarioService {
         return semImagem.size();
     }
 
+    // Senhas gravadas antes do BCrypt ficaram em texto puro. Converte todas de uma vez para o
+    // login não precisar mais aceitar texto puro (M5).
+    public int migrarSenhasLegado() {
+        List<Usuario> legado = usuarioRepository.findAll().stream()
+                .filter(u -> u.getSenha() != null && !u.getSenha().isBlank())
+                .filter(u -> !ehHashBcrypt(u.getSenha()))
+                .toList();
+        legado.forEach(u -> u.setSenha(passwordEncoder.encode(u.getSenha())));
+        usuarioRepository.saveAll(legado);
+        return legado.size();
+    }
+
+    static boolean ehHashBcrypt(String senha) {
+        return senha != null && senha.matches("^\\$2[aby]?\\$\\d{2}\\$[./A-Za-z0-9]{53}$");
+    }
+
     public boolean deleteUsuario(String id) {
         if (usuarioRepository.existsById(id)) {
             usuarioRepository.deleteById(id);

@@ -32,6 +32,7 @@ export class EditarPerfil {
   imagemErro: string = '';
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
+  salvando = signal<boolean>(false);
 
   private feedback = inject(FeedbackService);
 
@@ -64,6 +65,8 @@ export class EditarPerfil {
   onSubmit(event: Event) {
     event.preventDefault();
 
+    if (this.salvando()) return;
+
     if (this.senha() && this.senha() !== this.confirmaSenha()) {
       this.feedback.error('As senhas não coincidem.');
       return;
@@ -91,8 +94,10 @@ export class EditarPerfil {
       payload.senha = this.senha();
     }
 
+    this.salvando.set(true);
     this.usuarioService.atualizar(this.userId, payload).subscribe({
       next: (updated) => {
+        this.salvando.set(false);
         this.feedback.success('Perfil atualizado com sucesso.');
         // Atualiza localStorage com novos dados (mantém id)
         const funcaoAtualizada = updated.funcao || this.funcao;
@@ -113,6 +118,7 @@ export class EditarPerfil {
         this.router.navigate(['/home']);
       },
       error: (err) => {
+        this.salvando.set(false);
         console.error('Erro ao atualizar usuário:', err);
         this.feedback.error('Erro ao atualizar perfil. Tente novamente.');
       },
