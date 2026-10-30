@@ -96,7 +96,9 @@ public class OportunidadeService {
 
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-        aplicarStatus(salva);
+        // Resposta completa (nome/foto do criador, candidatos e status): o front troca o
+        // cartão por ela, e sem esses campos o nome do professor sumia da tela.
+        preencherDadosCriador(salva);
 
         feedService.criarFeedOportunidade(salva);
 
@@ -187,7 +189,7 @@ public class OportunidadeService {
 
             Oportunidade salva = oportunidadeRepository.save(existente);
 
-            aplicarStatus(salva);
+            preencherDadosCriador(salva);
 
             feedService.atualizarFeedOportunidade(salva);
 
@@ -402,7 +404,7 @@ public class OportunidadeService {
 
         notificarReservas(salva, reservas);
 
-        aplicarStatus(salva);
+        preencherDadosCriador(salva);
 
         feedService.atualizarFeedOportunidade(salva);
 
@@ -430,7 +432,7 @@ public class OportunidadeService {
 
         notificarReservas(salva, reservas);
 
-        aplicarStatus(salva);
+        preencherDadosCriador(salva);
 
         feedService.atualizarFeedOportunidade(salva);
 
