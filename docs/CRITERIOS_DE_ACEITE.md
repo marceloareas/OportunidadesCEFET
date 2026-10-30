@@ -31,8 +31,8 @@ Erros seguem o formato padronizado do `ExceptionControllerAdvice`
   *Teste:* `OportunidadePermissoesTest.alunoNaoCandidataOutroAluno`.
 - **CA-04** Dado um professor que não é o dono, quando ele tenta aprovar, finalizar, editar ou ver candidatos, então recebe **403**.
   *Teste:* `OportunidadePermissoesTest.outroProfessorNaoGerencia`, `OportunidadeControllerTest`.
-- **CA-05** Dada uma requisição sem token válido em qualquer rota fora de `/auth/**` e `POST /users`, então recebe **401/403**
-  (bloqueada pelo `SecurityConfig`).
+- **CA-05** Dada uma requisição sem token válido (ausente ou expirado) em qualquer rota fora de `/auth/**` e `POST /users`,
+  então recebe **401**. O 403 fica reservado para recusa de permissão.
 
 ## 2. Criação de oportunidade
 
@@ -98,3 +98,16 @@ Erros seguem o formato padronizado do `ExceptionControllerAdvice`
 - **CA-27** Login só aceita senha conferida por BCrypt. Senhas antigas em texto puro são convertidas automaticamente na
   subida do backend (`SenhaLegadoBackfill`), sem que o usuário perceba.
   *Teste:* `UsuarioServiceSenhaLegadoTest`, `AuthControllerTest`.
+- **CA-28** O login devolve um token de acesso (24h) e um refresh token (7 dias). Quando o token de acesso expira, o
+  frontend pede um novo par em `POST /auth/refresh` e repete a requisição, sem o usuário perceber. Se o refresh token
+  também tiver expirado, a sessão é encerrada e o usuário volta ao login. O refresh token não vale como token de acesso.
+  *Teste:* `JwtServiceTest`, `AuthControllerTest`, `auth.interceptor.spec`.
+
+## 10. Perfis, publicações, comentários e itens salvos (sprint 5)
+
+- **CA-29** Só o próprio usuário edita ou exclui o perfil; a função (aluno/professor) não muda pela edição (**403** ao
+  tentar editar outro). *Teste:* `UsuarioControllerPermissaoTest`, `UsuarioServiceEdicaoTest`.
+- **CA-30** Publicações e comentários ficam sempre em nome de quem está logado, mesmo que o corpo informe outro autor; só o
+  autor apaga a publicação. *Teste:* `PostComentarioSalvosPermissaoTest`.
+- **CA-31** Curtidas e itens salvos só podem ser feitos, removidos e listados em nome próprio (**403** caso contrário).
+  *Teste:* `PostComentarioSalvosPermissaoTest`.
