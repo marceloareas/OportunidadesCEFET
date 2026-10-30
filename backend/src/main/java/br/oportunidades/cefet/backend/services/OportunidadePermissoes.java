@@ -14,20 +14,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class OportunidadePermissoes {
 
-    private final UsuarioRepository usuarioRepository;
+    private final PermissoesUsuario usuarios;
     private final OportunidadeRepository oportunidadeRepository;
 
     public OportunidadePermissoes(UsuarioRepository usuarioRepository, OportunidadeRepository oportunidadeRepository) {
-        this.usuarioRepository = usuarioRepository;
+        this.usuarios = new PermissoesUsuario(usuarioRepository);
         this.oportunidadeRepository = oportunidadeRepository;
     }
 
     public Usuario usuarioAtual(Authentication authentication) {
-        if (authentication == null || authentication.getName() == null) {
-            throw new SecurityException("Usuário não autenticado.");
-        }
-        return usuarioRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        return usuarios.usuarioAtual(authentication);
     }
 
     public Usuario exigirProfessor(Authentication authentication) {
@@ -50,11 +46,7 @@ public class OportunidadePermissoes {
     }
 
     public Usuario exigirProprioUsuario(Authentication authentication, String idUsuario) {
-        Usuario usuario = usuarioAtual(authentication);
-        if (!usuario.getId().equals(idUsuario)) {
-            throw new SecurityException("Você não pode agir em nome de outro usuário.");
-        }
-        return usuario;
+        return usuarios.exigirProprioUsuario(authentication, idUsuario);
     }
 
     public Usuario exigirDono(Authentication authentication, String idOportunidade) {

@@ -67,7 +67,8 @@ public class UsuarioService {
                             throw new ConflictException("Já existe outro usuário cadastrado com esse e-mail.");
                         });
             }
-            // Atualiza apenas campos fornecidos; mantém senha e função se não vierem na requisição
+            // Atualiza apenas campos fornecidos; mantém a senha se não vier na requisição.
+            // A função (aluno/professor) é definida no cadastro e não muda pela edição de perfil.
             if (usuario.getNome() != null) {
                 existing.setNome(usuario.getNome());
             }
@@ -76,9 +77,6 @@ public class UsuarioService {
             }
             if (usuario.getMatricula() != null) {
                 existing.setMatricula(usuario.getMatricula());
-            }
-            if (usuario.getFuncao() != null) {
-                existing.setFuncao(usuario.getFuncao());
             }
             if (usuario.getSenha() != null && !usuario.getSenha().isBlank()) {
                 existing.setSenha(passwordEncoder.encode(usuario.getSenha()));
