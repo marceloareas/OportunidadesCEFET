@@ -59,20 +59,27 @@ public class FeedService {
     private MongoTemplate mongoTemplate;
 
     public FeedPageDTO listarFeed(int page, int size, String status, String categoria, String area, String userId) {
+        return listarFeed(page, size, status, categoria, area, null, userId);
+    }
+
+    // q = busca por texto livre no título e na descrição das oportunidades (B1).
+    public FeedPageDTO listarFeed(int page, int size, String status, String categoria, String area, String q,
+                                  String userId) {
 
         boolean temFiltro =
                 (status != null && !status.isBlank())
                         || (categoria != null && !categoria.isBlank())
-                        || (area != null && !area.isBlank());
+                        || (area != null && !area.isBlank())
+                        || (q != null && !q.isBlank());
 
         // Sem filtro: feed completo (posts + oportunidades), como antes.
         if (!temFiltro) {
             return listarFeedCompleto(page, size, userId);
         }
 
-        // Com filtro: os campos filtráveis (status/categoria/área) só existem em
+        // Com filtro: os campos filtráveis (status/categoria/área/texto) só existem em
         // Oportunidade, então consultamos essa coleção diretamente (posts ficam de fora).
-        return listarOportunidadesFiltradas(page, size, status, categoria, area, userId);
+        return listarOportunidadesFiltradas(page, size, status, categoria, area, q, userId);
     }
 
     private FeedPageDTO listarFeedCompleto(int page, int size, String userId) {
@@ -99,9 +106,13 @@ public class FeedService {
     }
 
     private FeedPageDTO listarOportunidadesFiltradas(
-            int page, int size, String status, String categoria, String area, String userId) {
+            int page, int size, String status, String categoria, String area, String q, String userId) {
 
         List<Criteria> condicoes = new ArrayList<>();
+
+        if (q != null && !q.isBlank()) {
+            condicoes.add(criteriaParaTexto(q));
+        }
 
         if (categoria != null && !categoria.isBlank()) {
             condicoes.add(Criteria.where("idCategoria").is(categoria.trim().toUpperCase()));
@@ -151,6 +162,16 @@ public class FeedService {
         int totalPages = size > 0 ? (int) Math.ceil((double) total / size) : 0;
 
         return new FeedPageDTO(items, page, size, total, totalPages);
+    }
+
+    // Busca "contém", sem diferenciar maiúsculas, no nome ou na descrição. O texto do usuário é
+    // escapado: caracteres como "(" ou "*" são procurados literalmente, não viram regex.
+    static Criteria criteriaParaTexto(String q) {
+        String literal = q.trim().replaceAll("[\\\\^$.|?*+()\\[\\]{}]", "\\\\$0");
+        return new Criteria().orOperator(
+                Criteria.where("nome").regex(literal, "i"),
+                Criteria.where("descricao").regex(literal, "i")
+        );
     }
 
     // Traduz o status (calculado dinamicamente a partir das datas e do flag

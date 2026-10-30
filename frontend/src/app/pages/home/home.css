@@ -103,6 +103,11 @@ hr {
   font-weight: 500;
 }
 
+.filtro-busca {
+  flex: 2 1 240px;
+}
+
+.filtro-campo input,
 .filtro-campo select {
   padding: 8px 10px;
   border: 1px solid #ccc;
@@ -113,6 +118,7 @@ hr {
   cursor: pointer;
 }
 
+.filtro-campo input:focus,
 .filtro-campo select:focus {
   outline: none;
   border-color: #0A497E;

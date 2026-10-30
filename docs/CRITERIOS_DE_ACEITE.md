@@ -111,3 +111,7 @@ Erros seguem o formato padronizado do `ExceptionControllerAdvice`
   autor apaga a publicação. *Teste:* `PostComentarioSalvosPermissaoTest`.
 - **CA-31** Curtidas e itens salvos só podem ser feitos, removidos e listados em nome próprio (**403** caso contrário).
   *Teste:* `PostComentarioSalvosPermissaoTest`.
+- **CA-32** No feed, o campo **Buscar oportunidades** procura o texto (sem diferenciar maiúsculas) no título e na descrição
+  das oportunidades, combinando com os filtros de status, categoria e área. A busca dispara 400 ms depois que a pessoa
+  para de digitar; caracteres especiais como `(` ou `+` são procurados literalmente. *Teste:* `FeedServiceTest`,
+  `feed.service.spec`, `home.spec`.
