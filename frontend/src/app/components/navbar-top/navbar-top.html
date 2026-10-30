@@ -9,6 +9,15 @@
     </div>
 
     <div class="right">
-        <p></p>
+        <button
+            type="button"
+            class="btn-tema"
+            (click)="tema.alternar()"
+            [attr.aria-label]="tema.tema() === 'escuro' ? 'Usar tema claro' : 'Usar tema escuro'"
+            [attr.title]="tema.tema() === 'escuro' ? 'Usar tema claro' : 'Usar tema escuro'"
+        >
+            <i class="bi" [class.bi-sun]="tema.tema() === 'escuro'" [class.bi-moon-stars]="tema.tema() !== 'escuro'" aria-hidden="true"></i>
+        </button>
+        <app-notificacoes-sino></app-notificacoes-sino>
     </div>
-</nav>   
+</nav>

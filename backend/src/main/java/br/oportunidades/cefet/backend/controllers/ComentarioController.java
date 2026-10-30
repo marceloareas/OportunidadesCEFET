@@ -2,8 +2,9 @@ package br.oportunidades.cefet.backend.controllers;
 
 import br.oportunidades.cefet.backend.models.Comentario;
 import br.oportunidades.cefet.backend.services.ComentarioService;
-import org.springframework.beans.factory.annotation.Autowired;
+import br.oportunidades.cefet.backend.services.PermissoesUsuario;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -11,8 +12,13 @@ import java.util.List;
 @RequestMapping("/comments")
 public class ComentarioController {
 
-    @Autowired
-    private ComentarioService comentarioService;
+    private final ComentarioService comentarioService;
+    private final PermissoesUsuario permissoes;
+
+    public ComentarioController(ComentarioService comentarioService, PermissoesUsuario permissoes) {
+        this.comentarioService = comentarioService;
+        this.permissoes = permissoes;
+    }
 
     // 🔹 Comentários de um Post
     @GetMapping("/post/{idPost}")
@@ -34,12 +40,10 @@ public class ComentarioController {
         );
     }
 
+    // O autor do comentário é sempre quem está logado, nunca o usuarioId enviado no corpo.
     @PostMapping
-    public ResponseEntity<Comentario> criar(@RequestBody Comentario comentario) {
-        try {
-            return ResponseEntity.ok(comentarioService.salvar(comentario));
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<Comentario> criar(@RequestBody Comentario comentario, Authentication authentication) {
+        comentario.setUsuarioId(permissoes.usuarioAtual(authentication).getId());
+        return ResponseEntity.ok(comentarioService.salvar(comentario));
     }
 }

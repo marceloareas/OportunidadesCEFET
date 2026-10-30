@@ -1,6 +1,6 @@
 .post {
-  background: #fafafa;
-  border: 1px solid #ddd;
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
   border-radius: 10px;
   padding: 14px 16px;
   margin-bottom: 16px;
@@ -23,7 +23,7 @@
 .post-info h2 {
   font-size: 0.95rem;
   margin: 0;
-  color: #222;
+  color: var(--cor-texto-forte);
   font-weight: 600;
 }
 
@@ -35,7 +35,7 @@
 
 .post-info .date {
   font-size: 0.8rem;
-  color: #777;
+  color: var(--cor-texto-suave);
 }
 
 .post-body {
@@ -44,14 +44,14 @@
 
 .post-title {
   font-size: 1.05rem;
-  color: #111;
+  color: var(--cor-texto-forte);
   font-weight: 600;
   margin: 6px 0 6px;
 }
 
 .post-text {
   font-size: 0.95rem;
-  color: #333;
+  color: var(--cor-texto);
   line-height: 1.4;
   margin-bottom: 10px;
   white-space: pre-line;
@@ -68,7 +68,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--cor-borda);
   margin-top: 10px;
   padding-top: 8px;
   gap: 10px;
@@ -82,7 +82,7 @@
 
 .oportunidade-info p {
   font-size: 0.9rem;
-  color: #444;
+  color: var(--cor-texto);
   margin: 0;
 }
 
@@ -99,31 +99,31 @@
   min-height: 22px;
   padding: 3px 9px;
   border-radius: 999px;
-  background: #eef3f8;
-  color: #345;
+  background: var(--cor-primaria-suave);
+  color: var(--cor-texto);
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1;
 }
 
 .candidatura-chip-aprovado {
-  background: #e8f7ed;
-  color: #1f7a3d;
+  background: var(--cor-sucesso-suave);
+  color: var(--cor-sucesso);
 }
 
 .candidatura-chip-reserva {
-  background: #f1f1f1;
-  color: #555;
+  background: var(--cor-superficie-2);
+  color: var(--cor-texto-suave);
 }
 
 .candidatura-chip-concorrendo {
-  background: #eaf2ff;
-  color: #0a497e;
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria-texto);
 }
 
 .btn-candidatos {
-  background: #0a497e;
-  color: #fff;
+  background: var(--cor-primaria);
+  color: var(--cor-sobre-primaria);
   border: none;
   padding: 6px 10px;
   border-radius: 6px;
@@ -133,14 +133,14 @@
 }
 
 .btn-candidatos:hover {
-  background: #0c5c9f;
+  background: var(--cor-primaria-forte);
 }
 
 .post-footer {
   display: flex;
   align-items: center;
   gap: 16px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--cor-borda);
   padding-top: 8px;
   margin-top: 10px;
 }
@@ -159,7 +159,7 @@
 .icon-btn {
   background: transparent;
   border: none;
-  color: #555;
+  color: var(--cor-texto-suave);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -170,20 +170,20 @@
 
 .icon-btn:hover {
   transform: scale(1.05);
-  color: #000;
+  color: var(--cor-texto-forte);
 }
 
 /* Estado ativo (curtido) */
 .icon-btn.like-btn.liked i,
 .icon-btn.like-btn.liked span {
-  color: #0062d9;
+  color: var(--cor-primaria-texto);
   font-weight: bold;
 }
 
 /* Botão de candidatura */
 .btn-candidatar {
   background-color: #000;
-  color: white;
+  color: var(--cor-sobre-primaria);
   border: none;
   border-radius: 4px;
   padding: 6px 10px;
@@ -219,48 +219,11 @@
   height: fit-content;
   margin-top:7vh;
   z-index: 102;
-  background-color: #fff;
+  background-color: var(--cor-superficie);
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0px 5px 15px rgba(0,0,0,0.3);
   width: 60vw;
-}
-
-.modal-confirmacao-candidatura {
-  align-items: flex-start;
-}
-
-.confirmacao-candidatura {
-  min-height: auto;
-  max-width: 420px;
-}
-
-.confirmacao-candidatura-corpo {
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 4px 0 16px;
-}
-
-.confirmacao-candidatura-corpo strong {
-  color: #111;
-  font-size: 1rem;
-}
-
-.confirmacao-candidatura-corpo p,
-.confirmacao-candidatura-corpo span {
-  color: #555;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.confirmacao-candidatura-acoes {
-  border-top: 1px solid #e5e5e5;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  padding-top: 12px;
 }
 
 .btn-confirmacao-secundario,
@@ -272,15 +235,15 @@
 }
 
 .btn-confirmacao-secundario {
-  background: #fff;
-  border: 1px solid #ccc;
-  color: #333;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto);
 }
 
 .btn-confirmacao-primario {
-  background: #0a497e;
-  border: 1px solid #0a497e;
-  color: #fff;
+  background: var(--cor-primaria);
+  border: 1px solid var(--cor-primaria-texto);
+  color: var(--cor-sobre-primaria);
 }
 
 .btn-confirmacao-secundario:disabled,
@@ -292,7 +255,7 @@
 .modal-conteudo.modal-candidatos {
   max-width: 620px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--cor-borda);
 }
 
 .candidatos-topo {
@@ -313,7 +276,7 @@
 }
 
 .sub{
-  color: #666;
+  color: var(--cor-texto-suave);
   font-size: 0.85rem;
 }
 
@@ -324,9 +287,9 @@
 }
 
 .btn-fechar{
-  background: #f2f2f2;
-  color: #333;
-  border: 1px solid #ddd;
+  background: var(--cor-superficie-2);
+  color: var(--cor-texto);
+  border: 1px solid var(--cor-borda);
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
@@ -337,13 +300,13 @@
   align-items: center;
   gap: 6px;
   font-size: 0.9rem;
-  color: #333;
+  color: var(--cor-texto);
 }
 
 /* TOPO FIXO */
 .modal-topo {
   padding: 12px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--cor-borda);
   display: flex;
   gap: 12px;
   justify-content: center;
@@ -371,8 +334,8 @@
 }
 
 .comentario-card{
-  border: 1px solid #e5e5e5;
-  background: #f9f9fb;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 10px;
@@ -381,7 +344,7 @@
 
 .comentario-autor{
   font-weight: 700;
-  color: #111;
+  color: var(--cor-texto-forte);
   margin-bottom: 4px;
 }
 
@@ -395,17 +358,17 @@
 
 .comentario-perfil-link:hover,
 .candidato-perfil-link:hover {
-  color: #0a497e;
+  color: var(--cor-primaria-texto);
   text-decoration: underline;
 }
 
 .comentario-texto{
-  color: #444;
+  color: var(--cor-texto);
   font-size: 0.95rem;
 }
 
 .comentario-data {
-  color: #777;
+  color: var(--cor-texto-suave);
   font-size: 0.82rem;
   font-weight: 500;
 }
@@ -417,17 +380,17 @@
   gap: 10px;
   margin-top: 14px;
   padding: 10px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--cor-borda);
   border-radius: 8px;
-  background: #fff;
+  background: var(--cor-superficie);
 }
 
 .btn-paginacao,
 .btn-comentario {
   min-width: 92px;
-  background: #ffffff;
-  color: #0a497e;
-  border: 1px solid #c9ddf5;
+  background: var(--cor-superficie);
+  color: var(--cor-primaria-texto);
+  border: 1px solid var(--cor-borda);
   padding: 7px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -437,23 +400,23 @@
 
 .btn-paginacao:hover:not(:disabled),
 .btn-comentario:hover:not(:disabled) {
-  background: #eef5ff;
-  border-color: #0a497e;
+  background: var(--cor-primaria-suave);
+  border-color: var(--cor-primaria-texto);
 }
 
 .btn-paginacao:disabled,
 .btn-comentario:disabled {
-  background: #f4f4f4;
-  border-color: #e0e0e0;
-  color: #999;
+  background: var(--cor-superficie-2);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto-suave);
   cursor: not-allowed;
 }
 
 .paginacao-info {
-  background: #f9f9fb;
-  border: 1px solid #ededed;
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
   border-radius: 6px;
-  color: #555;
+  color: var(--cor-texto-suave);
   font-size: 0.85rem;
   font-weight: 600;
   padding: 7px 10px;
@@ -486,13 +449,13 @@
 .lista-candidatos li{
   padding: 10px 12px;
   margin-bottom: 10px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--cor-borda);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   font-size: 0.95rem;
-  background: #f9f9fb;
+  background: var(--cor-fundo);
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
@@ -503,11 +466,11 @@
 }
 
 .candidato-card {
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--cor-borda);
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 8px;
-  background: #fafafa;
+  background: var(--cor-fundo);
 }
 
 .candidato-acoes {
@@ -519,17 +482,17 @@
 
 .candidato-nome {
   font-weight: 700;
-  color: #111;
+  color: var(--cor-texto-forte);
 }
 
 .cand-meta{
-  color: #666;
+  color: var(--cor-texto-suave);
   font-size: 0.85rem;
   margin-top: 2px;
 }
 
 .candidato-info {
-  color: #444;
+  color: var(--cor-texto);
   font-size: 0.9rem;
 }
 
@@ -537,8 +500,8 @@
   display: inline-block;
   margin-top: 6px;
   padding: 4px 8px;
-  background: #eef5ff;
-  color: #0a497e;
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria-texto);
   font-weight: 600;
   border-radius: 999px;
   font-size: 0.8rem;
@@ -548,15 +511,15 @@
   display: inline-block;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #e8f7ed;
-  color: #1f7a3d;
+  background: var(--cor-sucesso-suave);
+  color: var(--cor-sucesso);
   font-weight: 700;
   font-size: 0.82rem;
 }
 
 .btn-aprovar {
-  background: #0a497e;
-  color: #fff;
+  background: var(--cor-primaria);
+  color: var(--cor-sobre-primaria);
   border: none;
   padding: 6px 10px;
   border-radius: 6px;
@@ -566,23 +529,23 @@
 }
 
 .btn-aprovar:disabled {
-  background: #999;
+  background: var(--cor-superficie-3);
   cursor: not-allowed;
 }
 
 .btn-aprovar:hover:not(:disabled) {
-  background: #0c5c9f;
+  background: var(--cor-primaria-forte);
 }
 
 .mensagem-vazia{
-  color: #666;
+  color: var(--cor-texto-suave);
   font-style: italic;
   padding: 8px;
 }
 
 .comentario {
   padding: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--cor-borda);
 }
 .perfil-click {
   cursor: pointer;

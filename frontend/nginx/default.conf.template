@@ -1,0 +1,47 @@
+# Servidor de produção do frontend: entrega o Angular compilado e repassa /api ao backend.
+# Arquivo de template: a imagem oficial do nginx troca ${BACKEND_UPSTREAM} pelo valor da
+# variável de ambiente ao subir o container.
+server {
+    listen 80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.csr.html index.html;
+
+    # Fotos de perfil e imagens de post vão em base64 no corpo da requisição.
+    client_max_body_size 10m;
+
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+    gzip_min_length 1024;
+
+    location /api/ {
+        # A barra no fim tira o prefixo /api (o backend responde em /auth, /feed, ...).
+        proxy_pass ${BACKEND_UPSTREAM}/;
+        # Host e esquema originais: o Spring compara com o Origin do navegador (CORS).
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+
+    # Configuração lida em tempo de execução: nunca guardar em cache.
+    location = /env.js {
+        add_header Cache-Control "no-store";
+        try_files $uri =404;
+    }
+
+    # Arquivos com hash no nome podem ficar em cache por muito tempo.
+    location ~* \.(?:js|css|woff2?|ttf|svg|png|jpe?g|gif|ico)$ {
+        expires 30d;
+        add_header Cache-Control "public";
+        try_files $uri =404;
+    }
+
+    # Rotas do Angular (/home, /perfil/...) caem no index do app.
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri $uri/ /index.csr.html;
+    }
+}

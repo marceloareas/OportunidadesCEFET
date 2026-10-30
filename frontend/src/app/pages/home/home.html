@@ -7,7 +7,7 @@
       <div class="posts" *ngSwitchCase="'home'">
         <div class="new-post">
           <div class="img">
-            <img [src]="usuarioLogado()?.imagemPerfil || 'favicon.png'" />
+            <img [src]="avatarOuPadrao(usuarioLogado()?.imagemPerfil, usuarioLogado()?.funcao)" alt="Sua foto de perfil" />
           </div>
 
           <div (click)="openNewPost()" class="new-post-btn">
@@ -22,6 +22,18 @@
 
           <!-- FILTROS DE OPORTUNIDADES -->
           <div class="filtros">
+            <div class="filtro-campo filtro-busca">
+              <label for="filtroTexto">Buscar oportunidades</label>
+              <input
+                id="filtroTexto"
+                type="search"
+                placeholder="Título ou descrição"
+                autocomplete="off"
+                [ngModel]="filtroTexto()"
+                (ngModelChange)="buscarTexto($event)"
+              />
+            </div>
+
             <div class="filtro-campo">
               <label for="filtroStatus">Status</label>
               <select
@@ -158,6 +170,10 @@
         (click)="closeNewPost()"
       >
         <div class="modal-conteudo" (click)="$event.stopPropagation()">
+          <button type="button" class="close-modal-btn" (click)="closeNewPost()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+
           <div
             class="toggle-row"
             *ngIf="tipoUsuario() === 'professor'"
@@ -355,7 +371,13 @@
             </div>
           </ng-container>
 
-          <button class="send-btn" (click)="enviarPost()">CRIAR</button>
+          <button
+            class="send-btn"
+            (click)="enviarPost()"
+            [disabled]="publicando()"
+            [class.btn-carregando]="publicando()">
+            {{ publicando() ? 'CRIANDO...' : 'CRIAR' }}
+          </button>
         </div>
       </div>
     </div>

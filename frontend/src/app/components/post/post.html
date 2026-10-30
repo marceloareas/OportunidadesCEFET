@@ -8,14 +8,14 @@
     >
       <img
         class="avatar perfil-click"
-        [src]="(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil) || 'pfptemp.ico'"
+        [src]="avatarOuPadrao(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil, post.tipo === 'OPORTUNIDADE' ? 'professor' : null)"
         alt="Foto de perfil"
       />
     </a>
     <ng-template #avatarSemPerfil>
       <img
         class="avatar"
-        [src]="(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil) || 'pfptemp.ico'"
+        [src]="avatarOuPadrao(usuarioLogado()?.id === post.criadorId ? usuarioLogado()?.imagemPerfil : post.imagemPerfil, post.tipo === 'OPORTUNIDADE' ? 'professor' : null)"
         alt="Foto de perfil"
       />
     </ng-template>
@@ -88,10 +88,11 @@
     >
       <button
         class="btn-candidatar"
-        [disabled]="jaCandidatado() || !podeCandidatar()"
+        [disabled]="jaCandidatado() || !podeCandidatar() || candidaturaEnviando()"
+        [class.btn-carregando]="candidaturaEnviando()"
         (click)="abrirConfirmacaoCandidatura()"
       >
-        {{ !podeCandidatar() ? statusDescricao() : (jaCandidatado() ? 'CANDIDATADO ✔' : 'CANDIDATAR-SE') }}
+        {{ !podeCandidatar() ? statusDescricao() : (jaCandidatado() ? 'CANDIDATADO ✔' : (candidaturaEnviando() ? 'ENVIANDO...' : 'CANDIDATAR-SE')) }}
       </button>
 
       <span
@@ -101,53 +102,6 @@
       >
         {{ statusCandidaturaDescricao() }}
       </span>
-    </div>
-  </div>
-</div>
-
-<div
-  class="modal-overlay modal-confirmacao-candidatura"
-  *ngIf="confirmacaoCandidaturaAberta()"
-  (click)="fecharConfirmacaoCandidatura()"
->
-  <div class="modal-conteudo card-modal confirmacao-candidatura" (click)="$event.stopPropagation()">
-    <div class="modal-topo-lista">
-      <h3>Confirmar candidatura</h3>
-      <button
-        class="btn-comentario"
-        type="button"
-        (click)="fecharConfirmacaoCandidatura()"
-        [disabled]="candidaturaEnviando()"
-      >
-        Fechar
-      </button>
-    </div>
-
-    <div class="confirmacao-candidatura-corpo">
-      <strong>{{ post.titulo }}</strong>
-      <p>
-        Sua candidatura será enviada para análise do professor responsável.
-      </p>
-      <span *ngIf="periodoInscricao()">Inscrições: {{ periodoInscricao() }}</span>
-    </div>
-
-    <div class="confirmacao-candidatura-acoes">
-      <button
-        type="button"
-        class="btn-confirmacao-secundario"
-        (click)="fecharConfirmacaoCandidatura()"
-        [disabled]="candidaturaEnviando()"
-      >
-        Cancelar
-      </button>
-      <button
-        type="button"
-        class="btn-confirmacao-primario"
-        (click)="candidatar()"
-        [disabled]="candidaturaEnviando()"
-      >
-        {{ candidaturaEnviando() ? 'Enviando...' : 'Confirmar candidatura' }}
-      </button>
     </div>
   </div>
 </div>
@@ -165,8 +119,12 @@
           placeholder="Escreva seu comentário..."
           [(ngModel)]="novoComentario"></textarea>
 
-        <button class="btn-comentario" (click)="enviarComentario()" [disabled]="!novoComentario.trim()">
-          Enviar
+        <button
+          class="btn-comentario"
+          (click)="enviarComentario()"
+          [disabled]="!novoComentario.trim() || comentarioEnviando()"
+          [class.btn-carregando]="comentarioEnviando()">
+          {{ comentarioEnviando() ? 'Enviando...' : 'Enviar' }}
         </button>
       </ng-container>
       <ng-template #comentariosBloqueados>
@@ -184,10 +142,10 @@
             class="comentario-perfil-link"
             [routerLink]="['/perfil', c.usuarioId]"
           >
-            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            <img [src]="avatarOuPadrao(c.imagemPerfil)" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
           </a>
           <ng-template #comentarioFotoSemPerfil>
-            <img [src]="c.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+            <img [src]="avatarOuPadrao(c.imagemPerfil)" alt="Foto de perfil" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
           </ng-template>
           <a
             *ngIf="c.usuarioId; else comentarioNomeSemPerfil"

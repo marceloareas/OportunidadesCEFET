@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { avatarOuPadrao } from '../../utils/avatar';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-navbar-right',
@@ -15,6 +17,8 @@ export class NavbarRight implements OnInit {
   usuarioFuncao: string = 'Função não definida';
   usuarioMatricula: string = 'Matrícula';
   usuarioImagem: string | null = null;
+  readonly avatarOuPadrao = avatarOuPadrao;
+  private authService = inject(AuthService);
 
   constructor(private router: Router) {}
 
@@ -48,7 +52,7 @@ export class NavbarRight implements OnInit {
 
   // 🔹 Função de logout
   logout(): void {
-    localStorage.clear();
+    this.authService.encerrarSessao();
     this.router.navigate(['/login']);
   }
 }

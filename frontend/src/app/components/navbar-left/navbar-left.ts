@@ -1,19 +1,19 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 
 @Component({
   selector: 'app-navbar-left',
-  imports: [],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './navbar-left.html',
   styleUrl: './navbar-left.css'
 })
 export class NavbarLeft {
   usuarioId: string | null = null;
 
-  constructor(private router: Router) {}
-
   ngOnInit(): void {
+    if (typeof window === 'undefined') return;
+
     const usuarioSalvo = localStorage.getItem('usuario');
     if (usuarioSalvo) {
       try {
@@ -24,16 +24,4 @@ export class NavbarLeft {
       }
     }
   }
-
-  goPerfil(): void {
-    if (!this.usuarioId) {
-      return;
-    }
-
-    this.router.navigate(['/perfil', this.usuarioId]);
-  }
-
-  setView(view: string) {
-    this.router.navigate([`/${view}`]);
-  }  
 }

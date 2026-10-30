@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { FeedbackService } from '../../services/feedback.service';
+import { AuthService } from '../../services/auth.service';
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
   ProfileImageCropPosition,
@@ -31,6 +33,11 @@ export class EditarPerfil {
   imagemErro: string = '';
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
+  salvando = signal<boolean>(false);
+  private emailOriginal = '';
+
+  private feedback = inject(FeedbackService);
+  private authService = inject(AuthService);
 
   constructor(private usuarioService: UsuarioService, private router: Router) {}
 
@@ -47,6 +54,7 @@ export class EditarPerfil {
         this.userId = u.id?.toString();
         this.nome.set(u.nome || '');
         this.email.set(u.email || '');
+        this.emailOriginal = u.email || '';
         this.funcao = u.funcao;
         this.matricula = u.matricula;
         if (u.imagemPerfil) {
@@ -61,13 +69,15 @@ export class EditarPerfil {
   onSubmit(event: Event) {
     event.preventDefault();
 
+    if (this.salvando()) return;
+
     if (this.senha() && this.senha() !== this.confirmaSenha()) {
-      alert('As senhas não coincidem.');
+      this.feedback.error('As senhas não coincidem.');
       return;
     }
 
     if (!this.userId) {
-      alert('Usuário não encontrado. Faça login novamente.');
+      this.feedback.error('Usuário não encontrado. Faça login novamente.');
       return;
     }
 
@@ -88,9 +98,20 @@ export class EditarPerfil {
       payload.senha = this.senha();
     }
 
+    this.salvando.set(true);
     this.usuarioService.atualizar(this.userId, payload).subscribe({
       next: (updated) => {
-        alert('Perfil atualizado com sucesso.');
+        this.salvando.set(false);
+
+        // O login (token) é ligado ao e-mail: trocou o e-mail, precisa entrar de novo.
+        if (updated.email && this.emailOriginal && updated.email !== this.emailOriginal) {
+          this.authService.encerrarSessao();
+          this.feedback.success('E-mail alterado. Entre novamente com o novo e-mail.');
+          this.router.navigate(['/login']);
+          return;
+        }
+
+        this.feedback.success('Perfil atualizado com sucesso.');
         // Atualiza localStorage com novos dados (mantém id)
         const funcaoAtualizada = updated.funcao || this.funcao;
         const usuarioNormalizado = {
@@ -98,7 +119,8 @@ export class EditarPerfil {
           nome: updated.nome,
           email: updated.email,
           funcao: funcaoAtualizada,
-          matricula: updated.matricula || this.matricula
+          matricula: updated.matricula || this.matricula,
+          imagemPerfil: updated.imagemPerfil
         };
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
         if (funcaoAtualizada) {
@@ -109,8 +131,9 @@ export class EditarPerfil {
         this.router.navigate(['/home']);
       },
       error: (err) => {
+        this.salvando.set(false);
         console.error('Erro ao atualizar usuário:', err);
-        alert('Erro ao atualizar perfil. Tente novamente.');
+        this.feedback.error('Erro ao atualizar perfil. Tente novamente.');
       },
     });
   }

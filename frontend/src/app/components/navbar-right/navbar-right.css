@@ -1,7 +1,7 @@
 .menu-direita{
     width: 100%;
-    background-color: #fff;
-    border: 1px solid black;
+    background-color: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-forte);
     border-radius: 10px;
     height: auto;
 
@@ -18,12 +18,16 @@
     width: 80px;
     height: 80px;
     border-radius: 100%;
-    border: 1px solid black;
+    border: 1px solid var(--cor-borda-forte);
     margin-top: -6vh;
     margin-left: 1vw;
 
     img{
         border-radius: 100%;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
 }
 
@@ -32,7 +36,7 @@
 }
 
 .clickable:hover {
-    color: #0A497E;
+    color: var(--cor-primaria-texto);
 }
 
 .edit-profile{
@@ -41,10 +45,13 @@
     width: 100%;
     padding-right: .5vw;
     padding-top: 1vh;
+    /* Reserva o espaço da foto (absoluta, 80px) para o texto não passar por baixo dela. */
+    padding-left: calc(1vw + 88px);
+    font-size: 0.9rem;
     
     span:hover{
         cursor: pointer;
-        color: #0A497E;
+        color: var(--cor-primaria-texto);
     }
 }
 
@@ -58,7 +65,7 @@
 
     .desc{
         height: auto;
-        color: #313131;
+        color: var(--cor-texto);
         font-size: 14px;
         margin-top: .4vh;
         margin-bottom: 2vh;
@@ -73,13 +80,13 @@
         
         a{
             text-decoration: none;
-            color: black;
+            color: var(--cor-texto-forte);
             font-size: 17px;
             cursor: pointer;
         }
 
         a:hover{
-            color: #0A497E;
+            color: var(--cor-primaria-texto);
         }
     }
 

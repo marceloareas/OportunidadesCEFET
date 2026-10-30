@@ -2,6 +2,7 @@ package br.oportunidades.cefet.backend.services;
 
 import br.oportunidades.cefet.backend.enums.CategoriaOportunidade;
 import br.oportunidades.cefet.backend.models.Oportunidade;
+import br.oportunidades.cefet.backend.models.TipoNotificacao;
 import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.repositories.CandidaturaRepository;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,9 @@ public class OportunidadeService {
     @Autowired
     private CandidaturaRepository candidaturaRepository;
 
+    @Autowired
+    private NotificacaoService notificacaoService;
+
     public Page<Oportunidade> listarTodos(int page, int size) {
             Page<Oportunidade> ops = oportunidadeRepository.findAllByOrderByCriadoDesc(PageRequest.of(page, size));
             ops.getContent().forEach(this::preencherDadosCriador);
@@ -64,6 +69,11 @@ public class OportunidadeService {
 
         validarPeriodoInscricao(oportunidade);
 
+        // Com 0 vagas a primeira aprovação já finalizaria a oportunidade (M1).
+        if (oportunidade.getQuantidadeDeVagas() == null || oportunidade.getQuantidadeDeVagas() < 1) {
+            throw new IllegalArgumentException("A oportunidade precisa ter ao menos 1 vaga.");
+        }
+
         try {
             CategoriaOportunidade.valueOf(oportunidade.getIdCategoria().toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -80,21 +90,15 @@ public class OportunidadeService {
             oportunidade.setCriado(new Date());
         }
 
-        if (oportunidade.getVagasPreenchidas() == null) {
-            oportunidade.setVagasPreenchidas(0);
-        }
-
-        if (oportunidade.getQuantidadeDeVagas() == null) {
-            oportunidade.setQuantidadeDeVagas(0);
-        }
-
-        if (oportunidade.getFinalizada() == null) {
-            oportunidade.setFinalizada(false);
-        }
+        // Estado inicial é sempre aberto e sem aprovados, independente do que o cliente enviar.
+        oportunidade.setVagasPreenchidas(0);
+        oportunidade.setFinalizada(false);
 
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-        aplicarStatus(salva);
+        // Resposta completa (nome/foto do criador, candidatos e status): o front troca o
+        // cartão por ela, e sem esses campos o nome do professor sumia da tela.
+        preencherDadosCriador(salva);
 
         feedService.criarFeedOportunidade(salva);
 
@@ -132,22 +136,42 @@ public class OportunidadeService {
             op.setStatusCandidaturaAluno(statusPorOportunidade.get(op.getId()));
         });
 
+        // Mais recentes primeiro e paginado em memória: findAllById não pagina (M1).
+        List<Oportunidade> ordenadas = oportunidades.stream()
+                .sorted(Comparator.comparing(Oportunidade::getCriado,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+        int inicio = Math.min(page * size, ordenadas.size());
+        int fim = Math.min(inicio + size, ordenadas.size());
+
         return new PageImpl<>(
-                oportunidades,
+                ordenadas.subList(inicio, fim),
                 PageRequest.of(page, size),
-                oportunidades.size()
+                ordenadas.size()
         );
     }
 
     public Optional<Oportunidade> atualizar(String id, Oportunidade atualizada) {
         return oportunidadeRepository.findById(id).map(existente -> {
+            // Dono, vagas preenchidas e finalização não vêm do cliente: só mudam pelos fluxos
+            // de aprovação e finalização (M1).
             existente.setNome(atualizada.getNome());
             existente.setDescricao(atualizada.getDescricao());
-            existente.setProfessorId(atualizada.getProfessorId());
-            existente.setQuantidadeDeVagas(atualizada.getQuantidadeDeVagas());
-            existente.setVagasPreenchidas(atualizada.getVagasPreenchidas());
             existente.setIdCategoria(atualizada.getIdCategoria());
             existente.setImagemBase64(atualizada.getImagemBase64());
+
+            if (atualizada.getQuantidadeDeVagas() != null) {
+                int preenchidas = Objects.requireNonNullElse(existente.getVagasPreenchidas(), 0);
+                if (atualizada.getQuantidadeDeVagas() < Math.max(1, preenchidas)) {
+                    throw new IllegalArgumentException(
+                            "A quantidade de vagas não pode ser menor que 1 nem que as vagas já preenchidas.");
+                }
+                existente.setQuantidadeDeVagas(atualizada.getQuantidadeDeVagas());
+            }
+
+            if (atualizada.getGrandesAreas() != null && !atualizada.getGrandesAreas().isEmpty()) {
+                existente.setGrandesAreas(atualizada.getGrandesAreas());
+            }
 
             if (atualizada.getDataInicioInscricao() != null) {
                 existente.setDataInicioInscricao(atualizada.getDataInicioInscricao());
@@ -165,7 +189,7 @@ public class OportunidadeService {
 
             Oportunidade salva = oportunidadeRepository.save(existente);
 
-            aplicarStatus(salva);
+            preencherDadosCriador(salva);
 
             feedService.atualizarFeedOportunidade(salva);
 
@@ -217,6 +241,17 @@ public class OportunidadeService {
                 .build();
 
         candidaturaRepository.save(candidatura);
+
+        String nomeAluno = usuarioRepository.findById(idAluno)
+                .map(Usuario::getNome)
+                .filter(nome -> !nome.isBlank())
+                .orElse("Um aluno");
+        notificacaoService.notificar(
+                oportunidade.getProfessorId(),
+                TipoNotificacao.CANDIDATURA_RECEBIDA,
+                nomeAluno + " se candidatou à oportunidade \"" + oportunidade.getNome() + "\".",
+                idOportunidade
+        );
 
         return Optional.of(oportunidade);
     }
@@ -348,31 +383,28 @@ public class OportunidadeService {
 
         candidatura.setStatus(StatusCandidatura.APROVADO);
         candidaturaRepository.save(candidatura);
+        notificacaoService.notificar(
+                idAluno,
+                TipoNotificacao.CANDIDATURA_APROVADA,
+                "Você foi aprovado na oportunidade \"" + oportunidade.getNome() + "\".",
+                idOportunidade
+        );
+
         oportunidade.setVagasPreenchidas(
                 oportunidade.getVagasPreenchidas() + 1
         );
 
+        List<Candidatura> reservas = List.of();
         if (oportunidade.getVagasPreenchidas() >= oportunidade.getQuantidadeDeVagas()) {
-
             oportunidade.setFinalizada(true);
-
-            List<Candidatura> candidaturas =
-                    candidaturaRepository.findByOportunidadeId(idOportunidade);
-
-            for (Candidatura c : candidaturas) {
-
-                if (c.getStatus() == StatusCandidatura.CONCORRENDO) {
-
-                    c.setStatus(StatusCandidatura.RESERVA);
-
-                    candidaturaRepository.save(c);
-                }
-            }
+            reservas = moverConcorrentesParaReserva(idOportunidade);
         }
 
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-        aplicarStatus(salva);
+        notificarReservas(salva, reservas);
+
+        preencherDadosCriador(salva);
 
         feedService.atualizarFeedOportunidade(salva);
 
@@ -393,27 +425,41 @@ public class OportunidadeService {
             throw new IllegalStateException("Todas as vagas já foram preenchidas.");
         }
 
-        List<Candidatura> candidaturas =
-        candidaturaRepository.findByOportunidadeId(idOportunidade);
-
-        for (Candidatura candidatura : candidaturas) {
-
-            if (candidatura.getStatus() == StatusCandidatura.CONCORRENDO) {
-
-                candidatura.setStatus(StatusCandidatura.RESERVA);
-
-                candidaturaRepository.save(candidatura);
-            }
-        }
+        List<Candidatura> reservas = moverConcorrentesParaReserva(idOportunidade);
 
         oportunidade.setFinalizada(true);
         Oportunidade salva = oportunidadeRepository.save(oportunidade);
 
-        aplicarStatus(salva);
+        notificarReservas(salva, reservas);
+
+        preencherDadosCriador(salva);
 
         feedService.atualizarFeedOportunidade(salva);
 
         return Optional.of(salva);
+    }
+
+    private List<Candidatura> moverConcorrentesParaReserva(String idOportunidade) {
+        List<Candidatura> reservas = new ArrayList<>();
+        for (Candidatura candidatura : candidaturaRepository.findByOportunidadeId(idOportunidade)) {
+            if (candidatura.getStatus() == StatusCandidatura.CONCORRENDO) {
+                candidatura.setStatus(StatusCandidatura.RESERVA);
+                candidaturaRepository.save(candidatura);
+                reservas.add(candidatura);
+            }
+        }
+        return reservas;
+    }
+
+    private void notificarReservas(Oportunidade oportunidade, List<Candidatura> reservas) {
+        for (Candidatura candidatura : reservas) {
+            notificacaoService.notificar(
+                    candidatura.getAlunoId(),
+                    TipoNotificacao.OPORTUNIDADE_FINALIZADA,
+                    "A oportunidade \"" + oportunidade.getNome() + "\" foi finalizada. Você ficou na lista de reserva.",
+                    oportunidade.getId()
+            );
+        }
     }
 
     private void preencherDadosCriador(Oportunidade op) {

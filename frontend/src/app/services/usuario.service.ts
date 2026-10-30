@@ -39,4 +39,8 @@ export class UsuarioService {
   deletar(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API}/${id}`);
   }
+
+  removerImagem(id: string): Observable<Usuario> {
+    return this.http.delete<Usuario>(`${this.API}/${id}/imagem`);
+  }
 }

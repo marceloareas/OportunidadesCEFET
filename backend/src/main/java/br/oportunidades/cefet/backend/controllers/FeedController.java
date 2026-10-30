@@ -21,8 +21,9 @@ public class FeedController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String area,
+            @RequestParam(required = false) String q,
             @RequestParam(required = false) String userId
     ) {
-        return feedService.listarFeed(page, size, status, categoria, area, userId);
+        return feedService.listarFeed(page, size, status, categoria, area, q, userId);
     }
 }
