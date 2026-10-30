@@ -6,12 +6,15 @@
 # Só o frontend (nginx) fica exposto, na porta APP_PORT do .env. Ele entrega o app e
 # repassa /api ao backend. Backend e MongoDB ficam acessíveis apenas na rede interna.
 # Desenvolvimento com hot reload: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Os containers não têm nome fixo: o Compose usa o nome da pasta (ex.: oportunidadescefet-backend-1),
+# então dá para rodar mais de uma cópia no mesmo servidor (ex.: homologação e produção em pastas
+# diferentes, cada uma com seu APP_PORT). Use sempre os nomes dos serviços: docker compose logs backend.
 
 services:
 
   mongo:
     image: mongo:7
-    container_name: oportunidadescefet-mongo
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:?defina MONGO_INITDB_ROOT_USERNAME no .env}
@@ -28,7 +31,6 @@ services:
 
   backend:
     build: ./backend
-    container_name: oportunidadescefet-backend
     restart: unless-stopped
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/${MONGO_INITDB_DATABASE:-oportunidades_cefet}?authSource=admin
@@ -51,7 +53,6 @@ services:
 
   frontend:
     build: ./frontend
-    container_name: oportunidadescefet-frontend
     restart: unless-stopped
     ports:
       - "${APP_PORT:-8080}:80"
@@ -63,7 +64,6 @@ services:
   # Fica presa ao localhost do servidor (use um túnel SSH para acessar de fora).
   mongo-express:
     image: mongo-express
-    container_name: oportunidadescefet-mongo-express
     profiles:
       - tools
     restart: unless-stopped
