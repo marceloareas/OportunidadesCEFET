@@ -6,7 +6,7 @@
 .menu-esquerda{
     width: 100%;
     background-color: var(--cor-superficie);
-    border: 1px solid black;
+    border: 1px solid var(--cor-borda-forte);
     border-radius: 10px;
     height: 80vh;
 
@@ -20,7 +20,7 @@
         
         a{
             text-decoration: none;
-            color: black;
+            color: var(--cor-texto-forte);
             font-size: 18px;
             margin-bottom: 1vh;
             font-weight: 350;
@@ -64,7 +64,7 @@
                 margin-top: 1vh;
                 font-size: 18px;
                 text-decoration: none;
-                color: black;
+                color: var(--cor-texto-forte);
             }
 
             

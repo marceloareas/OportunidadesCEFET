@@ -23,7 +23,7 @@
 hr {
   border: none;
   height: 1px;
-  border-top: 1px solid black;
+  border-top: 1px solid var(--cor-borda-forte);
   margin: 4vh 0;
 }
 
@@ -224,7 +224,7 @@ hr {
   min-width: 160px;
   padding: 0.75rem 1.25rem;
 
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--cor-borda);
   border-radius: 999px;
   background: var(--cor-superficie);
 

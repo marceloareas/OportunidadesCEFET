@@ -15,7 +15,7 @@
     border-radius: 10px;
     object-fit: cover;
     border: 2px solid #8393A2;
-    background: var(--cor-superficie-3);
+    background: #eaeaea;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
@@ -23,8 +23,8 @@
     position: absolute;
     bottom: 0;
     right: 0;
-    background: var(--cor-primaria);
-    color: var(--cor-sobre-primaria);
+    background: #0A497E;
+    color: #fff;
     border-radius: 50%;
     width: 32px;
     height: 32px;
@@ -32,12 +32,12 @@
     align-items: center;
     justify-content: center;
     font-size: 1.3em;
-    border: 2px solid var(--cor-superficie);
+    border: 2px solid #fff;
     box-shadow: 0 1px 4px rgba(0,0,0,0.12);
 }
 
 .imagem-erro {
-    color: var(--cor-erro);
+    color: #ff4444;
     font-size: 0.95em;
     margin-top: 0.5em;
 }
@@ -81,7 +81,7 @@
     display: flex;
     width: 65vw;
     height: 90vh;
-    background-color: var(--cor-primaria);
+    background-color: #0A497E;
     border-radius: 25px;
 }
 
@@ -113,7 +113,7 @@
     width: 32.5vw;
     height: 90vh;
     padding: 2rem 2vw;
-    color:var(--cor-sobre-primaria);
+    color:white;
     overflow-y: auto;
     overflow-x: hidden;
 
@@ -139,7 +139,7 @@
     padding: 20rem 2vw;
     box-sizing: border-box;
 
-    color: var(--cor-sobre-primaria);
+    color: white;
 
     overflow: hidden;
 
@@ -164,13 +164,13 @@ form{
     }
 
     a{
-        color: var(--cor-sobre-primaria);
+        color: white;
         cursor: pointer;
         font-weight: bold;
         text-decoration: underline;
 
         &:hover{
-            color: var(--cor-texto-suave);
+            color: #8393A2;
         }
     }
 }
@@ -188,6 +188,9 @@ form{
         border: 1px solid #111;
         padding: 0 1vw;
         font-size: 1rem;
+        /* A tela de login tem cores próprias e fica igual nos dois temas (B4). */
+        background-color: #fff;
+        color: #111;
     }
 
     label{
@@ -203,7 +206,7 @@ form{
     height: 5vh;
     border: none;
     border-radius: 5px;
-    background-color: var(--cor-superficie);
+    background-color: white;
     color: black;
     font-size: 1.2rem;
     font-weight: bold;
@@ -216,4 +219,10 @@ form{
         background-color: #8393A2;
         transform: scale(1.05);
     }
+}
+
+/* O cadastro também tem um select: mantém as cores do login nos dois temas. */
+select {
+    background-color: #fff;
+    color: #111;
 }

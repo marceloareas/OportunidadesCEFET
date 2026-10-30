@@ -23,7 +23,7 @@
 hr {
   border: none;
   height: 1px;
-  border-top: 1px solid black;
+  border-top: 1px solid var(--cor-borda-forte);
   margin: 4vh 0;
 }
 

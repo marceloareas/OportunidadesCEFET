@@ -19,7 +19,7 @@
   min-height: 80vh;
   border-radius: 10px;
   margin-inline: 2.5vw;
-  border: 1px solid rgba(0,0,0,0.12);
+  border: 1px solid var(--cor-borda);
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 2vh 2vw;
 }
@@ -62,7 +62,9 @@ input[type="password"],
 select{
   height: 4.5vh;
   border-radius: 6px;
-  border: 1px solid rgba(0,0,0,0.15);
+  border: 1px solid var(--cor-borda);
+  /* Campo um tom abaixo do cartão: continua visível também no tema escuro. */
+  background-color: var(--cor-fundo);
   padding: 0 0.8vw;
   font-size: 0.975rem;
   box-sizing: border-box;

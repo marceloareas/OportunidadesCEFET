@@ -20,7 +20,7 @@
 .new-post{
     width:100%;
     height: auto;
-    color: black;
+    color: var(--cor-texto-forte);
     display: flex;
     justify-content: flex-start;
     gap: 10px;
@@ -29,7 +29,7 @@
         width: 50px;
         height: 50px;
         border-radius: 100%;
-        border: 1px solid black;
+        border: 1px solid var(--cor-borda-forte);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -49,7 +49,7 @@
         display: flex;
         background-color: var(--cor-superficie);
         font-size: medium;
-        border: 1px solid black;
+        border: 1px solid var(--cor-borda-forte);
         border-radius: 20px;
         padding: 15px;
         box-sizing: border-box;
@@ -68,7 +68,7 @@
 hr {
   border: none;
   height: 1px;
-  border-top: 1px solid black;
+  border-top: 1px solid var(--cor-borda-forte);
   margin: 4vh 0;
 }
 
@@ -190,7 +190,7 @@ hr {
     width: 100%;
     height: 6vh;
     border: none;
-    border-bottom: 2px solid black;
+    border-bottom: 2px solid var(--cor-borda-forte);
     font-size: 16px;
     padding:0;
     margin-bottom: 2vh;
@@ -206,7 +206,7 @@ hr {
         width: 100%;
         height: 20vh;
         border-radius: 10px;
-        border: 1px solid grey;
+        border: 1px solid var(--cor-borda);
         padding: 10px 5px;
         
     }
@@ -353,7 +353,7 @@ hr {
         background-color: var(--cor-primaria);
         font-size: 16px;
         justify-content: center;
-        border: 1px solid black;
+        border: 1px solid var(--cor-borda-forte);
         border-radius: 10px;
         align-items: center;
         color: var(--cor-sobre-primaria);
@@ -416,7 +416,7 @@ hr {
     min-width: 160px;
     padding: 0.75rem 1.25rem;
 
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--cor-borda);
     border-radius: 999px;
     background: var(--cor-superficie);
 
