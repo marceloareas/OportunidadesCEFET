@@ -46,6 +46,33 @@ class JwtServiceTest {
     }
 
     @Test
+    void refreshTokenEhReconhecidoEApontaParaOUsuario() {
+        JwtService jwt = new JwtService(SEGREDO, 60_000, 120_000);
+
+        String refresh = jwt.gerarRefreshToken(ana);
+
+        assertTrue(jwt.ehRefreshToken(refresh));
+        assertEquals("ana@cefet.br", jwt.extrairEmail(refresh));
+    }
+
+    @Test
+    void refreshTokenNaoServeComoTokenDeAcesso() {
+        JwtService jwt = new JwtService(SEGREDO, 60_000);
+
+        assertFalse(jwt.tokenValido(jwt.gerarRefreshToken(ana), ana));
+        assertFalse(jwt.ehRefreshToken(jwt.gerarToken(ana)));
+    }
+
+    @Test
+    void refreshTokenExpiradoOuAdulteradoNaoVale() {
+        JwtService jwt = new JwtService(SEGREDO, 60_000, -1_000);
+
+        assertFalse(jwt.ehRefreshToken(jwt.gerarRefreshToken(ana)));
+        assertFalse(jwt.ehRefreshToken("nao.e.jwt"));
+        assertFalse(jwt.ehRefreshToken(new JwtService(OUTRO_SEGREDO, 60_000).gerarRefreshToken(ana)));
+    }
+
+    @Test
     void tokenAssinadoComOutraChaveEhRecusado() {
         String token = new JwtService(OUTRO_SEGREDO, 60_000).gerarToken(ana);
 
