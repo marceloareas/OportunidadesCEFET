@@ -14,67 +14,62 @@
         height: auto;
         display: flex;
         flex-direction: column;
-        gap: 1vh;
-        padding: 3vh 1vw;
-        margin-bottom: 2vh;
-        
+        gap: 4px;
+        padding: 2.5vh 0.6vw;
+
         a{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            padding: 9px 10px;
+            border-radius: 8px;
             text-decoration: none;
             color: var(--cor-texto-forte);
-            font-size: 18px;
-            margin-bottom: 1vh;
-            font-weight: 350;
+            font-size: clamp(13px, 1.05vw, 16px);
+            font-weight: 400;
+            transition: background-color 0.15s ease, color 0.15s ease;
+
+            i{
+                flex-shrink: 0;
+                font-size: 1.1em;
+                color: var(--cor-texto-suave);
+                transition: color 0.15s ease;
+            }
+
+            /* Rótulo longo não vaza da caixa em colunas estreitas */
+            span{
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
         }
 
         a:hover{
+            background-color: var(--cor-superficie-2);
             color: var(--cor-primaria-texto);
-            cursor: pointer;
+
+            i{
+                color: var(--cor-primaria-texto);
+            }
+        }
+
+        /* Página atual */
+        a.ativo{
+            background-color: var(--cor-primaria-suave);
+            color: var(--cor-primaria-texto);
+            font-weight: 600;
+
+            i{
+                color: var(--cor-primaria-texto);
+            }
         }
 
         .divisor{
-            height: 1px;
-            border: 1px solid var(--cor-borda-forte);
+            display: block;
+            margin: 8px 4px;
+            border-top: 1px solid var(--cor-borda);
         }
-
-        .title{
-            font-size: 20px;
-            color: var(--cor-texto);
-        }
-
-        .group{
-            display: flex;
-            align-items: center;
-            height: auto;
-            width: 100%;
-            transition: transform 0.3s ease;
-            transform-origin: left;
-            margin-bottom: .5vh;
-
-            img{
-                object-fit: cover;
-                object-position: center;
-                width: 35px;
-                height: 35px;
-                border-radius: 100%;
-            }
-
-            a{
-                height: auto;
-                margin-left: .5vw;
-                margin-top: 1vh;
-                font-size: 18px;
-                text-decoration: none;
-                color: var(--cor-texto-forte);
-            }
-
-            
-            &:hover{
-                color: var(--cor-primaria-texto);
-                transform: scale(1.1);
-            }
-
-        }
-
     }
-
 }

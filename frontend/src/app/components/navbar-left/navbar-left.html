@@ -1,29 +1,31 @@
 <aside class="sidebar-left">
-  <div class="menu-esquerda">
+  <nav class="menu-esquerda" aria-label="Menu principal">
     <div class="item-list">
-      <a (click)="goPerfil()">
-        <i class="bi bi-person-circle"></i> Editar Perfil
+      @if (usuarioId) {
+        <a [routerLink]="['/perfil', usuarioId]" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+          <i class="bi bi-person-circle" aria-hidden="true"></i><span>Editar Perfil</span>
+        </a>
+      }
+
+      <span class="divisor" role="separator"></span>
+
+      <a routerLink="/home" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+        <i class="bi bi-house" aria-hidden="true"></i><span>Página inicial</span>
       </a>
 
-      <span class="divisor"></span>
-
-      <a (click)="setView('home')">
-        <i class="bi bi-house"></i> Página inicial
+      <a routerLink="/minhas_discussoes" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+        <i class="bi bi-chat-left-text" aria-hidden="true"></i><span>Minhas Discussões</span>
       </a>
 
-      <a (click)="setView('minhas_discussoes')">
-        <i class="bi bi-chat-left-text"></i> Minhas Discussões
+      <a routerLink="/oportunidades" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+        <i class="bi bi-briefcase" aria-hidden="true"></i><span>Oportunidades</span>
       </a>
 
-      <a (click)="setView('oportunidades')">
-        <i class="bi bi-briefcase"></i> Oportunidades
+      <a routerLink="/itens_salvos" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+        <i class="bi bi-bookmark" aria-hidden="true"></i><span>Itens Salvos</span>
       </a>
 
-      <a (click)="setView('itens_salvos')">
-        <i class="bi bi-bookmark"></i> Itens Salvos
-      </a>
-
-      <span class="divisor"></span>
+      <span class="divisor" role="separator"></span>
     </div>
-  </div>
+  </nav>
 </aside>
