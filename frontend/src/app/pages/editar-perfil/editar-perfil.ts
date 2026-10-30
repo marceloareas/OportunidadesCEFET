@@ -7,6 +7,7 @@ import { NavbarTop } from '../../components/navbar-top/navbar-top';
 import { NavbarLeft } from '../../components/navbar-left/navbar-left';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
 import { FeedbackService } from '../../services/feedback.service';
+import { AuthService } from '../../services/auth.service';
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
   ProfileImageCropPosition,
@@ -33,8 +34,10 @@ export class EditarPerfil {
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
   salvando = signal<boolean>(false);
+  private emailOriginal = '';
 
   private feedback = inject(FeedbackService);
+  private authService = inject(AuthService);
 
   constructor(private usuarioService: UsuarioService, private router: Router) {}
 
@@ -51,6 +54,7 @@ export class EditarPerfil {
         this.userId = u.id?.toString();
         this.nome.set(u.nome || '');
         this.email.set(u.email || '');
+        this.emailOriginal = u.email || '';
         this.funcao = u.funcao;
         this.matricula = u.matricula;
         if (u.imagemPerfil) {
@@ -98,6 +102,15 @@ export class EditarPerfil {
     this.usuarioService.atualizar(this.userId, payload).subscribe({
       next: (updated) => {
         this.salvando.set(false);
+
+        // O login (token) é ligado ao e-mail: trocou o e-mail, precisa entrar de novo.
+        if (updated.email && this.emailOriginal && updated.email !== this.emailOriginal) {
+          this.authService.encerrarSessao();
+          this.feedback.success('E-mail alterado. Entre novamente com o novo e-mail.');
+          this.router.navigate(['/login']);
+          return;
+        }
+
         this.feedback.success('Perfil atualizado com sucesso.');
         // Atualiza localStorage com novos dados (mantém id)
         const funcaoAtualizada = updated.funcao || this.funcao;
