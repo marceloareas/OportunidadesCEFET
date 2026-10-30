@@ -3,7 +3,7 @@
   padding-top: 6.5vh;
   grid-template-columns: 22.5vw 55vw 22.5vw;
   height: 100vh;
-  background-color: #FAF9F6;
+  background-color: var(--cor-fundo);
   overflow-y: hidden;
 }
 
@@ -23,50 +23,50 @@
 hr {
   border: none;
   height: 1px;
-  border-top: 1px solid black;
+  border-top: 1px solid var(--cor-borda-forte);
   margin: 4vh 0;
 }
 
 .mensagem-status {
-  color: #333;
+  color: var(--cor-texto);
   margin: 12px 0;
 }
 
 .mensagem-erro {
-  color: #d32f2f;
+  color: var(--cor-erro);
   margin: 12px 0;
 }
 
 .mensagem-vazia {
-  color: #666;
+  color: var(--cor-texto-suave);
   font-style: italic;
   margin: 12px 0;
 }
 
 .post-item {
-  background: #fff;
-  border: 1px solid #eee;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
 }
 
 .post-item h3 { margin: 0 0 6px 0; }
-.post-item .meta { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
+.post-item .meta { color: var(--cor-texto-suave); font-size: 0.85rem; margin-bottom: 8px; }
 
-.oportunidade { border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 10px; background: #fff; }
+.oportunidade { border: 1px solid var(--cor-borda); border-radius: 6px; padding: 10px; margin-bottom: 10px; background: var(--cor-superficie); }
 .candidatos ul { padding-left: 12px; margin: 6px 0; }
 
 .btn-pequeno { margin-left: 8px; padding: 4px 8px; font-size: 0.85rem; }
 
 .oportunidade-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .oportunidade-actions { display:flex; gap:8px; align-items:center; }
-.badge { background:#eee; padding:4px 8px; border-radius:12px; font-size:0.75rem; color:#333; }
-.badge.aprovado { background:#e8f7ed; color:#1f7a3d; font-weight:700; }
+.badge { background:var(--cor-superficie-2); padding:4px 8px; border-radius:12px; font-size:0.75rem; color:var(--cor-texto); }
+.badge.aprovado { background:var(--cor-sucesso-suave); color:var(--cor-sucesso); font-weight:700; }
 
 .btn-finalizar {
-  background-color: #0A497E;
-  color: white;
+  background-color: var(--cor-primaria);
+  color: var(--cor-sobre-primaria);
   border: none;
   padding: 6px 10px;
   border-radius: 6px;
@@ -74,13 +74,13 @@ hr {
   font-size: 0.85rem;
 }
 .btn-finalizar[disabled] {
-  background-color: #bbb;
+  background-color: var(--cor-superficie-3);
   cursor: not-allowed;
 }
 
 .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0, 0, 0, 0.6); display:flex; justify-content:center; align-items:center; z-index:100; }
 .modal-conteudo { 
-    background: #fff; 
+    background: var(--cor-superficie); 
     padding: 20px; 
     border-radius: 8px; 
     width: 60vw; 
@@ -95,7 +95,7 @@ hr {
 
 .card-modal{
     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--cor-borda);
 }
 
 .modal-close:hover { background: rgba(0,0,0,0.05); }
@@ -109,13 +109,13 @@ hr {
 .modal-conteudo li { 
     padding: 10px 12px; 
     margin-bottom: 10px;
-    border: 1px solid #e5e5e5; 
+    border: 1px solid var(--cor-borda); 
     display:flex; 
     align-items:flex-start; 
     justify-content:space-between; 
     gap:12px; 
     font-size: 0.95rem; 
-    background: #f9f9fb;
+    background: var(--cor-fundo);
     border-radius: 10px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
@@ -140,7 +140,7 @@ hr {
 }
 
 .sub{
-    color: #666;
+    color: var(--cor-texto-suave);
     font-size: 0.85rem;
 }
 
@@ -151,9 +151,9 @@ hr {
 }
 
 .btn-fechar{
-    background: #f2f2f2;
-    color: #333;
-    border: 1px solid #ddd;
+    background: var(--cor-superficie-2);
+    color: var(--cor-texto);
+    border: 1px solid var(--cor-borda);
     padding: 6px 10px;
     border-radius: 6px;
     cursor: pointer;
@@ -164,14 +164,14 @@ hr {
 }
 
 .cand-meta{
-    color: #666;
+    color: var(--cor-texto-suave);
     font-size: 0.85rem;
     margin-top: 2px;
 }
 
 .btn-aprovar{
-    border: 1px solid #0a497e;
-    color: #0a497e;
-    background: #eef5ff;
+    border: 1px solid var(--cor-primaria-texto);
+    color: var(--cor-primaria-texto);
+    background: var(--cor-primaria-suave);
 }
 

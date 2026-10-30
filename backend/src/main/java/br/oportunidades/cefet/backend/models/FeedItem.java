@@ -27,5 +27,6 @@ public class FeedItem {
     private int comentariosCount;
 
     @Indexed
+    @Builder.Default
     private Date createdAt = new Date();
 }

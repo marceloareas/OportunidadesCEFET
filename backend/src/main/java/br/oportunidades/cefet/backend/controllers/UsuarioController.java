@@ -1,10 +1,13 @@
 package br.oportunidades.cefet.backend.controllers;
 
+import br.oportunidades.cefet.backend.exceptions.ResourceNotFoundException;
 import br.oportunidades.cefet.backend.models.Usuario;
+import br.oportunidades.cefet.backend.services.PermissoesUsuario;
 import br.oportunidades.cefet.backend.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +18,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private PermissoesUsuario permissoes;
 
     //Listar todos
     @GetMapping
@@ -39,30 +45,26 @@ public class UsuarioController {
     // Criar novo
     @PostMapping
     public ResponseEntity<Usuario> createUsuario(@RequestBody Usuario usuario) {
-        try {
-            return ResponseEntity.ok(usuarioService.createUsuario(usuario));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(409).build();
-        }
+        return ResponseEntity.ok(usuarioService.createUsuario(usuario));
     }
 
+    // Só o próprio usuário edita ou exclui o seu perfil.
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> updateUsuario(@PathVariable String id, @RequestBody Usuario usuario){
+    public ResponseEntity<Usuario> updateUsuario(@PathVariable String id, @RequestBody Usuario usuario,
+                                                 Authentication authentication){
+        permissoes.exigirProprioUsuario(authentication, id);
         Usuario existingUsuario = usuarioService.getUsuarioById(id);
         if (existingUsuario != null) {
-            try {
-                Usuario updatedUsuario = usuarioService.updateUsuario(id, usuario);
-                return ResponseEntity.ok(updatedUsuario);
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.status(409).build();
-            }
+            Usuario updatedUsuario = usuarioService.updateUsuario(id, usuario);
+            return ResponseEntity.ok(updatedUsuario);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUsuario(@PathVariable String id) {
+    public ResponseEntity<Void> deleteUsuario(@PathVariable String id, Authentication authentication) {
+        permissoes.exigirProprioUsuario(authentication, id);
         Usuario existingUsuario = usuarioService.getUsuarioById(id);
         if (existingUsuario != null) {
             usuarioService.deleteUsuario(id);
@@ -70,6 +72,18 @@ public class UsuarioController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @DeleteMapping("/{id}/imagem")
+    public ResponseEntity<Usuario> removerImagemPerfil(@PathVariable String id, Authentication authentication) {
+        Usuario usuario = usuarioService.getUsuarioById(id);
+        if (usuario == null) {
+            throw new ResourceNotFoundException("Usuário não encontrado.");
+        }
+        if (authentication == null || !authentication.getName().equals(usuario.getEmail())) {
+            throw new SecurityException("Você só pode remover a sua própria foto.");
+        }
+        return ResponseEntity.ok(usuarioService.removerImagemPerfil(id));
     }
 
 }

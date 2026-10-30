@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, computed, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,8 @@ import { CandidatosModal } from '../../components/candidatos-modal/candidatos-mo
 import { PostService, Post } from '../../services/post.services';
 import { OportunidadeService, Oportunidade } from '../../services/oportunidade.service';
 import { FeedItem, FeedService } from '../../services/feed.service';
+import { FeedbackService } from '../../services/feedback.service';
+import { avatarOuPadrao } from '../../utils/avatar';
 
 @Component({
   selector: 'app-home',
@@ -28,6 +30,7 @@ export class Home {
   modoOportunidade = signal<boolean>(false);
 
   tipoUsuario = signal<string>('aluno');
+  readonly avatarOuPadrao = avatarOuPadrao;
   usuarioLogado = signal<{ id: string; nome: string; funcao: string; imagemPerfil?: string } | null>(null);
 
   feedItens = signal<FeedItem[]>([]);
@@ -39,13 +42,16 @@ export class Home {
   filtroStatus = signal<string>('');
   filtroCategoria = signal<string>('');
   filtroArea = signal<string>('');
+  filtroTexto = signal<string>('');
+  private buscaTimer?: ReturnType<typeof setTimeout>;
 
   filtrosAtivos = computed(() =>
-    Boolean(this.filtroStatus() || this.filtroCategoria() || this.filtroArea())
+    Boolean(this.filtroStatus() || this.filtroCategoria() || this.filtroArea() || this.filtroTexto().trim())
   );
 
   carregando = signal<boolean>(false);
   erro = signal<string>('');
+  publicando = signal<boolean>(false);
 
   // modal de candidatos (professor vendo candidatos de uma oportunidade do feed)
   mostrandoModalCandidatos = signal<boolean>(false);
@@ -62,6 +68,8 @@ export class Home {
   dataFimInscricao = signal<string>('');
   categoria = signal<string>('');
   grandesAreas = signal<string[]>([]);
+
+  private feedback = inject(FeedbackService);
 
   constructor(
     private postService: PostService,
@@ -80,11 +88,24 @@ export class Home {
     this.carregarFeed(true);
   }
 
+  // Busca por texto (B1): espera a pessoa parar de digitar antes de consultar o backend.
+  buscarTexto(texto: string) {
+    this.filtroTexto.set(texto);
+    clearTimeout(this.buscaTimer);
+    this.buscaTimer = setTimeout(() => this.aplicarFiltros(), 400);
+  }
+
   limparFiltros() {
+    clearTimeout(this.buscaTimer);
     this.filtroStatus.set('');
     this.filtroCategoria.set('');
     this.filtroArea.set('');
+    this.filtroTexto.set('');
     this.carregarFeed(true);
+  }
+
+  ngOnDestroy() {
+    clearTimeout(this.buscaTimer);
   }
 
   ngOnInit() {
@@ -139,6 +160,7 @@ export class Home {
       status: this.filtroStatus() || undefined,
       categoria: this.filtroCategoria() || undefined,
       area: this.filtroArea() || undefined,
+      q: this.filtroTexto().trim() || undefined,
       userId: this.usuarioLogado()?.id,
     };
 
@@ -299,8 +321,10 @@ export class Home {
   }
 
   enviarPost() {
+    if (this.publicando()) return;
+
     if (!this.titulo().trim()) {
-      alert('Informe um título antes de enviar.');
+      this.feedback.error('Informe um título antes de enviar.');
       return;
     }
 
@@ -319,22 +343,26 @@ export class Home {
       nomeCriador: usuario?.nome || 'Usuário',
     } as any;
 
+    this.publicando.set(true);
     this.postService.createPost(novoPost).subscribe({
       next: (p) => {
+        this.publicando.set(false);
         this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
+        this.feedback.success('Publicação criada com sucesso!');
       },
       error: (err) => {
+        this.publicando.set(false);
         console.error('Erro ao criar post:', err);
-        alert('Erro ao criar post.');
+        this.feedback.error('Erro ao criar post.');
       }
     });
   }
 
   private enviarOportunidade() {
     if (!this.titulo().trim()) {
-      alert('Informe um título para a oportunidade.');
+      this.feedback.error('Informe um título para a oportunidade.');
       return;
     }
 
@@ -351,7 +379,7 @@ export class Home {
     const dataFim = this.dataFimInscricao().trim();
 
     if (!dataInicio || !dataFim) {
-      alert('Informe a data inicial e final das inscrições.');
+      this.feedback.error('Informe a data inicial e final das inscrições.');
       return;
     }
 
@@ -359,17 +387,17 @@ export class Home {
     const fim = new Date(`${dataFim}T23:59:59`);
 
     if (Number.isNaN(inicio.getTime()) || Number.isNaN(fim.getTime())) {
-      alert('Informe um período de inscrição válido.');
+      this.feedback.error('Informe um período de inscrição válido.');
       return;
     }
 
     if (fim < inicio) {
-      alert('A data final das inscrições deve ser igual ou posterior à data inicial.');
+      this.feedback.error('A data final das inscrições deve ser igual ou posterior à data inicial.');
       return;
     }
 
     if (!categoriaSelecionada) {
-      alert('Selecione uma categoria.');
+      this.feedback.error('Selecione uma categoria.');
       return;
     }
 
@@ -385,8 +413,10 @@ export class Home {
       dataFimInscricao: fim.toISOString()
     };
 
+    this.publicando.set(true);
     this.oportunidadeService.criar(novaOportunidade).subscribe({
       next: (oportunidade) => {
+        this.publicando.set(false);
         const opComVagas = {
           ...oportunidade,
           quantidadeDeVagas:
@@ -398,10 +428,12 @@ export class Home {
         this.carregarFeed(true);
         this.resetFormulario();
         this.newPostModal.set(false);
+        this.feedback.success('Oportunidade criada com sucesso!');
       },
       error: (err) => {
+        this.publicando.set(false);
         console.error('Erro ao criar oportunidade:', err);
-        alert('Erro ao criar oportunidade.');
+        this.feedback.error('Erro ao criar oportunidade.');
       }
     });
   }

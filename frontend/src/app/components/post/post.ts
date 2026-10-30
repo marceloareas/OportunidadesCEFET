@@ -10,6 +10,9 @@ import { ComentarioService } from '../../services/comentario.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { FeedItem } from '../../services/feed.service';
 import { SavedItemsService } from '../../services/itens-salvos.service';
+import { FeedbackService } from '../../services/feedback.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { avatarOuPadrao } from '../../utils/avatar';
 
 @Component({
   selector: 'app-post',
@@ -44,6 +47,7 @@ export class PostComponent {
   };
 
   tipoUsuario = signal<string>(localStorage.getItem('tipoUsuario') || 'aluno');
+  readonly avatarOuPadrao = avatarOuPadrao;
   usuarioLogado = signal<{
     id: string;
     nome: string;
@@ -64,12 +68,14 @@ export class PostComponent {
   newCommentModal = signal<boolean>(false);
 
   salvo = signal<boolean>(false);
-  confirmacaoCandidaturaAberta = signal<boolean>(false);
   candidaturaEnviando = signal<boolean>(false);
+  comentarioEnviando = signal<boolean>(false);
 
   private comentarioService = inject(ComentarioService);
   private usuarioService = inject(UsuarioService);
   private savedService = inject(SavedItemsService);
+  private feedback = inject(FeedbackService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   constructor(
       private oportunidadeService: OportunidadeService,
@@ -111,12 +117,7 @@ export class PostComponent {
 
     const refId = this.post.referenciaId || this.post.id;
     if (usuario && refId) {
-      this.savedService.listarPorUsuario(usuario.id).subscribe(res => {
-        const refs = res.content.map(item => item.referenciaId || item.id);
-        if (refs.includes(refId)) {
-          this.salvo.set(true);
-        }
-      });
+      this.savedService.estaSalvo(usuario.id, refId).subscribe(salvo => this.salvo.set(salvo));
     }
   }
 
@@ -193,18 +194,18 @@ export class PostComponent {
   enviarComentario() {
     const usuario = this.usuarioLogado();
     if (!usuario || !this.post.id) {
-      alert('Usuário ou post não identificado.');
+      this.feedback.error('Usuário ou post não identificado.');
       return;
     }
 
     if (this.post.tipo === 'OPORTUNIDADE' && this.post.status === 'FINALIZADA') {
-      alert('Esta oportunidade está finalizada e não aceita mensagens.');
+      this.feedback.error('Esta oportunidade está finalizada e não aceita mensagens.');
       return;
     }
 
     const textoComentario = this.novoComentario.trim();
     if (!textoComentario) {
-      alert('Comentário não pode ser vazio.');
+      this.feedback.error('Comentário não pode ser vazio.');
       return;
     }
 
@@ -215,8 +216,12 @@ export class PostComponent {
       texto: textoComentario
     } as any;
 
+    if (this.comentarioEnviando()) return;
+    this.comentarioEnviando.set(true);
+
     this.comentarioService.criar(payload).subscribe({
       next: (saved) => {
+        this.comentarioEnviando.set(false);
         this.comentarios.push({
           autor: usuario.nome || usuario.id,
           imagemPerfil: usuario.imagemPerfil,
@@ -235,8 +240,9 @@ export class PostComponent {
         this.novoComentario = '';
       },
       error: (err) => {
+        this.comentarioEnviando.set(false);
         console.error('Erro ao enviar comentario:', err);
-        alert('Erro ao enviar comentario. Veja o console para mais detalhes.');
+        this.feedback.error('Erro ao enviar comentario. Veja o console para mais detalhes.');
       },
     });
   }
@@ -353,21 +359,24 @@ export class PostComponent {
   abrirConfirmacaoCandidatura() {
     const usuario = this.usuarioLogado();
     if (!usuario || !this.post.id) {
-      alert('Usuário não identificado.');
+      this.feedback.error('Usuário não identificado.');
       return;
     }
 
     if (!this.podeCandidatar()) {
-      alert('As inscrições não estão abertas para esta oportunidade.');
+      this.feedback.error('As inscrições não estão abertas para esta oportunidade.');
       return;
     }
 
-    this.confirmacaoCandidaturaAberta.set(true);
-  }
-
-  fecharConfirmacaoCandidatura() {
-    if (this.candidaturaEnviando()) return;
-    this.confirmacaoCandidaturaAberta.set(false);
+    this.confirmDialog
+      .confirm({
+        title: 'Candidatar-se',
+        message: 'Deseja se candidatar a esta oportunidade?',
+        confirmLabel: 'Candidatar-se',
+      })
+      .subscribe((confirmado) => {
+        if (confirmado) this.candidatar();
+      });
   }
 
   candidatar() {
@@ -375,8 +384,7 @@ export class PostComponent {
     if (!usuario || !this.post.id || this.candidaturaEnviando()) return;
 
     if (!this.podeCandidatar()) {
-      alert('As inscrições não estão abertas para esta oportunidade.');
-      this.confirmacaoCandidaturaAberta.set(false);
+      this.feedback.error('As inscrições não estão abertas para esta oportunidade.');
       return;
     }
 
@@ -394,13 +402,12 @@ export class PostComponent {
         if (!this.post.alunosCandidatosId) this.post.alunosCandidatosId = [];
         this.post.alunosCandidatosId.push(usuario.id);
         this.candidaturaEnviando.set(false);
-        this.confirmacaoCandidaturaAberta.set(false);
+        this.feedback.success('Candidatura enviada com sucesso!');
       },
       error: (err) => {
         console.error('Erro ao se candidatar:', err);
         this.candidaturaEnviando.set(false);
-        this.confirmacaoCandidaturaAberta.set(false);
-        alert('Erro ao se candidatar à vaga.');
+        this.feedback.error('Erro ao se candidatar à vaga.');
       },
     });
   }

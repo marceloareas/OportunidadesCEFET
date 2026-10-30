@@ -1,14 +1,17 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { UsuarioService, Usuario } from '../../services/usuario.service';
+import { FeedbackService } from '../../services/feedback.service';
 import {
   DEFAULT_PROFILE_IMAGE_CROP,
   ProfileImageCropPosition,
   cropProfileImageToSquare
 } from '../../utils/profile-image';
+
+import { avatarPadrao } from '../../utils/avatar';
 
 @Component({
   selector: 'app-login',
@@ -30,9 +33,15 @@ export class Login {
 
   imagemPerfilBase64: string | null = null;
   imagemPreview: string | null = null;
+  readonly avatarPadrao = avatarPadrao;
   imagemErro: string = '';
   imagemSelecionada: File | null = null;
   imagemCrop: ProfileImageCropPosition = { ...DEFAULT_PROFILE_IMAGE_CROP };
+
+  // Trava o botão Enviar enquanto a requisição está em andamento (M4).
+  enviando = signal<boolean>(false);
+
+  private feedback = inject(FeedbackService);
 
   constructor(
     private router: Router,
@@ -104,13 +113,17 @@ export class Login {
   onLoginSubmit(event: Event): void {
     event.preventDefault();
 
+    if (this.enviando()) return;
+
     if (!this.email() || !this.senha()) {
-      alert('Preencha e-mail e senha.');
+      this.feedback.error('Preencha e-mail e senha.');
       return;
     }
 
+    this.enviando.set(true);
     this.authService.login({ email: this.email(), senha: this.senha() }).subscribe({
       next: (authResponse) => {
+        this.enviando.set(false);
         const usuarioNormalizado = {
           id: authResponse.usuario.id?.toString(),
           nome: authResponse.usuario.nome,
@@ -121,19 +134,20 @@ export class Login {
         };
 
         localStorage.setItem('isLogged', 'true');
-        localStorage.setItem('token', authResponse.token);
+        this.authService.guardarTokens(authResponse);
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
 
         const tipo =
           authResponse.usuario.funcao?.toLowerCase() === 'professor' ? 'professor' : 'aluno';
         localStorage.setItem('tipoUsuario', tipo);
 
-        alert(`Bem-vindo, ${authResponse.usuario.nome}!`);
+        this.feedback.success(`Bem-vindo, ${authResponse.usuario.nome}!`);
         this.router.navigate(['/home']);
       },
       error: (err) => {
+        this.enviando.set(false);
         console.error('Erro ao autenticar usuário:', err);
-        alert('Usuário não encontrado ou senha incorreta.');
+        this.feedback.error('Usuário não encontrado ou senha incorreta.');
       },
     });
   }
@@ -141,8 +155,10 @@ export class Login {
   onRegisterSubmit(event: Event): void {
     event.preventDefault();
 
+    if (this.enviando()) return;
+
     if (this.senha() !== this.confirmaSenha()) {
-      alert('As senhas não coincidem.');
+      this.feedback.error('As senhas não coincidem.');
       return;
     }
 
@@ -155,14 +171,17 @@ export class Login {
       imagemPerfil: this.imagemPerfilBase64 || undefined
     };
 
+    this.enviando.set(true);
     this.usuarioService.cadastrar(novoUsuario).subscribe({
       next: (usuario) => {
-        alert('Cadastro realizado! Faça login.');
+        this.enviando.set(false);
+        this.feedback.success('Cadastro realizado! Faça login.');
         this.toggleForm();
       },
       error: (err) => {
+        this.enviando.set(false);
         console.error('Erro ao cadastrar:', err);
-        alert('Erro ao cadastrar usuário.');
+        this.feedback.error('Erro ao cadastrar usuário.');
       },
     });
   }

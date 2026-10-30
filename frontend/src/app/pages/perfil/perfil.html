@@ -56,7 +56,7 @@
       <section class="card-perfil" *ngIf="!carregando() && !erro() && usuarioPerfil() as perfil">
         <div class="info-principal">
           <div class="foto-wrapper" *ngIf="isProprioPerfil(); else fotoSomenteVisualizacao">
-            <img [src]="perfil.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" />
+            <img [src]="avatarOuPadrao(perfil.imagemPerfil, perfil.funcao)" alt="Foto de perfil" />
 
             <div class="foto-overlay" (click)="abrirModalImagem()">
               <span class="material-icons">edit</span>
@@ -114,6 +114,14 @@
               </div>
 
               <div class="modal-acoes">
+                <button
+                  type="button"
+                  class="btn-remover"
+                  *ngIf="!isAvatarPadrao(perfil.imagemPerfil)"
+                  (click)="removerImagemPerfil()"
+                >
+                  Remover foto
+                </button>
                 <button type="button" class="btn-secundario" (click)="fecharModalImagem()">Cancelar</button>
                 <button type="button" class="btn-primario" (click)="salvarImagemPerfil()">Salvar</button>
               </div>
@@ -122,7 +130,7 @@
 
           <ng-template #fotoSomenteVisualizacao>
             <div class="foto-wrapper">
-              <img [src]="perfil.imagemPerfil || 'pfptemp.ico'" alt="Foto de perfil" />
+              <img [src]="avatarOuPadrao(perfil.imagemPerfil, perfil.funcao)" alt="Foto de perfil" />
             </div>
           </ng-template>
 

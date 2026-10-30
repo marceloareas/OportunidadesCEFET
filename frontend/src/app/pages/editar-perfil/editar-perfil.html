@@ -60,7 +60,9 @@
                   </div>
 
                   <div class="form-actions">
-                    <button type="submit" class="send-btn">Salvar</button>
+                    <button type="submit" class="send-btn" [disabled]="salvando()" [class.btn-carregando]="salvando()">
+                      {{ salvando() ? 'Salvando...' : 'Salvar' }}
+                    </button>
                     <a href="/home" class="cancel-link" (click)="$event.preventDefault(); onCancel()">Cancelar</a>
                   </div>
                 </form>

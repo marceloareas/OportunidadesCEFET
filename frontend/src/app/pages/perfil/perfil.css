@@ -3,7 +3,7 @@
   padding-top: 6.5vh;
   grid-template-columns: 22.5vw 55vw 22.5vw;
   height: 100vh;
-  background-color: #faf9f6;
+  background-color: var(--cor-fundo);
   overflow-y: hidden;
 }
 
@@ -23,22 +23,22 @@
 
 .titulo-pagina {
   margin: 4vh 0 2vh;
-  color: #111;
+  color: var(--cor-texto-forte);
   font-size: 1.55rem;
 }
 
 .estado {
   margin: 12px 0;
-  color: #333;
+  color: var(--cor-texto);
 }
 
 .estado.erro {
-  color: #b42222;
+  color: var(--cor-erro);
 }
 
 .card-perfil {
-  background: #fff;
-  border: 1px solid #e8e8e8;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
   border-radius: 10px;
   padding: 24px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -53,7 +53,7 @@
 .foto-wrapper {
   width: 100px;
   height: 100px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--cor-borda);
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -72,12 +72,12 @@
 .dados-principais h3 {
   margin: 0;
   font-size: 1.4rem;
-  color: #111;
+  color: var(--cor-texto-forte);
 }
 
 .linha-secundaria {
   margin-top: 8px;
-  color: #444;
+  color: var(--cor-texto);
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -85,14 +85,14 @@
 
 .email {
   margin-top: 8px;
-  color: #2f2f2f;
+  color: var(--cor-texto);
   overflow-wrap: anywhere;
 }
 
 .links-publicos,
 .edit-links {
   margin-top: 20px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--cor-borda);
   padding-top: 16px;
 }
 
@@ -109,16 +109,16 @@
 
 .links-grid a {
   text-decoration: none;
-  background: #eef5ff;
-  color: #0a497e;
-  border: 1px solid #c9ddf5;
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria-texto);
+  border: 1px solid var(--cor-borda);
   padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
 }
 
 .hint {
-  color: #666;
+  color: var(--cor-texto-suave);
   margin: 0 0 12px;
 }
 
@@ -134,7 +134,7 @@
 
 .campos input {
   width: 100%;
-  border: 1px solid #d7d7d7;
+  border: 1px solid var(--cor-borda);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 0.95rem;
@@ -142,7 +142,7 @@
 }
 
 .campos input:focus {
-  border-color: #0a497e;
+  border-color: var(--cor-primaria-texto);
   box-shadow: 0 0 0 3px rgba(10, 73, 126, 0.12);
 }
 
@@ -152,8 +152,8 @@
 
 .acoes button,
 .btn-voltar {
-  background: #0a497e;
-  color: #fff;
+  background: var(--cor-primaria);
+  color: var(--cor-sobre-primaria);
   border: none;
   border-radius: 8px;
   padding: 10px 14px;
@@ -161,7 +161,7 @@
 }
 
 .acoes button[disabled] {
-  background: #b9b9b9;
+  background: var(--cor-superficie-3);
   cursor: not-allowed;
 }
 
@@ -223,7 +223,7 @@
 }
 
 .foto-overlay .material-icons {
-  color: white;
+  color: var(--cor-sobre-primaria);
   font-size: 28px;
 }
 
@@ -241,7 +241,7 @@
 .modal-imagem {
   width: 100%;
   max-width: 420px;
-  background: white;
+  background: var(--cor-superficie);
   border-radius: 20px;
   padding: 1.5rem;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
@@ -264,7 +264,7 @@
   height: 180px;
   object-fit: cover;
   border-radius: 50%;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cor-borda);
 }
 
 .crop-controls {
@@ -290,12 +290,12 @@
 }
 
 .btn-secundario {
-  background: #f1f1f1;
+  background: var(--cor-superficie-2);
 }
 
 .btn-primario {
   background: #111827;
-  color: white;
+  color: var(--cor-sobre-primaria);
 }
 
 @keyframes fadeInUp {
@@ -326,7 +326,7 @@
 .input-label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--cor-texto-forte);
 }
 
 .upload-btn {
@@ -338,11 +338,11 @@
   width: fit-content;
   padding: 0.8rem 1.2rem;
 
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--cor-borda);
   border-radius: 12px;
 
-  background: #f9fafb;
-  color: #1f2937;
+  background: var(--cor-superficie-2);
+  color: var(--cor-texto-forte);
 
   font-size: 0.95rem;
   font-weight: 500;
@@ -352,8 +352,8 @@
 }
 
 .upload-btn:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+  background: var(--cor-superficie-2);
+  border-color: var(--cor-borda);
   transform: translateY(-1px);
 }
 
@@ -363,17 +363,32 @@
 
 .upload-btn .material-icons {
   font-size: 1.1rem;
-  color: #0A497E;
+  color: var(--cor-primaria-texto);
 }
 
 .file-hint {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--cor-texto-suave);
   margin-top: -0.2rem;
 }
 
 .imagem-erro {
   font-size: 0.85rem;
-  color: #dc2626;
+  color: var(--cor-erro);
   font-weight: 500;
+}
+
+.modal-acoes .btn-remover {
+  margin-right: auto;
+  background: transparent;
+  color: var(--cor-erro);
+  border: 1px solid var(--cor-erro);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.modal-acoes .btn-remover:hover {
+  background: var(--cor-erro-suave);
 }

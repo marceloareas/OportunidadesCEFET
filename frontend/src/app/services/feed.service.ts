@@ -40,6 +40,7 @@ export interface FeedFiltros {
   status?: string;
   categoria?: string;
   area?: string;
+  q?: string; // busca por texto no título e na descrição das oportunidades (B1)
   userId?: string;
 }
 
@@ -67,6 +68,7 @@ export class FeedService {
     if (filtros?.status) params = params.set('status', filtros.status);
     if (filtros?.categoria) params = params.set('categoria', filtros.categoria);
     if (filtros?.area) params = params.set('area', filtros.area);
+    if (filtros?.q?.trim()) params = params.set('q', filtros.q.trim());
     if (filtros?.userId) params = params.set('userId', filtros.userId);
 
     return this.http.get<FeedPage>(this.api, { params });

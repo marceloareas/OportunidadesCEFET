@@ -31,19 +31,28 @@ public class AuthController {
 	public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
 		return usuarioRepository.findByEmail(request.email())
 				.filter(usuario -> usuario.getSenha() != null)
-				.filter(usuario -> {
-					boolean senhaHashValida = passwordEncoder.matches(request.senha(), usuario.getSenha());
-					boolean senhaLegadaValida = request.senha().equals(usuario.getSenha());
-
-					if (senhaLegadaValida && !senhaHashValida) {
-						usuario.setSenha(passwordEncoder.encode(request.senha()));
-						usuarioRepository.save(usuario);
-					}
-
-					return senhaHashValida || senhaLegadaValida;
-				})
-				.map(usuario -> ResponseEntity.ok(new AuthResponse(jwtService.gerarToken(usuario), usuario)))
+				// Só BCrypt: as senhas em texto puro são migradas na subida (SenhaLegadoBackfill).
+				.filter(usuario -> request.senha() != null
+						&& passwordEncoder.matches(request.senha(), usuario.getSenha()))
+				.map(usuario -> ResponseEntity.ok(novaSessao(usuario)))
 				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+	}
+
+	// Troca um refresh token válido por um novo par de tokens (B5). O refresh token também
+	// é renovado, então quem usa o sistema com frequência não precisa logar de novo.
+	@PostMapping("/refresh")
+	public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshRequest request) {
+		if (request == null || request.refreshToken() == null || !jwtService.ehRefreshToken(request.refreshToken())) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		return usuarioRepository.findByEmail(jwtService.extrairEmail(request.refreshToken()))
+				.map(usuario -> ResponseEntity.ok(novaSessao(usuario)))
+				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+	}
+
+	private AuthResponse novaSessao(Usuario usuario) {
+		return new AuthResponse(jwtService.gerarToken(usuario), jwtService.gerarRefreshToken(usuario), usuario);
 	}
 
 	@GetMapping("/me")
@@ -60,6 +69,9 @@ public class AuthController {
 	public record LoginRequest(String email, String senha) {
 	}
 
-	public record AuthResponse(String token, Usuario usuario) {
+	public record RefreshRequest(String refreshToken) {
+	}
+
+	public record AuthResponse(String token, String refreshToken, Usuario usuario) {
 	}
 }

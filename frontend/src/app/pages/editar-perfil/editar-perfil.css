@@ -3,7 +3,7 @@
   padding-top: 6.5vh;
   grid-template-columns: 22.5vw 77.5vw;
   height: 100vh;
-  background-color: #FAF9F6;
+  background-color: var(--cor-fundo);
   overflow-y: hidden;
 }
 
@@ -13,13 +13,13 @@
 }
 
 .profile{
-  background-color: #fff;
+  background-color: var(--cor-superficie);
   margin-top: 5vh;
   height: auto;
   min-height: 80vh;
   border-radius: 10px;
   margin-inline: 2.5vw;
-  border: 1px solid rgba(0,0,0,0.12);
+  border: 1px solid var(--cor-borda);
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 2vh 2vw;
 }
@@ -27,7 +27,7 @@
 .profile h2{
   font-size: 1.6rem;
   margin-bottom: 1.5vh;
-  color: #0A497E;
+  color: var(--cor-primaria-texto);
 }
 
 form{
@@ -53,7 +53,7 @@ label{
   font-size: 0.95rem;
   font-weight: 600;
   margin-bottom: 0.5vh;
-  color: #313131;
+  color: var(--cor-texto);
 }
 
 input[type="text"],
@@ -62,22 +62,24 @@ input[type="password"],
 select{
   height: 4.5vh;
   border-radius: 6px;
-  border: 1px solid rgba(0,0,0,0.15);
+  border: 1px solid var(--cor-borda);
+  /* Campo um tom abaixo do cartão: continua visível também no tema escuro. */
+  background-color: var(--cor-fundo);
   padding: 0 0.8vw;
   font-size: 0.975rem;
   box-sizing: border-box;
 }
 
 input::placeholder{
-  color: #999;
+  color: var(--cor-texto-suave);
 }
 
 .send-btn{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #0A497E;
-  color: #fff;
+  background-color: var(--cor-primaria);
+  color: var(--cor-sobre-primaria);
   border: none;
   border-radius: 8px;
   padding: 0.6vh 1.2vw;
@@ -88,7 +90,7 @@ input::placeholder{
 
 .send-btn:hover{
   transform: translateY(-2px);
-  background-color: #083a64;
+  background-color: var(--cor-primaria-forte);
 }
 
 .form-actions{
@@ -98,7 +100,7 @@ input::placeholder{
 }
 
 .cancel-link{
-  color: #0A497E;
+  color: var(--cor-primaria-texto);
   text-decoration: none;
   align-self: center;
 }
@@ -107,13 +109,13 @@ input::placeholder{
   width: 120px;
   height: 120px;
   border-radius: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--cor-borda);
   object-fit: cover;
-  background: #eaeaea;
+  background: var(--cor-superficie-3);
 }
 
 .imagem-erro{
-  color: #d32f2f;
+  color: var(--cor-erro);
   font-size: 0.9rem;
   margin-top: 6px;
 }
@@ -133,5 +135,5 @@ input::placeholder{
 .crop-controls input[type="range"]{
   width: 100%;
   cursor: pointer;
-  accent-color: #0A497E;
+  accent-color: var(--cor-primaria);
 }

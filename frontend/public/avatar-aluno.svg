@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Foto de perfil padrão de aluno">
+  <rect width="256" height="256" fill="#0A497E"/>
+  <circle cx="128" cy="100" r="46" fill="#FFFFFF"/>
+  <path d="M40 256c0-52 39-88 88-88s88 36 88 88z" fill="#FFFFFF"/>
+</svg>

@@ -1,11 +1,187 @@
 /* You can add global styles to this file, and also import other style files */
+@import '@angular/material/prebuilt-themes/azure-blue.css';
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css");
 
 *{
     margin: 0;
     padding: 0;
-    height: 100%;
     box-sizing: border-box;
     font-family: "Roboto";
+}
+
+/* =========================================================
+   Tokens de cor (B4). Os componentes usam só os papéis abaixo;
+   o tema escuro remapeia os papéis, não inverte cores.
+   ========================================================= */
+:root {
+    color-scheme: light;
+
+    --cor-fundo: #faf9f6;          /* fundo das páginas */
+    --cor-superficie: #ffffff;     /* cartões, modais, barras */
+    --cor-superficie-2: #f2f2f2;   /* hover, áreas recuadas */
+    --cor-superficie-3: #e5e5e5;   /* skeleton, desabilitado */
+
+    --cor-texto-forte: #111111;
+    --cor-texto: #313131;
+    --cor-texto-suave: #666666;
+
+    --cor-borda: #e0e0e0;
+    --cor-borda-forte: #333333;
+
+    --cor-primaria: #0a497e;        /* fundo de botões e destaques (texto branco em cima) */
+    --cor-primaria-forte: #0c5c9f;  /* hover dos botões primários */
+    --cor-primaria-texto: #0a497e;  /* links, ícones e bordas na cor da marca */
+    --cor-primaria-suave: #eef5ff;  /* fundos selecionados / informativos */
+    --cor-sobre-primaria: #ffffff;
+    --cor-barra: #0a497e;           /* barra do topo */
+
+    --cor-sucesso: #1f7a3d;
+    --cor-sucesso-suave: #e8f7ed;
+    --cor-erro: #c62828;
+    --cor-erro-suave: #ffebee;
+    --cor-aviso-texto: #8a6d3b;
+    --cor-aviso-suave: #fff8e1;
+
+    --cor-foco: #1976d2;
+}
+
+/* Escuro: azul-noite levemente puxado para a marca, superfícies sobem de tom com a
+   elevação e a primária ganha um tom mais claro quando é texto sobre fundo escuro. */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --cor-fundo: #0f141a;
+    --cor-superficie: #171d24;
+    --cor-superficie-2: #1e252e;
+    --cor-superficie-3: #2a323c;
+
+    --cor-texto-forte: #f2f4f7;
+    --cor-texto: #dde3ea;
+    --cor-texto-suave: #9aa7b4;
+
+    --cor-borda: #2e3742;
+    --cor-borda-forte: #46525f;
+
+    --cor-primaria: #2369a8;
+    --cor-primaria-forte: #2d7cc4;
+    --cor-primaria-texto: #8cc2f2;
+    --cor-primaria-suave: #1b2c40;
+    --cor-sobre-primaria: #ffffff;
+    --cor-barra: #12304d;
+
+    --cor-sucesso: #6fcf8e;
+    --cor-sucesso-suave: #16301f;
+    --cor-erro: #ff8a80;
+    --cor-erro-suave: #3a1d1d;
+    --cor-aviso-texto: #f0c674;
+    --cor-aviso-suave: #3a3020;
+
+    --cor-foco: #8cc2f2;
+
+    /* Componentes do Angular Material (diálogos de confirmação, menus) */
+    --mat-sys-background: var(--cor-fundo);
+    --mat-sys-on-background: var(--cor-texto);
+    --mat-sys-surface: var(--cor-superficie);
+    --mat-sys-surface-container: var(--cor-superficie);
+    --mat-sys-surface-container-low: var(--cor-superficie);
+    --mat-sys-surface-container-high: var(--cor-superficie-2);
+    --mat-sys-surface-container-highest: var(--cor-superficie-3);
+    --mat-sys-on-surface: var(--cor-texto-forte);
+    --mat-sys-on-surface-variant: var(--cor-texto-suave);
+    --mat-sys-outline: var(--cor-borda-forte);
+    --mat-sys-outline-variant: var(--cor-borda);
+    --mat-sys-primary: var(--cor-primaria-texto);
+    --mat-sys-on-primary: #0f141a;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+}
+
+/* Campos de formulário seguem o tema (o navegador não troca sozinho) */
+input,
+select,
+textarea {
+    background-color: var(--cor-superficie);
+    color: var(--cor-texto);
+    border-color: var(--cor-borda);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--cor-texto-suave);
+}
+
+/* Estados padrão de elementos clicáveis (M4) */
+button,
+[role="button"],
+a[href],
+select,
+label[for] {
+    cursor: pointer;
+}
+
+button:disabled,
+button[aria-busy="true"],
+[role="button"][aria-disabled="true"] {
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+a[href]:focus-visible {
+    outline: 2px solid var(--cor-foco);
+    outline-offset: 2px;
+}
+
+/* Spinner inline para botões com requisição em andamento */
+.btn-carregando {
+    position: relative;
+    cursor: progress !important;
+}
+
+.btn-carregando::before {
+    content: "";
+    display: inline-block;
+    width: 0.9em;
+    height: 0.9em;
+    margin-right: 0.5em;
+    vertical-align: -0.1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: btn-girar 0.7s linear infinite;
+}
+
+@keyframes btn-girar {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-carregando::before {
+        animation-duration: 2s;
+    }
+}
+
+.notification-success .mdc-snackbar__surface {
+  background-color: #2e7d32 !important;
+}
+.notification-success .mdc-snackbar__label,
+.notification-success .mat-mdc-button {
+  color: #ffffff !important;
+}
+
+.notification-error .mdc-snackbar__surface {
+  background-color: #c62828 !important;
+}
+.notification-error .mdc-snackbar__label,
+.notification-error .mat-mdc-button {
+  color: #ffffff !important;
 }
