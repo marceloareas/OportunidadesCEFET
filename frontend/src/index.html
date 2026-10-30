@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <title>Oportunidades CEFET</title>
@@ -10,6 +10,15 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <script src="env.js"></script>
+  <script>
+    // Aplica o tema salvo (ou o do sistema) antes do app carregar, sem piscar em branco.
+    (function () {
+      var tema = null;
+      try { tema = localStorage.getItem('tema'); } catch (e) {}
+      var escuro = tema ? tema === 'escuro' : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', escuro ? 'dark' : 'light');
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

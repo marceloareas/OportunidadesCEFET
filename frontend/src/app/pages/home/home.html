@@ -22,6 +22,18 @@
 
           <!-- FILTROS DE OPORTUNIDADES -->
           <div class="filtros">
+            <div class="filtro-campo filtro-busca">
+              <label for="filtroTexto">Buscar oportunidades</label>
+              <input
+                id="filtroTexto"
+                type="search"
+                placeholder="Título ou descrição"
+                autocomplete="off"
+                [ngModel]="filtroTexto()"
+                (ngModelChange)="buscarTexto($event)"
+              />
+            </div>
+
             <div class="filtro-campo">
               <label for="filtroStatus">Status</label>
               <select

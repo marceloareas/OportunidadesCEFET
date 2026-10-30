@@ -1,0 +1,30 @@
+# Ajustes para desenvolvimento local, por cima do docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#
+# O frontend roda com ng serve (hot reload) na porta FRONTEND_PORT, e o backend fica
+# exposto em BACKEND_PORT para testar a API direto.
+
+services:
+
+  backend:
+    ports:
+      - "${BACKEND_PORT:-8090}:8080"
+    environment:
+      BACKEND_LOG_LEVEL: ${BACKEND_LOG_LEVEL:-DEBUG}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports: !override
+      - "${FRONTEND_PORT:-4200}:4200"
+    environment:
+      FRONTEND_API_BASE_URL: "/api"
+      FRONTEND_PROXY_TARGET: "http://backend:8080"
+      NG_ALLOWED_HOSTS: "${FRONTEND_ALLOWED_HOSTS:-localhost,127.0.0.1}"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    healthcheck:
+      disable: true

@@ -134,7 +134,7 @@ export class Login {
         };
 
         localStorage.setItem('isLogged', 'true');
-        localStorage.setItem('token', authResponse.token);
+        this.authService.guardarTokens(authResponse);
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
 
         const tipo =

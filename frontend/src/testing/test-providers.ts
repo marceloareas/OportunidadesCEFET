@@ -26,5 +26,7 @@ export function logarComo(usuario: UsuarioDeTeste): void {
 }
 
 export function deslogar(): void {
-  ['isLogged', 'token', 'usuario', 'tipoUsuario'].forEach((chave) => localStorage.removeItem(chave));
+  ['isLogged', 'token', 'refreshToken', 'usuario', 'tipoUsuario'].forEach((chave) =>
+    localStorage.removeItem(chave),
+  );
 }

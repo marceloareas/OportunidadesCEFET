@@ -158,6 +158,25 @@ class OportunidadeServiceFluxoTest {
         verify(feedService).atualizarFeedOportunidade(salva);
     }
 
+    // Sprint 5 (teste do zero): a resposta de finalizar/aprovar vinha sem o nome do criador e
+    // a tela, que troca o cartão pela resposta, mostrava "é você" sem o nome.
+    @Test
+    void respostaDeFinalizarEAprovarTrazNomeDoCriadorECandidatos() {
+        Candidatura concorrendo = candidatura("aluno-1", StatusCandidatura.CONCORRENDO);
+        when(oportunidadeRepository.findById("op-1")).thenReturn(Optional.of(oportunidade(2, 0, false)));
+        when(candidaturaRepository.findByOportunidadeId("op-1")).thenReturn(List.of(concorrendo));
+        when(usuarioRepository.findById("prof-1")).thenReturn(Optional.of(
+                br.oportunidades.cefet.backend.models.Usuario.builder()
+                        .id("prof-1").nome("Prof Teste").imagemPerfil("prof.png").build()));
+        salvarDevolveOArgumento();
+
+        Oportunidade finalizada = service.finalizar("op-1").orElseThrow();
+
+        assertEquals("Prof Teste", finalizada.getNomeCriador());
+        assertEquals("prof.png", finalizada.getImagemPerfil());
+        assertEquals(List.of("aluno-1"), finalizada.getAlunosCandidatosId());
+    }
+
     @Test
     void naoFinalizaDuasVezes() {
         when(oportunidadeRepository.findById("op-1")).thenReturn(Optional.of(oportunidade(3, 1, true)));

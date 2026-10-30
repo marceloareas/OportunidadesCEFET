@@ -1,11 +1,10 @@
 package br.oportunidades.cefet.backend.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,18 +16,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.oportunidades.cefet.backend.dto.item_salvo.SavedItemDTO;
 import br.oportunidades.cefet.backend.dto.feed.FeedResponseDTO;
+import br.oportunidades.cefet.backend.services.PermissoesUsuario;
 import br.oportunidades.cefet.backend.services.SavedItemService;
 
+// Itens salvos são privados: cada usuário só salva, remove e vê os próprios.
 @RestController
 @RequestMapping("/saved-items")
-@CrossOrigin
 public class SavedItemController {
 
-    @Autowired
-    private SavedItemService service;
+    private final SavedItemService service;
+    private final PermissoesUsuario permissoes;
+
+    public SavedItemController(SavedItemService service, PermissoesUsuario permissoes) {
+        this.service = service;
+        this.permissoes = permissoes;
+    }
 
     @PostMapping
-    public ResponseEntity<Void> salvar(@RequestBody SavedItemDTO dto) {
+    public ResponseEntity<Void> salvar(@RequestBody SavedItemDTO dto, Authentication authentication) {
+        permissoes.exigirProprioUsuario(authentication, dto.getUserId());
         service.salvar(dto);
         return ResponseEntity.ok().build();
     }
@@ -36,8 +42,10 @@ public class SavedItemController {
     @DeleteMapping("/{userId}/{feedItemId}")
     public ResponseEntity<Void> remover(
             @PathVariable String userId,
-            @PathVariable String feedItemId) {
+            @PathVariable String feedItemId,
+            Authentication authentication) {
 
+        permissoes.exigirProprioUsuario(authentication, userId);
         service.remover(userId, feedItemId);
         return ResponseEntity.noContent().build();
     }
@@ -46,8 +54,10 @@ public class SavedItemController {
     public ResponseEntity<Page<FeedResponseDTO>> listar(
             @PathVariable String userId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication) {
 
+        permissoes.exigirProprioUsuario(authentication, userId);
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(service.listar(userId, pageable));
     }

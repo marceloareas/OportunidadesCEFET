@@ -16,11 +16,17 @@ describe('LoginComponent', () => {
 
   const respostaLogin = {
     token: 'jwt-123',
+    refreshToken: 'refresh-123',
     usuario: { id: 'u1', nome: 'Ana', email: 'ana@cefet.br', funcao: 'PROFESSOR', matricula: '1' },
   };
 
   beforeEach(async () => {
-    auth = jasmine.createSpyObj<AuthService>('AuthService', ['login']);
+    auth = jasmine.createSpyObj<AuthService>('AuthService', ['login', 'guardarTokens']);
+    // Mantém o comportamento real de gravar os tokens, para o teste conferir o localStorage.
+    auth.guardarTokens.and.callFake((r) => {
+      localStorage.setItem('token', r.token);
+      if (r.refreshToken) localStorage.setItem('refreshToken', r.refreshToken);
+    });
     feedback = jasmine.createSpyObj<FeedbackService>('FeedbackService', ['success', 'error']);
 
     await TestBed.configureTestingModule({
@@ -65,6 +71,7 @@ describe('LoginComponent', () => {
 
     expect(auth.login).toHaveBeenCalledWith({ email: 'ana@cefet.br', senha: 'segredo' });
     expect(localStorage.getItem('token')).toBe('jwt-123');
+    expect(localStorage.getItem('refreshToken')).toBe('refresh-123');
     expect(JSON.parse(localStorage.getItem('usuario')!).id).toBe('u1');
     expect(localStorage.getItem('tipoUsuario')).toBe('professor');
     expect(router.navigate).toHaveBeenCalledWith(['/home']);

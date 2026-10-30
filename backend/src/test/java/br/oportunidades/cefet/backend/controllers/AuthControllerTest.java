@@ -114,6 +114,59 @@ class AuthControllerTest {
     }
 
     @Test
+    void loginTambemDevolveRefreshToken() throws Exception {
+        when(usuarioRepository.findByEmail("ana@cefet.br"))
+                .thenReturn(Optional.of(ana(passwordEncoder.encode("segredo"))));
+        when(jwtService.gerarToken(any(Usuario.class))).thenReturn("acesso");
+        when(jwtService.gerarRefreshToken(any(Usuario.class))).thenReturn("refresh");
+
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(corpoLogin("ana@cefet.br", "segredo")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.refreshToken").value("refresh"));
+    }
+
+    @Test
+    void refreshValidoDevolveNovoPar() throws Exception {
+        when(jwtService.ehRefreshToken("r1")).thenReturn(true);
+        when(jwtService.extrairEmail("r1")).thenReturn("ana@cefet.br");
+        when(usuarioRepository.findByEmail("ana@cefet.br")).thenReturn(Optional.of(ana("hash")));
+        when(jwtService.gerarToken(any(Usuario.class))).thenReturn("acesso-novo");
+        when(jwtService.gerarRefreshToken(any(Usuario.class))).thenReturn("refresh-novo");
+
+        mvc.perform(post("/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"r1\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("acesso-novo"))
+                .andExpect(jsonPath("$.refreshToken").value("refresh-novo"))
+                .andExpect(jsonPath("$.usuario.id").value("user-1"));
+    }
+
+    @Test
+    void refreshInvalidoOuTokenDeAcessoDa401() throws Exception {
+        when(jwtService.ehRefreshToken("token-de-acesso")).thenReturn(false);
+
+        mvc.perform(post("/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"token-de-acesso\"}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isUnauthorized());
+
+        verify(jwtService, never()).gerarToken(any());
+    }
+
+    @Test
+    void refreshDeUsuarioApagadoDa401() throws Exception {
+        when(jwtService.ehRefreshToken("r1")).thenReturn(true);
+        when(jwtService.extrairEmail("r1")).thenReturn("sumiu@cefet.br");
+        when(usuarioRepository.findByEmail("sumiu@cefet.br")).thenReturn(Optional.empty());
+
+        mvc.perform(post("/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"r1\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void meDevolveOUsuarioDoToken() throws Exception {
         when(usuarioRepository.findByEmail("ana@cefet.br")).thenReturn(Optional.of(ana("hash")));
 

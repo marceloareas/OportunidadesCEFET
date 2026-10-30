@@ -61,3 +61,18 @@ logs/
 /coverage/
 # SDD control workspace (subagent-driven-development scratch)
 .superpowers/
+
+# =========================
+# BACKUPS DO BANCO (gerados por backup-db.sh; contêm dados reais, nunca versionar)
+# =========================
+backups/
+backup-oportunidades-*
+
+# =========================
+# VIDEO (projeto Remotion de apresentacao e renders)
+# =========================
+video/
+*.mp4
+*.mov
+*.webm
+*.mkv

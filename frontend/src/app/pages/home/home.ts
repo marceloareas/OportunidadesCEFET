@@ -42,9 +42,11 @@ export class Home {
   filtroStatus = signal<string>('');
   filtroCategoria = signal<string>('');
   filtroArea = signal<string>('');
+  filtroTexto = signal<string>('');
+  private buscaTimer?: ReturnType<typeof setTimeout>;
 
   filtrosAtivos = computed(() =>
-    Boolean(this.filtroStatus() || this.filtroCategoria() || this.filtroArea())
+    Boolean(this.filtroStatus() || this.filtroCategoria() || this.filtroArea() || this.filtroTexto().trim())
   );
 
   carregando = signal<boolean>(false);
@@ -86,11 +88,24 @@ export class Home {
     this.carregarFeed(true);
   }
 
+  // Busca por texto (B1): espera a pessoa parar de digitar antes de consultar o backend.
+  buscarTexto(texto: string) {
+    this.filtroTexto.set(texto);
+    clearTimeout(this.buscaTimer);
+    this.buscaTimer = setTimeout(() => this.aplicarFiltros(), 400);
+  }
+
   limparFiltros() {
+    clearTimeout(this.buscaTimer);
     this.filtroStatus.set('');
     this.filtroCategoria.set('');
     this.filtroArea.set('');
+    this.filtroTexto.set('');
     this.carregarFeed(true);
+  }
+
+  ngOnDestroy() {
+    clearTimeout(this.buscaTimer);
   }
 
   ngOnInit() {
@@ -145,6 +160,7 @@ export class Home {
       status: this.filtroStatus() || undefined,
       categoria: this.filtroCategoria() || undefined,
       area: this.filtroArea() || undefined,
+      q: this.filtroTexto().trim() || undefined,
       userId: this.usuarioLogado()?.id,
     };
 

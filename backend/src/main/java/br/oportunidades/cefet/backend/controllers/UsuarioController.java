@@ -2,6 +2,7 @@ package br.oportunidades.cefet.backend.controllers;
 
 import br.oportunidades.cefet.backend.exceptions.ResourceNotFoundException;
 import br.oportunidades.cefet.backend.models.Usuario;
+import br.oportunidades.cefet.backend.services.PermissoesUsuario;
 import br.oportunidades.cefet.backend.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private PermissoesUsuario permissoes;
 
     //Listar todos
     @GetMapping
@@ -44,8 +48,11 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.createUsuario(usuario));
     }
 
+    // Só o próprio usuário edita ou exclui o seu perfil.
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> updateUsuario(@PathVariable String id, @RequestBody Usuario usuario){
+    public ResponseEntity<Usuario> updateUsuario(@PathVariable String id, @RequestBody Usuario usuario,
+                                                 Authentication authentication){
+        permissoes.exigirProprioUsuario(authentication, id);
         Usuario existingUsuario = usuarioService.getUsuarioById(id);
         if (existingUsuario != null) {
             Usuario updatedUsuario = usuarioService.updateUsuario(id, usuario);
@@ -56,7 +63,8 @@ public class UsuarioController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUsuario(@PathVariable String id) {
+    public ResponseEntity<Void> deleteUsuario(@PathVariable String id, Authentication authentication) {
+        permissoes.exigirProprioUsuario(authentication, id);
         Usuario existingUsuario = usuarioService.getUsuarioById(id);
         if (existingUsuario != null) {
             usuarioService.deleteUsuario(id);

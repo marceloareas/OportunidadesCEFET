@@ -139,6 +139,54 @@ class FeedServiceTest {
         verify(feedRepository, never()).findAllByOrderByCreatedAtDesc(any());
     }
 
+    // B1: busca por texto livre
+    private static String padraoDe(Object valor) {
+        if (valor instanceof java.util.regex.Pattern p) return p.pattern();
+        if (valor instanceof org.bson.BsonRegularExpression r) return r.getPattern();
+        return String.valueOf(valor);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void buscaProcuraNoNomeENaDescricaoComTextoLiteral() {
+        org.bson.Document filtro = FeedService.criteriaParaTexto("  C++ (IA) ").getCriteriaObject();
+        List<org.bson.Document> alternativas = (List<org.bson.Document>) filtro.get("$or");
+
+        assertEquals(2, alternativas.size());
+        String padraoNome = padraoDe(alternativas.get(0).get("nome"));
+        assertEquals(padraoNome, padraoDe(alternativas.get(1).get("descricao")));
+
+        java.util.regex.Pattern regex =
+                java.util.regex.Pattern.compile(padraoNome, java.util.regex.Pattern.CASE_INSENSITIVE);
+        assertTrue(regex.matcher("Monitoria de c++ (ia) aplicada").find());
+        assertFalse(regex.matcher("Monitoria de C (IA)").find());
+    }
+
+    @Test
+    void buscaUsaAConsultaDeOportunidadesESomaComOsFiltros() {
+        when(mongoTemplate.count(any(Query.class), eq(Oportunidade.class))).thenReturn(0L);
+        when(mongoTemplate.find(any(Query.class), eq(Oportunidade.class))).thenReturn(List.of());
+        when(feedRepository.findByReferenciaIdIn(List.of())).thenReturn(List.of());
+
+        service.listarFeed(0, 10, null, "PESQUISA", null, "robótica", null);
+
+        org.mockito.ArgumentCaptor<Query> captor = org.mockito.ArgumentCaptor.forClass(Query.class);
+        verify(mongoTemplate).find(captor.capture(), eq(Oportunidade.class));
+        String consulta = captor.getValue().getQueryObject().toJson();
+        assertTrue(consulta.contains("robótica"), consulta);
+        assertTrue(consulta.contains("PESQUISA"), consulta);
+        verify(feedRepository, never()).findAllByOrderByCreatedAtDesc(any());
+    }
+
+    @Test
+    void buscaEmBrancoMostraOFeedCompleto() {
+        feedCom();
+
+        service.listarFeed(0, 20, null, null, null, "   ", null);
+
+        verifyNoInteractions(mongoTemplate);
+    }
+
     @Test
     void criarOportunidadeGeraItemNoFeed() {
         Oportunidade op = Oportunidade.builder().id("op-1").build();

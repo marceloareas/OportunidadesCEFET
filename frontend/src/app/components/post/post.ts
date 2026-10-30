@@ -117,12 +117,7 @@ export class PostComponent {
 
     const refId = this.post.referenciaId || this.post.id;
     if (usuario && refId) {
-      this.savedService.listarPorUsuario(usuario.id).subscribe(res => {
-        const refs = res.content.map(item => item.referenciaId || item.id);
-        if (refs.includes(refId)) {
-          this.salvo.set(true);
-        }
-      });
+      this.savedService.estaSalvo(usuario.id, refId).subscribe(salvo => this.salvo.set(salvo));
     }
   }
 

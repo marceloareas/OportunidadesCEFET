@@ -39,8 +39,8 @@ describe('OportunidadesPage', () => {
     servico.listarPorAluno.and.returnValue(pagina([{ ...aberta, statusCandidaturaAluno: 'APROVADO' }]));
     confirm = jasmine.createSpyObj<ConfirmDialogService>('ConfirmDialogService', ['confirm']);
     feedback = jasmine.createSpyObj<FeedbackService>('FeedbackService', ['success', 'error']);
-    const salvos = jasmine.createSpyObj<SavedItemsService>('SavedItemsService', ['listarPorUsuario']);
-    salvos.listarPorUsuario.and.returnValue(of({ content: [] } as any));
+    const salvos = jasmine.createSpyObj<SavedItemsService>('SavedItemsService', ['estaSalvo']);
+    salvos.estaSalvo.and.returnValue(of(false));
 
     await TestBed.configureTestingModule({
       imports: [OportunidadesPage],

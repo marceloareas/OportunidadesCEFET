@@ -1,23 +1,23 @@
-# Imagem base JDK 21
-FROM eclipse-temurin:21-jdk
+# 1) Build com Maven (dependências em camada própria para aproveitar o cache)
+FROM maven:3.9-eclipse-temurin-21 AS build
 
-# Diretório de trabalho
 WORKDIR /app
 
-# Copia arquivos necessários
 COPY pom.xml .
+RUN mvn -q -B dependency:go-offline
+
 COPY src ./src
-COPY mvnw .
-COPY .mvn .mvn
+RUN mvn -q -B package -DskipTests
 
-# Dá permissão de execução para o wrapper
-RUN chmod +x mvnw
+# 2) Só o JRE para rodar: imagem bem menor que a do JDK + Maven
+FROM eclipse-temurin:21-jre
 
-# Build da aplicação
-RUN ./mvnw clean package -DskipTests
+WORKDIR /app
 
-# Expõe a porta do Spring Boot
+RUN useradd --system --no-create-home app
+COPY --from=build /app/target/backend-0.0.1-SNAPSHOT.jar app.jar
+USER app
+
 EXPOSE 8080
 
-# Comando para rodar a aplicação
-CMD ["java", "-jar", "target/backend-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
