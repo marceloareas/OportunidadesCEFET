@@ -5,7 +5,7 @@
 
 .menu-esquerda{
     width: 100%;
-    background-color: #fff;
+    background-color: var(--cor-superficie);
     border: 1px solid black;
     border-radius: 10px;
     height: 80vh;
@@ -27,18 +27,18 @@
         }
 
         a:hover{
-            color: #0A497E;
+            color: var(--cor-primaria-texto);
             cursor: pointer;
         }
 
         .divisor{
             height: 1px;
-            border: 1px solid #444;
+            border: 1px solid var(--cor-borda-forte);
         }
 
         .title{
             font-size: 20px;
-            color: #444;
+            color: var(--cor-texto);
         }
 
         .group{
@@ -69,7 +69,7 @@
 
             
             &:hover{
-                color: #0A497E;
+                color: var(--cor-primaria-texto);
                 transform: scale(1.1);
             }
 

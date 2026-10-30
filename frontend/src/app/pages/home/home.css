@@ -3,7 +3,7 @@
   padding-top: 6.5vh;
   grid-template-columns: 22.5% 55% 22.5%;
   height: 100vh;
-  background-color: #FAF9F6;
+  background-color: var(--cor-fundo);
   overflow: hidden;
 }
 
@@ -47,21 +47,21 @@
         width: auto;
         height: 50px;
         display: flex;
-        background-color: #fff;
+        background-color: var(--cor-superficie);
         font-size: medium;
         border: 1px solid black;
         border-radius: 20px;
         padding: 15px;
         box-sizing: border-box;
         cursor: pointer;
-        color: #313131;
+        color: var(--cor-texto);
         transition: background-color 0.2s ease;
         
     }
 
     .new-post-btn:hover {
         background-color: #212121;
-        color: #fff;
+        color: var(--cor-sobre-primaria);
     }
 }
 
@@ -99,7 +99,7 @@ hr {
 
 .filtro-campo label {
   font-size: 13px;
-  color: #313131;
+  color: var(--cor-texto);
   font-weight: 500;
 }
 
@@ -110,35 +110,35 @@ hr {
 .filtro-campo input,
 .filtro-campo select {
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--cor-borda);
   border-radius: 8px;
   font-size: 14px;
-  background-color: #fff;
-  color: #313131;
+  background-color: var(--cor-superficie);
+  color: var(--cor-texto);
   cursor: pointer;
 }
 
 .filtro-campo input:focus,
 .filtro-campo select:focus {
   outline: none;
-  border-color: #0A497E;
+  border-color: var(--cor-primaria-texto);
 }
 
 .filtro-limpar {
   padding: 8px 14px;
   height: fit-content;
-  border: 1px solid #0A497E;
+  border: 1px solid var(--cor-primaria-texto);
   border-radius: 8px;
-  background-color: #fff;
-  color: #0A497E;
+  background-color: var(--cor-superficie);
+  color: var(--cor-primaria-texto);
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .filtro-limpar:hover {
-  background-color: #0A497E;
-  color: #fff;
+  background-color: var(--cor-primaria);
+  color: var(--cor-sobre-primaria);
 }
 
 .modal-overlay {
@@ -162,7 +162,7 @@ hr {
   height: fit-content;
     max-height: 86vh;
     margin-top: 0;
-  background-color: #fff;
+  background-color: var(--cor-superficie);
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0px 5px 15px rgba(0,0,0,0.3);
@@ -178,12 +178,12 @@ hr {
     border: none;
     font-size: 20px;
     cursor: pointer;
-    color: #444;
+    color: var(--cor-texto);
     transition: color 0.2s;
   }
   
   .close-modal-btn:hover {
-    color: #d32f2f;
+    color: var(--cor-erro);
   }
 
   .title-input{
@@ -221,11 +221,11 @@ hr {
     }
 
     .toggle-label{
-        color: #313131;
+        color: var(--cor-texto);
     }
 
     .toggle-label.ativo{
-        color: #0A497E;
+        color: var(--cor-primaria-texto);
     }
 
     .toggle-switch{
@@ -248,7 +248,7 @@ hr {
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #ccc;
+        background-color: var(--cor-superficie-3);
         transition: .2s;
         border-radius: 26px;
     }
@@ -260,13 +260,13 @@ hr {
         width: 20px;
         left: 3px;
         bottom: 3px;
-        background-color: white;
+        background-color: var(--cor-superficie);
         transition: .2s;
         border-radius: 50%;
     }
 
     .toggle-switch input:checked + .slider{
-        background-color: #0A497E;
+        background-color: var(--cor-primaria);
     }
 
     .toggle-switch input:checked + .slider:before{
@@ -288,12 +288,12 @@ hr {
 
     .oportunidade-extra .campo label{
         font-size: 14px;
-        color: #313131;
+        color: var(--cor-texto);
     }
 
     .oportunidade-extra .campo input{
         padding: 6px 8px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--cor-borda);
         border-radius: 6px;
         font-size: 14px;
     }
@@ -302,7 +302,7 @@ hr {
         width: 20vw;
         height: auto;
         font-size: 14px;
-        color: #0A497E;
+        color: var(--cor-primaria-texto);
         padding: 2px 5px;
         margin-bottom: 5px;
 
@@ -313,7 +313,7 @@ hr {
     }
 
     .erro-imagem{
-        color: #d32f2f;
+        color: var(--cor-erro);
         font-size: 0.85rem;
         margin: 5px 0 10px;
     }
@@ -333,7 +333,7 @@ hr {
         .remove-image{
             background: transparent;
             border: none;
-            color: #d32f2f;
+            color: var(--cor-erro);
             cursor: pointer;
             font-size: 14px;
             padding: 4px 8px;
@@ -350,13 +350,13 @@ hr {
         width: 15vw;
         height: 5vh;
         display: flex;
-        background-color: #0A497E;
+        background-color: var(--cor-primaria);
         font-size: 16px;
         justify-content: center;
         border: 1px solid black;
         border-radius: 10px;
         align-items: center;
-        color: white;
+        color: var(--cor-sobre-primaria);
         box-shadow: 2px 2px 2px #444;
         transition: .2s ease;
 
@@ -381,7 +381,7 @@ hr {
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    color: #666;
+    color: var(--cor-texto-suave);
     font-size: 0.95rem;
     }
 
@@ -401,8 +401,8 @@ hr {
     .loader {
     width: 18px;
     height: 18px;
-    border: 2px solid #ddd;
-    border-top: 2px solid #333;
+    border: 2px solid var(--cor-borda);
+    border-top: 2px solid var(--cor-borda-forte);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     }
@@ -418,9 +418,9 @@ hr {
 
     border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 999px;
-    background: #fff;
+    background: var(--cor-superficie);
 
-    color: #222;
+    color: var(--cor-texto-forte);
     font-weight: 500;
 
     cursor: pointer;
@@ -428,7 +428,7 @@ hr {
     }
 
     .feed-load-btn:hover {
-    background: #f7f7f7;
+    background: var(--cor-fundo);
     transform: translateY(-1px);
     }
 
@@ -446,8 +446,8 @@ hr {
 }
 
 .post-skeleton {
-  background: #fff;
-  border: 1px solid #e7e7e7;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
   border-radius: 16px;
   padding: 1rem;
   display: flex;
@@ -477,7 +477,7 @@ hr {
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: #e9ecef;
+  background: var(--cor-superficie-2);
   border-radius: 10px;
 }
 

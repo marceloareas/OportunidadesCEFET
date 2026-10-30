@@ -1,6 +1,6 @@
 .menu-direita{
     width: 100%;
-    background-color: #fff;
+    background-color: var(--cor-superficie);
     border: 1px solid black;
     border-radius: 10px;
     height: auto;
@@ -36,7 +36,7 @@
 }
 
 .clickable:hover {
-    color: #0A497E;
+    color: var(--cor-primaria-texto);
 }
 
 .edit-profile{
@@ -48,7 +48,7 @@
     
     span:hover{
         cursor: pointer;
-        color: #0A497E;
+        color: var(--cor-primaria-texto);
     }
 }
 
@@ -62,7 +62,7 @@
 
     .desc{
         height: auto;
-        color: #313131;
+        color: var(--cor-texto);
         font-size: 14px;
         margin-top: .4vh;
         margin-bottom: 2vh;
@@ -83,7 +83,7 @@
         }
 
         a:hover{
-            color: #0A497E;
+            color: var(--cor-primaria-texto);
         }
     }
 

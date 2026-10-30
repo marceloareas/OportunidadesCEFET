@@ -15,7 +15,7 @@
     border-radius: 10px;
     object-fit: cover;
     border: 2px solid #8393A2;
-    background: #eaeaea;
+    background: var(--cor-superficie-3);
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
@@ -23,8 +23,8 @@
     position: absolute;
     bottom: 0;
     right: 0;
-    background: #0A497E;
-    color: #fff;
+    background: var(--cor-primaria);
+    color: var(--cor-sobre-primaria);
     border-radius: 50%;
     width: 32px;
     height: 32px;
@@ -32,12 +32,12 @@
     align-items: center;
     justify-content: center;
     font-size: 1.3em;
-    border: 2px solid #fff;
+    border: 2px solid var(--cor-superficie);
     box-shadow: 0 1px 4px rgba(0,0,0,0.12);
 }
 
 .imagem-erro {
-    color: #ff4444;
+    color: var(--cor-erro);
     font-size: 0.95em;
     margin-top: 0.5em;
 }
@@ -81,7 +81,7 @@
     display: flex;
     width: 65vw;
     height: 90vh;
-    background-color: #0A497E;
+    background-color: var(--cor-primaria);
     border-radius: 25px;
 }
 
@@ -113,7 +113,7 @@
     width: 32.5vw;
     height: 90vh;
     padding: 2rem 2vw;
-    color:white;
+    color:var(--cor-sobre-primaria);
     overflow-y: auto;
     overflow-x: hidden;
 
@@ -139,7 +139,7 @@
     padding: 20rem 2vw;
     box-sizing: border-box;
 
-    color: white;
+    color: var(--cor-sobre-primaria);
 
     overflow: hidden;
 
@@ -164,13 +164,13 @@ form{
     }
 
     a{
-        color: white;
+        color: var(--cor-sobre-primaria);
         cursor: pointer;
         font-weight: bold;
         text-decoration: underline;
 
         &:hover{
-            color: #8393A2;
+            color: var(--cor-texto-suave);
         }
     }
 }
@@ -203,7 +203,7 @@ form{
     height: 5vh;
     border: none;
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--cor-superficie);
     color: black;
     font-size: 1.2rem;
     font-weight: bold;
