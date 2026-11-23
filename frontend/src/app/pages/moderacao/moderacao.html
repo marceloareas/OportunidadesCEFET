@@ -1,0 +1,120 @@
+<app-navbar-top></app-navbar-top>
+
+<div class="page">
+  <app-navbar-left></app-navbar-left>
+
+  <main class="content">
+    <div class="scroll-content">
+      <section class="moderacao" aria-labelledby="titulo-moderacao">
+        <h2 id="titulo-moderacao" class="titulo-principal">Moderação</h2>
+        <p class="descricao">
+          Contas cadastradas no sistema. Uma conta desativada não consegue mais entrar,
+          mas as publicações dela continuam no ar.
+        </p>
+
+        <form class="busca" role="search" (submit)="buscar($event)">
+          <label for="busca-usuarios" class="visualmente-oculto">Buscar por nome ou e-mail</label>
+          <div class="campo-busca">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input
+              id="busca-usuarios"
+              type="search"
+              placeholder="Buscar por nome ou e-mail"
+              autocomplete="off"
+              [value]="termo()"
+              (input)="termo.set($any($event.target).value)"
+            />
+          </div>
+          <button type="submit" class="btn-primario">Buscar</button>
+          @if (termo() || termoAplicado()) {
+            <button type="button" class="btn-link" (click)="limparBusca()">Limpar</button>
+          }
+        </form>
+
+        @if (erro()) {
+          <div class="mensagem-erro" role="alert">
+            <p>{{ erro() }}</p>
+            <button type="button" class="btn-pagina btn-tentar" (click)="carregar(pagina())">
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Tentar de novo
+            </button>
+          </div>
+        } @else if (carregando() && usuarios().length === 0) {
+          <p class="mensagem-status">Carregando usuários...</p>
+        } @else if (usuarios().length === 0) {
+          <p class="mensagem-vazia">Nenhum usuário encontrado{{ termoAplicado() ? ' para "' + termoAplicado() + '"' : '' }}.</p>
+        } @else {
+          <p class="contagem" aria-live="polite">
+            {{ totalUsuarios() }} {{ totalUsuarios() === 1 ? 'conta' : 'contas' }}
+          </p>
+
+          <div class="tabela-rolagem" [class.atualizando]="carregando()">
+            <table class="tabela-usuarios">
+              <thead>
+                <tr>
+                  <th scope="col">Usuário</th>
+                  <th scope="col">Perfil</th>
+                  <th scope="col">Situação</th>
+                  <th scope="col"><span class="visualmente-oculto">Ação</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of usuarios(); track u.id) {
+                  <tr [class.inativo]="!ativo(u)">
+                    <td>
+                      <div class="usuario">
+                        <img class="avatar" [src]="avatarOuPadrao(u.imagemPerfil, u.funcao)" alt="" />
+                        <div class="usuario-texto">
+                          <a class="usuario-nome" [routerLink]="['/perfil', u.id]">{{ u.nome || 'Sem nome' }}</a>
+                          <span class="usuario-email">{{ u.email }}</span>
+                          @if (u.matricula) {
+                            <span class="usuario-matricula">Matrícula {{ u.matricula }}</span>
+                          }
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="chip chip-perfil">{{ rotuloPerfil(u.funcao) }}</span></td>
+                    <td>
+                      @if (ativo(u)) {
+                        <span class="chip chip-ativo"><i class="bi bi-check-circle" aria-hidden="true"></i>Ativo</span>
+                      } @else {
+                        <span class="chip chip-inativo"><i class="bi bi-slash-circle" aria-hidden="true"></i>Desativado</span>
+                      }
+                    </td>
+                    <td class="coluna-acao">
+                      @if (!ehAdmin(u)) {
+                        <button
+                          type="button"
+                          [class]="ativo(u) ? 'btn-acao btn-desativar' : 'btn-acao btn-reativar'"
+                          [class.btn-carregando]="processando() === u.id"
+                          [disabled]="processando() !== null"
+                          [attr.aria-label]="(ativo(u) ? 'Desativar a conta de ' : 'Reativar a conta de ') + u.nome"
+                          (click)="alternar(u)"
+                        >
+                          {{ ativo(u) ? 'Desativar' : 'Reativar' }}
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (totalPaginas() > 1) {
+            <nav class="paginacao" aria-label="Páginas de usuários">
+              <button type="button" class="btn-pagina" [disabled]="pagina() === 0 || carregando()" (click)="carregar(pagina() - 1)">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i> Anterior
+              </button>
+              <span>Página {{ pagina() + 1 }} de {{ totalPaginas() }}</span>
+              <button type="button" class="btn-pagina" [disabled]="pagina() + 1 >= totalPaginas() || carregando()" (click)="carregar(pagina() + 1)">
+                Próxima <i class="bi bi-chevron-right" aria-hidden="true"></i>
+              </button>
+            </nav>
+          }
+        }
+      </section>
+    </div>
+  </main>
+
+  <app-navbar-right></app-navbar-right>
+</div>

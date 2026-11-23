@@ -6,7 +6,8 @@ import { MinhasDiscussoes } from './pages/minhas-discussoes/minhas-discussoes';
 import { OportunidadesPage } from './pages/oportunidades/oportunidades';
 import { ItensSalvosComponent } from './pages/itens-salvos/itens-salvos';
 import { Perfil } from './pages/perfil/perfil';
-import { authGuard, visitanteGuard } from './guards/auth.guard';
+import { Moderacao } from './pages/moderacao/moderacao';
+import { adminGuard, authGuard, visitanteGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'oportunidades', component: OportunidadesPage, canActivate: [authGuard] },
   { path: 'itens_salvos', component: ItensSalvosComponent, canActivate: [authGuard] },
   { path: 'perfil/:id', component: Perfil, canActivate: [authGuard] },
+  { path: 'moderacao', component: Moderacao, canActivate: [authGuard, adminGuard] },
   // Endereço inexistente: manda para o feed (ou para o login, pela guarda).
   { path: '**', redirectTo: 'home' }
 ];

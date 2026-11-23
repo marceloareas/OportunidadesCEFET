@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ehAdmin } from '../../utils/perfil';
 
 
 @Component({
@@ -10,9 +11,12 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class NavbarLeft {
   usuarioId: string | null = null;
+  admin = false;
 
   ngOnInit(): void {
     if (typeof window === 'undefined') return;
+
+    this.admin = ehAdmin();
 
     const usuarioSalvo = localStorage.getItem('usuario');
     if (usuarioSalvo) {

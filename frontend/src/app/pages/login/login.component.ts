@@ -12,6 +12,7 @@ import {
 } from '../../utils/profile-image';
 
 import { avatarPadrao } from '../../utils/avatar';
+import { tipoUsuarioDe } from '../../utils/perfil';
 
 @Component({
   selector: 'app-login',
@@ -137,9 +138,7 @@ export class Login {
         this.authService.guardarTokens(authResponse);
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
 
-        const tipo =
-          authResponse.usuario.funcao?.toLowerCase() === 'professor' ? 'professor' : 'aluno';
-        localStorage.setItem('tipoUsuario', tipo);
+        localStorage.setItem('tipoUsuario', tipoUsuarioDe(authResponse.usuario.funcao));
 
         this.feedback.success(`Bem-vindo, ${authResponse.usuario.nome}!`);
         this.router.navigate(['/home']);
@@ -147,7 +146,12 @@ export class Login {
       error: (err) => {
         this.enviando.set(false);
         console.error('Erro ao autenticar usuário:', err);
-        this.feedback.error('Usuário não encontrado ou senha incorreta.');
+        // 403 = conta desativada pela moderação (sprint 6): mostra o aviso do servidor.
+        this.feedback.error(
+          err?.status === 403 && err?.error?.message
+            ? err.error.message
+            : 'Usuário não encontrado ou senha incorreta.',
+        );
       },
     });
   }

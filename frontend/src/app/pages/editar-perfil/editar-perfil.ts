@@ -13,6 +13,7 @@ import {
   ProfileImageCropPosition,
   cropProfileImageToSquare
 } from '../../utils/profile-image';
+import { tipoUsuarioDe } from '../../utils/perfil';
 
 @Component({
   selector: 'app-editar-perfil',
@@ -124,9 +125,7 @@ export class EditarPerfil {
         };
         localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
         if (funcaoAtualizada) {
-          const tipo =
-            funcaoAtualizada.toLowerCase() === 'professor' ? 'professor' : 'aluno';
-          localStorage.setItem('tipoUsuario', tipo);
+          localStorage.setItem('tipoUsuario', tipoUsuarioDe(funcaoAtualizada));
         }
         this.router.navigate(['/home']);
       },

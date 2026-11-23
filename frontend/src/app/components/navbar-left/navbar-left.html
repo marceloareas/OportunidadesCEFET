@@ -17,15 +17,24 @@
         <i class="bi bi-chat-left-text" aria-hidden="true"></i><span>Minhas Discussões</span>
       </a>
 
-      <a routerLink="/oportunidades" routerLinkActive="ativo" ariaCurrentWhenActive="page">
-        <i class="bi bi-briefcase" aria-hidden="true"></i><span>Oportunidades</span>
-      </a>
+      <!-- O administrador modera pelo feed; a página Oportunidades é de aluno e professor. -->
+      @if (!admin) {
+        <a routerLink="/oportunidades" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+          <i class="bi bi-briefcase" aria-hidden="true"></i><span>Oportunidades</span>
+        </a>
+      }
 
       <a routerLink="/itens_salvos" routerLinkActive="ativo" ariaCurrentWhenActive="page">
         <i class="bi bi-bookmark" aria-hidden="true"></i><span>Itens Salvos</span>
       </a>
 
       <span class="divisor" role="separator"></span>
+
+      @if (admin) {
+        <a routerLink="/moderacao" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+          <i class="bi bi-shield-check" aria-hidden="true"></i><span>Moderação</span>
+        </a>
+      }
     </div>
   </nav>
 </aside>

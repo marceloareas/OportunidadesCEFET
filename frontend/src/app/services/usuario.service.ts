@@ -8,11 +8,12 @@ export interface Usuario {
   nome: string;
   email: string;
   senha?: string;
-  funcao?: string;     // 'Aluno', 'Professor'
+  funcao?: string;     // 'ALUNO', 'PROFESSOR', 'ADMIN'
   matricula?: string;
   imagemPerfil?: string; // base64 ou url
   linkPortfolio?: string;
   linkCurriculo?: string;
+  ativo?: boolean;      // false = desativado pela moderação
 }
 
 @Injectable({ providedIn: 'root' })

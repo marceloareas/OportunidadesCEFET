@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { ehAdmin } from '../utils/perfil';
 
 function estaLogado(): boolean {
   return typeof window !== 'undefined' && Boolean(localStorage.getItem('token') && localStorage.getItem('usuario'));
@@ -8,6 +9,10 @@ function estaLogado(): boolean {
 // Páginas internas: sem sessão, volta para o login em vez de mostrar uma tela vazia cheia de erros.
 export const authGuard: CanActivateFn = () =>
   estaLogado() ? true : inject(Router).createUrlTree(['/login']);
+
+// Moderação (sprint 6): só o administrador. Os outros voltam para o feed. A API barra de novo.
+export const adminGuard: CanActivateFn = () =>
+  estaLogado() && ehAdmin() ? true : inject(Router).createUrlTree(['/home']);
 
 // Tela de login: quem já está logado vai direto para o feed.
 export const visitanteGuard: CanActivateFn = () =>
