@@ -39,6 +39,18 @@
       </ng-template>
       <span class="date">{{ dataFormatada }}</span>
     </div>
+    <button
+      *ngIf="admin"
+      class="btn-remover-post"
+      type="button"
+      [disabled]="removendo()"
+      [class.btn-carregando]="removendo()"
+      [attr.aria-label]="post.tipo === 'OPORTUNIDADE' ? 'Remover oportunidade' : 'Remover discussão'"
+      (click)="removerPost()"
+    >
+      <i class="bi bi-trash3" aria-hidden="true"></i>
+      <span>{{ removendo() ? 'Removendo...' : 'Remover' }}</span>
+    </button>
   </div>
 
   <div class="post-body">
@@ -158,6 +170,17 @@
             <span>{{ c.autor }}</span>
           </ng-template>
           <span class="comentario-data" *ngIf="formatarDataComentario(c.data)">• {{ formatarDataComentario(c.data) }}</span>
+          <button
+            *ngIf="admin && c.id"
+            class="btn-remover-comentario"
+            type="button"
+            [disabled]="comentarioRemovendo() !== null"
+            [attr.aria-label]="'Apagar o comentário de ' + c.autor"
+            title="Apagar comentário"
+            (click)="removerComentario(c)"
+          >
+            <i class="bi bi-trash3" aria-hidden="true"></i>
+          </button>
         </div>
         <div class="comentario-texto">{{ c.texto }}</div>
       </div>

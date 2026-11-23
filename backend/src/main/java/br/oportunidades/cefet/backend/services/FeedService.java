@@ -28,6 +28,7 @@ import br.oportunidades.cefet.backend.repositories.PostRepository;
 import br.oportunidades.cefet.backend.repositories.OportunidadeRepository;
 import br.oportunidades.cefet.backend.repositories.CandidaturaRepository;
 import br.oportunidades.cefet.backend.repositories.ComentarioRepository;
+import br.oportunidades.cefet.backend.repositories.SavedItemRepository;
 import br.oportunidades.cefet.backend.models.Candidatura;
 import br.oportunidades.cefet.backend.enums.StatusCandidatura;
 import br.oportunidades.cefet.backend.enums.TipoFeed;
@@ -54,6 +55,9 @@ public class FeedService {
 
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private SavedItemRepository savedItemRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -264,8 +268,12 @@ public class FeedService {
                 });
     }
 
+    // Tira a postagem do feed junto com o que pendura nela (comentários e itens salvos),
+    // para nada ficar órfão quando o autor ou o administrador apaga.
     public void deletarFeedItem(String referenciaId) {
         feedRepository.deleteByReferenciaId(referenciaId);
+        comentarioRepository.deleteByIdPost(referenciaId);
+        savedItemRepository.deleteByFeedItemId(referenciaId);
     }
 
     FeedResponseDTO montarFeedItem(FeedItem item) {

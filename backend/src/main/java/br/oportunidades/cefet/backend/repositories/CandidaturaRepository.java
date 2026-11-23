@@ -13,6 +13,8 @@ public interface CandidaturaRepository
 
     List<Candidatura> findByOportunidadeId(String oportunidadeId);
 
+    void deleteByOportunidadeId(String oportunidadeId);
+
     Optional<Candidatura> findByAlunoIdAndOportunidadeId(
             String alunoId,
             String oportunidadeId

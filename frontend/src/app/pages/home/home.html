@@ -123,7 +123,7 @@
           <!-- FEED -->
           <div *ngIf="!carregando() && feedItens().length > 0; else semItens">
             <ng-container *ngFor="let p of feedItens(); trackBy: trackByFeedId">
-              <app-post [post]="p" (abrirModalCandidatos)="abrirModalCandidatos(p)"></app-post>
+              <app-post [post]="p" (abrirModalCandidatos)="abrirModalCandidatos(p)" (removido)="removerDoFeed($event)"></app-post>
             </ng-container>
 
             <div class="feed-footer">

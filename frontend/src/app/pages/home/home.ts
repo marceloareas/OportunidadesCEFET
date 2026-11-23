@@ -79,6 +79,11 @@ export class Home {
     private router: Router
   ) {}
 
+  // Postagem apagada pela moderação (sprint 6): some do feed sem recarregar.
+  removerDoFeed(referenciaId: string): void {
+    this.feedItens.update((itens) => itens.filter((i) => (i.referenciaId || i.id) !== referenciaId));
+  }
+
   trackByFeedId(index: number, item: FeedItem): string {
     return item.id!;
   }

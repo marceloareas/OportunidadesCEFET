@@ -2,6 +2,7 @@ package br.oportunidades.cefet.backend.services;
 
 import br.oportunidades.cefet.backend.enums.StatusOportunidade;
 import br.oportunidades.cefet.backend.enums.TipoFeed;
+import br.oportunidades.cefet.backend.exceptions.ResourceNotFoundException;
 import br.oportunidades.cefet.backend.models.Comentario;
 import br.oportunidades.cefet.backend.models.Oportunidade;
 import br.oportunidades.cefet.backend.models.Post;
@@ -54,6 +55,13 @@ public class ComentarioService {
                         TipoFeed.OPORTUNIDADE,
                         idOportunidade
                 );
+    }
+
+    // Moderação (sprint 6): quem chama já conferiu que é o administrador.
+    public void deletar(String idComentario) {
+        Comentario comentario = comentarioRepository.findById(idComentario)
+                .orElseThrow(() -> new ResourceNotFoundException("Comentário não encontrado."));
+        comentarioRepository.deleteById(comentario.getId());
     }
 
     public Comentario salvar(Comentario comentario) {

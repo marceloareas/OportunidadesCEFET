@@ -49,6 +49,18 @@ public class OportunidadePermissoes {
         return usuarios.exigirProprioUsuario(authentication, idUsuario);
     }
 
+    // Moderação (sprint 6): além do professor dono, o administrador pode apagar qualquer oportunidade.
+    public Usuario exigirDonoOuAdmin(Authentication authentication, String idOportunidade) {
+        Usuario usuario = usuarioAtual(authentication);
+        if (!PermissoesUsuario.ehAdmin(usuario)) {
+            return exigirDono(authentication, idOportunidade);
+        }
+        if (oportunidadeRepository.findById(idOportunidade).isEmpty()) {
+            throw new ResourceNotFoundException("Oportunidade não encontrada.");
+        }
+        return usuario;
+    }
+
     public Usuario exigirDono(Authentication authentication, String idOportunidade) {
         Usuario usuario = exigirProfessor(authentication);
         Oportunidade oportunidade = oportunidadeRepository.findById(idOportunidade)

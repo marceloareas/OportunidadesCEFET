@@ -16,4 +16,6 @@ public interface SavedItemRepository extends MongoRepository<SavedItem, String> 
     Optional<SavedItem> findByUserIdAndFeedItemId(String userId, String feedItemId);
 
     void deleteByUserIdAndFeedItemId(String userId, String feedItemId);
+
+    void deleteByFeedItemId(String feedItemId);
 }

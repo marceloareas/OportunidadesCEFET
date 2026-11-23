@@ -373,6 +373,55 @@
   font-weight: 500;
 }
 
+/* Moderação (sprint 6): ações só do administrador, discretas até o hover. */
+.btn-remover-post {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cor-texto-suave);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-remover-post:hover:not(:disabled) {
+  border-color: var(--cor-erro);
+  background: var(--cor-erro-suave);
+  color: var(--cor-erro);
+}
+
+.btn-remover-comentario {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cor-texto-suave);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-remover-comentario:hover:not(:disabled) {
+  background: var(--cor-erro-suave);
+  color: var(--cor-erro);
+}
+
+.btn-remover-post:disabled,
+.btn-remover-comentario:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .comentarios-paginacao {
   display: flex;
   align-items: center;

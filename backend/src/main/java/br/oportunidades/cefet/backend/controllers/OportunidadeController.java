@@ -57,7 +57,7 @@ public class OportunidadeController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable String id, Authentication authentication) {
-        permissoes.exigirDono(authentication, id);
+        permissoes.exigirDonoOuAdmin(authentication, id);
         oportunidadeService.deletar(id);
         return ResponseEntity.noContent().build();
     }

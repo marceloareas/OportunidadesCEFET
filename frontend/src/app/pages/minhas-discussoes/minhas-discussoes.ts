@@ -45,6 +45,11 @@ export class MinhasDiscussoes {
     this.carregarDados(0, false);
   }
 
+  // Postagem apagada pela moderação (sprint 6).
+  removerDaLista(referenciaId: string) {
+    this.minhasPublicacoes.update((lista) => lista.filter((p) => p.id !== referenciaId));
+  }
+
   carregarMaisPublicacoes() {
     if (this.carregando() || !this.hasMore()) return;
     this.carregarDados(this.paginaAtual() + 1, true);

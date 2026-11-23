@@ -7,6 +7,8 @@ import { Oportunidade, OportunidadeService } from '../../services/oportunidade.s
 import { SavedItemsService } from '../../services/itens-salvos.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { FeedbackService } from '../../services/feedback.service';
+import { PostService } from '../../services/post.services';
+import { ComentarioService } from '../../services/comentario.service';
 import { deslogar, logarComo, providersDeTeste } from '../../../testing/test-providers';
 
 describe('PostComponent', () => {
@@ -33,6 +35,7 @@ describe('PostComponent', () => {
     oportunidades = jasmine.createSpyObj<OportunidadeService>('OportunidadeService', [
       'candidatarAluno',
       'curtirOportunidade',
+      'deletar',
     ]);
     confirm = jasmine.createSpyObj<ConfirmDialogService>('ConfirmDialogService', ['confirm']);
     feedback = jasmine.createSpyObj<FeedbackService>('FeedbackService', ['success', 'error']);
@@ -58,6 +61,8 @@ describe('PostComponent', () => {
 
   const botaoCandidatar = () =>
     fixture.nativeElement.querySelector('.btn-candidatar') as HTMLButtonElement | null;
+  const botaoRemover = () =>
+    fixture.nativeElement.querySelector('.btn-remover-post') as HTMLButtonElement | null;
 
   afterEach(() => deslogar());
 
@@ -137,6 +142,94 @@ describe('PostComponent', () => {
       await montar(oportunidadeAberta());
 
       expect(botaoCandidatar()).toBeNull();
+    });
+
+    it('não vê o botão de remover postagem', async () => {
+      await montar(oportunidadeAberta());
+
+      expect(botaoRemover()).toBeNull();
+    });
+  });
+
+  // Sprint 6: moderação de postagens e comentários.
+  describe('como administrador', () => {
+    beforeEach(() => logarComo({ id: 'adm', nome: 'Administrador', funcao: 'ADMIN' }));
+
+    const discussao = (): FeedItem =>
+      ({ id: 'f2', referenciaId: 'p-1', tipo: 'POST', titulo: 'Dúvida', criadorId: 'aluno-1' }) as FeedItem;
+
+    it('remove uma discussão depois de confirmar e avisa a página', async () => {
+      await montar(discussao());
+      const posts = TestBed.inject(PostService);
+      spyOn(posts, 'deletar').and.returnValue(of(void 0));
+      confirm.confirm.and.returnValue(of(true));
+      const removidos: string[] = [];
+      component.removido.subscribe((id) => removidos.push(id));
+
+      botaoRemover()!.click();
+
+      expect(posts.deletar).toHaveBeenCalledWith('p-1');
+      expect(removidos).toEqual(['p-1']);
+      expect(feedback.success).toHaveBeenCalled();
+    });
+
+    it('remove uma oportunidade pela rota de oportunidades', async () => {
+      await montar(oportunidadeAberta());
+      oportunidades.deletar.and.returnValue(of(void 0));
+      confirm.confirm.and.returnValue(of(true));
+
+      botaoRemover()!.click();
+
+      expect(oportunidades.deletar).toHaveBeenCalledWith('op-1');
+    });
+
+    it('cancelar não remove nada', async () => {
+      await montar(oportunidadeAberta());
+      confirm.confirm.and.returnValue(of(false));
+
+      botaoRemover()!.click();
+
+      expect(oportunidades.deletar).not.toHaveBeenCalled();
+    });
+
+    it('não vê o botão de candidatura', async () => {
+      await montar(oportunidadeAberta());
+
+      expect(botaoCandidatar()).toBeNull();
+    });
+
+    it('apaga um comentário e atualiza o contador', async () => {
+      await montar(discussao());
+      const comentarios = TestBed.inject(ComentarioService);
+      spyOn(comentarios, 'deletar').and.returnValue(of(void 0));
+      confirm.confirm.and.returnValue(of(true));
+      component.comentarios = [
+        { id: 'c1', autor: 'Bia', texto: 'ofensivo' },
+        { id: 'c2', autor: 'Caio', texto: 'ok' },
+      ];
+      component.contadorComentarios.set(2);
+      component.newCommentModal.set(true);
+      fixture.detectChanges();
+
+      (fixture.nativeElement.querySelector('.btn-remover-comentario') as HTMLButtonElement).click();
+
+      expect(comentarios.deletar).toHaveBeenCalledWith('c1');
+      expect(component.comentarios.map((c) => c.id)).toEqual(['c2']);
+      expect(component.contadorComentarios()).toBe(1);
+    });
+  });
+
+  describe('como aluno, nos comentários', () => {
+    beforeEach(() => logarComo({ id: 'aluno-1', nome: 'Bia', funcao: 'ALUNO' }));
+
+    it('não vê a lixeira de comentário nem o remover postagem', async () => {
+      await montar(oportunidadeAberta());
+      component.comentarios = [{ id: 'c1', autor: 'Caio', texto: 'oi' }];
+      component.newCommentModal.set(true);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.btn-remover-comentario')).toBeNull();
+      expect(botaoRemover()).toBeNull();
     });
   });
 });

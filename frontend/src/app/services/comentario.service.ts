@@ -30,4 +30,9 @@ export class ComentarioService {
   criar(comentario: Comentario): Observable<Comentario> {
     return this.http.post<Comentario>(this.API, comentario);
   }
+
+  // Só o administrador (moderação, sprint 6).
+  deletar(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.API}/${id}`);
+  }
 }

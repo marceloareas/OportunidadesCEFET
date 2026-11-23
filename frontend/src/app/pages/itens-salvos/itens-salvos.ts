@@ -37,6 +37,11 @@ export class ItensSalvosComponent implements OnInit {
     private router: Router,
   ) {}
 
+  // Postagem apagada pela moderação (sprint 6).
+  removerDaLista(referenciaId: string) {
+    this.itens = this.itens.filter((i) => (i.referenciaId || i.id) !== referenciaId);
+  }
+
   trackById(index: number, item: FeedItem) {
     return item.id;
   }

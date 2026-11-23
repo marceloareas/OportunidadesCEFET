@@ -13,6 +13,7 @@ import { SavedItemsService } from '../../services/itens-salvos.service';
 import { FeedbackService } from '../../services/feedback.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { avatarOuPadrao } from '../../utils/avatar';
+import { ehAdmin } from '../../utils/perfil';
 
 @Component({
   selector: 'app-post',
@@ -24,6 +25,8 @@ import { avatarOuPadrao } from '../../utils/avatar';
 export class PostComponent {
   @Input() post!: FeedItem;
   @Output() abrirModalCandidatos = new EventEmitter<any>();
+  // Sprint 6: avisa a página que a postagem foi apagada pela moderação (emite o referenciaId).
+  @Output() removido = new EventEmitter<string>();
   readonly comentariosPorPagina = 10;
 
   private readonly categoriaLabels: Record<string, string> = {
@@ -70,6 +73,9 @@ export class PostComponent {
   salvo = signal<boolean>(false);
   candidaturaEnviando = signal<boolean>(false);
   comentarioEnviando = signal<boolean>(false);
+  readonly admin = ehAdmin();
+  removendo = signal<boolean>(false);
+  comentarioRemovendo = signal<string | null>(null);
 
   private comentarioService = inject(ComentarioService);
   private usuarioService = inject(UsuarioService);
@@ -493,6 +499,70 @@ export class PostComponent {
 
     // Emitir evento para a página pai gerenciar a seleção em lote
     this.abrirModalCandidatos.emit({ oportunidadeId: this.post.id, professorId: usuario.id });
+  }
+
+  // Moderação (sprint 6): o administrador apaga discussões e oportunidades de qualquer pessoa.
+  removerPost() {
+    const refId = this.post.referenciaId || this.post.id;
+    if (!this.admin || !refId || this.removendo()) return;
+    const ehOportunidade = this.post.tipo === 'OPORTUNIDADE';
+
+    this.confirmDialog
+      .confirm({
+        title: ehOportunidade ? 'Remover oportunidade' : 'Remover discussão',
+        message: ehOportunidade
+          ? 'A oportunidade sai do feed junto com os comentários e as candidaturas. Não dá para desfazer.'
+          : 'A discussão sai do feed junto com os comentários. Não dá para desfazer.',
+        confirmLabel: 'Remover',
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) return;
+        this.removendo.set(true);
+        const pedido = ehOportunidade ? this.oportunidadeService.deletar(refId) : this.postService.deletar(refId);
+        pedido.subscribe({
+          next: () => {
+            this.removendo.set(false);
+            this.feedback.success(ehOportunidade ? 'Oportunidade removida.' : 'Discussão removida.');
+            this.removido.emit(refId);
+          },
+          error: (err) => {
+            this.removendo.set(false);
+            this.feedback.error(err?.error?.message || 'Não foi possível remover a publicação.');
+          },
+        });
+      });
+  }
+
+  removerComentario(comentario: { id?: string; autor: string }) {
+    if (!this.admin || !comentario.id || this.comentarioRemovendo()) return;
+    const id = comentario.id;
+
+    this.confirmDialog
+      .confirm({
+        title: 'Apagar comentário',
+        message: `O comentário de ${comentario.autor} será apagado. Não dá para desfazer.`,
+        confirmLabel: 'Apagar',
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) return;
+        this.comentarioRemovendo.set(id);
+        this.comentarioService.deletar(id).subscribe({
+          next: () => {
+            this.comentarioRemovendo.set(null);
+            this.comentarios = this.comentarios.filter((c) => c.id !== id);
+            this.contadorComentarios.update((n) => Math.max(0, n - 1));
+            this.post.idComentarios = (this.post.idComentarios || []).filter((c) => c !== id);
+            if (this.paginaComentarios() > this.totalPaginasComentarios()) {
+              this.paginaComentarios.set(this.totalPaginasComentarios());
+            }
+            this.feedback.success('Comentário apagado.');
+          },
+          error: (err) => {
+            this.comentarioRemovendo.set(null);
+            this.feedback.error(err?.error?.message || 'Não foi possível apagar o comentário.');
+          },
+        });
+      });
   }
 
   toggleSalvar() {

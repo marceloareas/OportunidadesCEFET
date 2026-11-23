@@ -38,7 +38,7 @@
         <!-- LISTA -->
         <div *ngIf="minhasPublicacoes().length > 0">
           <ng-container *ngFor="let p of minhasPublicacoes()">
-            <app-post [post]="p"></app-post>
+            <app-post [post]="p" (removido)="removerDaLista($event)"></app-post>
           </ng-container>
 
           <div class="feed-footer">

@@ -50,7 +50,7 @@ public class PostController {
     public ResponseEntity<Void> deletar(@PathVariable String id, Authentication authentication) {
         Post post = postService.buscarPorId(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicação não encontrada."));
-        permissoes.exigirProprioUsuario(authentication, post.getCriadorId());
+        permissoes.exigirDonoOuAdmin(authentication, post.getCriadorId());
         postService.deletar(id);
         return ResponseEntity.noContent().build();
     }

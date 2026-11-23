@@ -27,7 +27,7 @@
         <!-- LISTA -->
         <div *ngIf="!carregando && itens.length > 0">
           <ng-container *ngFor="let p of itens; trackBy: trackById">
-            <app-post [post]="p" (abrirModalCandidatos)="abrirModalCandidatos(p)"></app-post>
+            <app-post [post]="p" (abrirModalCandidatos)="abrirModalCandidatos(p)" (removido)="removerDaLista($event)"></app-post>
           </ng-container>
         </div>
 

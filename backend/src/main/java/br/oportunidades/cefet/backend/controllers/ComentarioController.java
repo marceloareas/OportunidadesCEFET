@@ -46,4 +46,12 @@ public class ComentarioController {
         comentario.setUsuarioId(permissoes.usuarioAtual(authentication).getId());
         return ResponseEntity.ok(comentarioService.salvar(comentario));
     }
+
+    // Sprint 6: só o administrador apaga comentários (moderação).
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable String id, Authentication authentication) {
+        permissoes.exigirAdmin(authentication);
+        comentarioService.deletar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

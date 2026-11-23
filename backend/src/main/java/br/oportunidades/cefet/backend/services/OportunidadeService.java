@@ -199,6 +199,7 @@ public class OportunidadeService {
 
     public void deletar(String id) {
         oportunidadeRepository.deleteById(id);
+        candidaturaRepository.deleteByOportunidadeId(id);
         feedService.deletarFeedItem(id);
     }
 

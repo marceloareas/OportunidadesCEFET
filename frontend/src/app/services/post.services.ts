@@ -53,6 +53,11 @@ export class PostService {
     return this.http.post<Post>(this.apiUrl, post);
   }
 
+  // O autor ou o administrador (moderação, sprint 6).
+  deletar(postId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${postId}`);
+  }
+
   atualizarLike(postId: string, usuarioId: string) {
     return this.http.post(`${this.apiUrl}/${postId}/like/${usuarioId}`, {});
   }
