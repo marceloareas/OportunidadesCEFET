@@ -1,5 +1,6 @@
 package br.oportunidades.cefet.backend.services;
 
+import br.oportunidades.cefet.backend.enums.FuncaoDeUsuario;
 import br.oportunidades.cefet.backend.exceptions.ResourceNotFoundException;
 import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.repositories.UsuarioRepository;
@@ -28,6 +29,27 @@ public class PermissoesUsuario {
     public Usuario exigirProprioUsuario(Authentication authentication, String idUsuario) {
         Usuario usuario = usuarioAtual(authentication);
         if (!usuario.getId().equals(idUsuario)) {
+            throw new SecurityException("Você não pode agir em nome de outro usuário.");
+        }
+        return usuario;
+    }
+
+    public static boolean ehAdmin(Usuario usuario) {
+        return usuario != null && usuario.getFuncao() == FuncaoDeUsuario.ADMIN;
+    }
+
+    public Usuario exigirAdmin(Authentication authentication) {
+        Usuario usuario = usuarioAtual(authentication);
+        if (!ehAdmin(usuario)) {
+            throw new SecurityException("Apenas o administrador pode realizar esta ação.");
+        }
+        return usuario;
+    }
+
+    // Moderação (sprint 6): o autor ou o administrador.
+    public Usuario exigirDonoOuAdmin(Authentication authentication, String idDono) {
+        Usuario usuario = usuarioAtual(authentication);
+        if (!ehAdmin(usuario) && !usuario.getId().equals(idDono)) {
             throw new SecurityException("Você não pode agir em nome de outro usuário.");
         }
         return usuario;

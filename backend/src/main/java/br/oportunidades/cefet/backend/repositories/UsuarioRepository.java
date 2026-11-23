@@ -16,4 +16,7 @@ public interface UsuarioRepository extends MongoRepository<Usuario, String> {
 	Page<Usuario> findByIdIn(List<String> ids, Pageable pageable);
 
 	List<Usuario> findByImagemPerfilIsNullOrImagemPerfil(String imagemPerfil);
+
+	// Busca da tela de moderação (sprint 6). O Spring Data escapa o termo antes de montar o regex.
+	Page<Usuario> findByNomeContainingIgnoreCaseOrEmailContainingIgnoreCase(String nome, String email, Pageable pageable);
 }

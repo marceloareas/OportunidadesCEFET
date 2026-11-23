@@ -64,7 +64,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        // O 403 de permissão é encaminhado para /error; sem isto ele virava 401.
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 // Sem login válido (token ausente ou expirado) = 401, para o front saber que deve
                 // renovar o token. 403 fica só para recusa de permissão.
