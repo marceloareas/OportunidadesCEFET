@@ -1,5 +1,6 @@
 package br.oportunidades.cefet.backend;
 
+import br.oportunidades.cefet.backend.config.AdminSeed;
 import br.oportunidades.cefet.backend.config.AvatarPadraoBackfill;
 import br.oportunidades.cefet.backend.config.SenhaLegadoBackfill;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,9 @@ class BackendApplicationTests {
 
 	@MockitoBean
 	private SenhaLegadoBackfill senhaLegadoBackfill;
+
+	@MockitoBean
+	private AdminSeed adminSeed;
 
 	@Test
 	void contextLoads() {

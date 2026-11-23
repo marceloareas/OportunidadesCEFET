@@ -5,13 +5,17 @@ import br.oportunidades.cefet.backend.exceptions.ConflictException;
 import br.oportunidades.cefet.backend.exceptions.ResourceNotFoundException;
 import br.oportunidades.cefet.backend.models.Usuario;
 import br.oportunidades.cefet.backend.repositories.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
+import java.util.UUID;
 
 
 @Service
@@ -24,6 +28,8 @@ public class UsuarioService {
     public static String imagemPadrao(FuncaoDeUsuario funcao) {
         return funcao == FuncaoDeUsuario.PROFESSOR ? AVATAR_PROFESSOR : AVATAR_ALUNO;
     }
+
+    private static final Logger log = LoggerFactory.getLogger(UsuarioService.class);
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
@@ -43,6 +49,15 @@ public class UsuarioService {
     }
 
     public Usuario createUsuario(Usuario usuario) {
+        // O cadastro é público: ninguém se cadastra como administrador nem já desativado.
+        if (usuario.getFuncao() == FuncaoDeUsuario.ADMIN) {
+            throw new SecurityException("Não é possível se cadastrar como administrador.");
+        }
+        usuario.setAtivo(true);
+        // id e dados internos nunca vêm do cliente: um id escolhido sobrescreveria outra conta.
+        usuario.setId(UUID.randomUUID().toString());
+        usuario.setIdCandidaturas(new ArrayList<>());
+        usuario.setCriado(null);
         if (usuario.getEmail() != null && usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
             throw new ConflictException("Já existe um usuário cadastrado com esse e-mail.");
         }
@@ -105,6 +120,37 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         usuario.setImagemPerfil(imagemPadrao(usuario.getFuncao()));
         return usuarioRepository.save(usuario);
+    }
+
+    // Chamado na subida (AdminSeed). Idempotente: cria o administrador se não existir; se a conta
+    // de admin já existe, só garante que esteja ativa, sem sobrescrever a senha trocada depois.
+    // Uma conta comum que já usa esse e-mail NÃO é promovida (quem a criou escolheu a senha).
+    // Devolve true quando gravou algo.
+    public boolean garantirAdmin(String email, String senha, String nome) {
+        return usuarioRepository.findByEmail(email).map(existente -> {
+            if (existente.getFuncao() != FuncaoDeUsuario.ADMIN) {
+                log.error("O e-mail do administrador ({}) já pertence a uma conta comum; o perfil ADMIN não foi criado. "
+                        + "Defina outro ADMIN_EMAIL no .env.", email);
+                return false;
+            }
+            if (existente.getAtivo()) {
+                return false;
+            }
+            existente.setAtivo(true);
+            usuarioRepository.save(existente);
+            return true;
+        }).orElseGet(() -> {
+            usuarioRepository.save(Usuario.builder()
+                    .email(email)
+                    .nome(nome)
+                    .senha(passwordEncoder.encode(senha))
+                    .funcao(FuncaoDeUsuario.ADMIN)
+                    .ativo(true)
+                    .criado(new Date())
+                    .imagemPerfil(imagemPadrao(FuncaoDeUsuario.ADMIN))
+                    .build());
+            return true;
+        });
     }
 
     public int preencherImagensPadrao() {

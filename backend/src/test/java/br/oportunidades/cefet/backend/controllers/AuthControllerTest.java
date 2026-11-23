@@ -176,6 +176,47 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.id").value("user-1"));
     }
 
+    // Sprint 6: conta desativada pelo administrador não entra nem renova a sessão.
+    @Test
+    void loginDeContaDesativadaDa403ComMensagem() throws Exception {
+        Usuario desativada = ana(passwordEncoder.encode("segredo"));
+        desativada.setAtivo(false);
+        when(usuarioRepository.findByEmail("ana@cefet.br")).thenReturn(Optional.of(desativada));
+
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(corpoLogin("ana@cefet.br", "segredo")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Sua conta foi desativada pela administração."));
+
+        verify(jwtService, never()).gerarToken(any());
+    }
+
+    @Test
+    void loginDeContaDesativadaComSenhaErradaContinua401() throws Exception {
+        Usuario desativada = ana(passwordEncoder.encode("segredo"));
+        desativada.setAtivo(false);
+        when(usuarioRepository.findByEmail("ana@cefet.br")).thenReturn(Optional.of(desativada));
+
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(corpoLogin("ana@cefet.br", "errada")))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void refreshDeContaDesativadaDa401() throws Exception {
+        Usuario desativada = ana("hash");
+        desativada.setAtivo(false);
+        when(jwtService.ehRefreshToken("r1")).thenReturn(true);
+        when(jwtService.extrairEmail("r1")).thenReturn("ana@cefet.br");
+        when(usuarioRepository.findByEmail("ana@cefet.br")).thenReturn(Optional.of(desativada));
+
+        mvc.perform(post("/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"r1\"}"))
+                .andExpect(status().isUnauthorized());
+
+        verify(jwtService, never()).gerarToken(any());
+    }
+
     @Test
     void meSemAutenticacaoDa401() throws Exception {
         mvc.perform(get("/auth/me")).andExpect(status().isUnauthorized());

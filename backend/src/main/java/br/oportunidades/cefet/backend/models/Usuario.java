@@ -34,7 +34,14 @@ public class Usuario {
     private String linkPortfolio;
     private String linkCurriculo;
 
+    // Desativado pela moderação: não loga e o token deixa de valer. Ausente (dado antigo) = ativo.
+    private Boolean ativo;
+
     @Builder.Default
     private List<String> idCandidaturas = new ArrayList<>(); // referencia Oportunidade(id)
+
+    public Boolean getAtivo() {
+        return !Boolean.FALSE.equals(ativo);
+    }
 
 }

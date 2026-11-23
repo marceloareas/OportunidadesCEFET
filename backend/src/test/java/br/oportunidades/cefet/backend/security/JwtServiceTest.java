@@ -36,6 +36,17 @@ class JwtServiceTest {
         assertFalse(jwt.tokenValido(jwt.gerarToken(ana), bia));
     }
 
+    // Sprint 6: ao desativar a conta, o token que o usuário já tinha deixa de valer.
+    @Test
+    void tokenNaoValeParaContaDesativada() {
+        JwtService jwt = new JwtService(SEGREDO, 60_000);
+        String token = jwt.gerarToken(ana);
+        Usuario desativada = Usuario.builder()
+                .id("user-1").email("ana@cefet.br").funcao(FuncaoDeUsuario.PROFESSOR).ativo(false).build();
+
+        assertFalse(jwt.tokenValido(token, desativada));
+    }
+
     @Test
     void tokenExpiradoEhRecusado() {
         JwtService jwt = new JwtService(SEGREDO, -1_000);

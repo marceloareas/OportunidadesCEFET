@@ -34,7 +34,13 @@ public class AuthController {
 				// Só BCrypt: as senhas em texto puro são migradas na subida (SenhaLegadoBackfill).
 				.filter(usuario -> request.senha() != null
 						&& passwordEncoder.matches(request.senha(), usuario.getSenha()))
-				.map(usuario -> ResponseEntity.ok(novaSessao(usuario)))
+				.map(usuario -> {
+					// Só depois de conferir a senha, para não revelar a quem não sabe a senha que a conta existe.
+					if (!usuario.getAtivo()) {
+						throw new SecurityException("Sua conta foi desativada pela administração.");
+					}
+					return ResponseEntity.ok(novaSessao(usuario));
+				})
 				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
 	}
 
@@ -47,6 +53,7 @@ public class AuthController {
 		}
 
 		return usuarioRepository.findByEmail(jwtService.extrairEmail(request.refreshToken()))
+				.filter(Usuario::getAtivo)
 				.map(usuario -> ResponseEntity.ok(novaSessao(usuario)))
 				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
 	}

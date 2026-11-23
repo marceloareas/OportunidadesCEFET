@@ -81,7 +81,8 @@ public class JwtService {
 	// Refresh token não serve como token de acesso.
 	public boolean tokenValido(String token, Usuario usuario) {
 		Claims claims = extrairClaims(token);
-		return usuario.getEmail().equals(claims.getSubject())
+		return usuario.getAtivo()
+				&& usuario.getEmail().equals(claims.getSubject())
 				&& claims.getExpiration().after(new Date())
 				&& !TIPO_REFRESH.equals(claims.get(CLAIM_TIPO, String.class));
 	}
