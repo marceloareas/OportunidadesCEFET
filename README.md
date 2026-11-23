@@ -42,6 +42,7 @@ Edite o `.env`:
 | `APP_PORT` | Porta em que o sistema fica no ar (`http://<servidor>:APP_PORT`). Padrão `8080`. |
 | `MONGO_INITDB_ROOT_USERNAME` / `MONGO_INITDB_ROOT_PASSWORD` | Usuário e senha do MongoDB. Use só letras e números na senha. |
 | `SECURITY_JWT_SECRET` | Segredo dos tokens de login, com no mínimo 32 caracteres (`openssl rand -base64 48`). |
+| `ADMIN_EMAIL` / `ADMIN_SENHA` | Login do administrador criado automaticamente na subida (padrão `admin@cefet-rj.br` / `Admin@2026`). Troque a senha no servidor. |
 
 Depois suba tudo:
 
@@ -53,6 +54,11 @@ docker compose ps        # mongo e backend devem aparecer como "healthy"
 Só a porta `APP_PORT` fica aberta. O nginx entrega o site e repassa as chamadas `/api` para o backend; o
 backend e o MongoDB ficam acessíveis apenas na rede interna do Docker. Os containers reiniciam sozinhos se
 o servidor reiniciar.
+
+**Perfil administrador:** na subida, o backend cria (uma vez só) o usuário administrador com `ADMIN_EMAIL` e
+`ADMIN_SENHA`. Ele vê o item **Moderação** no menu, onde lista e desativa/reativa contas, e pode apagar comentários
+e postagens de qualquer usuário. Se a conta já existir, a senha não é sobrescrita; para trocá-la depois, entre como
+administrador e use **Editar dados de cadastro**.
 
 **Trocar a porta:** altere `APP_PORT` no `.env` e rode `docker compose up -d` de novo.
 

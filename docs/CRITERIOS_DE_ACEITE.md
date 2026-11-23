@@ -115,3 +115,34 @@ Erros seguem o formato padronizado do `ExceptionControllerAdvice`
   das oportunidades, combinando com os filtros de status, categoria e área. A busca dispara 400 ms depois que a pessoa
   para de digitar; caracteres especiais como `(` ou `+` são procurados literalmente. *Teste:* `FeedServiceTest`,
   `feed.service.spec`, `home.spec`.
+
+## 11. Perfil administrador e moderação (sprint 6)
+
+| Ação | Aluno | Professor | Administrador | Resposta quando negado |
+|---|---|---|---|---|
+| Listar usuários (`GET /admin/usuarios`) | ✗ | ✗ | ✓ | 403 |
+| Desativar / reativar usuário | ✗ | ✗ | ✓ (não a si nem a outro admin) | 403 |
+| Apagar comentário (`DELETE /comments/{id}`) | ✗ | ✗ | ✓ | 403 |
+| Apagar discussão (`DELETE /posts/{id}`) | só a própria | só a própria | ✓ qualquer uma | 403 |
+| Apagar oportunidade (`DELETE /oportunidades/{id}`) | ✗ | só a própria | ✓ qualquer uma | 403 |
+
+- **CA-33** Dado o sistema subindo, quando não existe usuário com `ADMIN_EMAIL`, então é criado o administrador
+  (padrão `admin@cefet-rj.br` / `Admin@2026`) com senha em BCrypt. Subidas seguintes não duplicam a conta nem trocam a
+  senha; uma conta comum que já use esse e-mail não é promovida. *Teste:* `UsuarioServiceAdminTest`; verificação manual:
+  reiniciar o backend e conferir que existe um único ADMIN.
+- **CA-34** O cadastro público (`POST /users`) recusa `funcao: ADMIN` com **403**, ignora `ativo` e `id` enviados no corpo
+  (a conta nasce ativa e com id novo). *Teste:* `UsuarioServiceAdminTest`.
+- **CA-35** O administrador lista os usuários paginados e ordenados por nome, buscando por parte do nome ou do e-mail
+  (caracteres especiais são literais); a senha nunca aparece na resposta. *Teste:* `AdminControllerTest`, `moderacao.spec`.
+- **CA-36** Desativar uma conta faz o login dela responder **403** com "Sua conta foi desativada pela administração." (só
+  depois de a senha conferir; senha errada continua **401**), o token que ela já tinha passa a dar **401** e o refresh é
+  recusado. Reativar devolve o acesso. Contas antigas sem o campo `ativo` contam como ativas. *Teste:*
+  `AuthControllerTest`, `JwtServiceTest`, `AdminControllerTest`.
+- **CA-37** O administrador não desativa a si mesmo nem outro administrador (**403**); a tela não mostra o botão nessas linhas.
+  *Teste:* `AdminControllerTest`, `moderacao.spec`.
+- **CA-38** Apagar uma discussão ou oportunidade remove também o item do feed, os comentários e os itens salvos ligados a ela;
+  na oportunidade, também as candidaturas (some de "Minhas candidaturas"). *Teste:* `ModeracaoCascataTest`,
+  `ModeracaoConteudoTest`.
+- **CA-39** Na interface, só o administrador vê o link **Moderação**, o botão **Remover** nas publicações e a lixeira nos
+  comentários, sempre com confirmação; quem não é administrador e abre `/moderacao` volta para o feed. *Teste:*
+  `post.spec`, `navbar-left.spec`, `auth.guard.spec`.
